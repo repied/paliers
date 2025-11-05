@@ -2,10 +2,10 @@
 title: Visualiseur des facteurs de gradient 
 --- 
 
-Cet outil est une page web côté client montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
+[Cet outil](./index.html) est une page web simple montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
 
 Cet outil implémente un algorithme simplifié [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) en Javascript.
-La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau codé par couleur. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont reportés ci-dessous sur clic dans le tableau.
+La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont fournis en cliquant.
 
 Pour simplifier nous supposons :
 - une seule plongée
@@ -17,20 +17,20 @@ Pour simplifier nous supposons :
 
 ## Définition
 
-Les facteurs de gradient déterminent la sursaturation maximale autorisée dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps est supérieure à la pression ambiante. Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
+Les facteurs de gradient déterminent la sursaturation maximale autorisée dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps (sa "tension") est supérieure à la pression ambiante. Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
 
 Plus précisément, les facteurs de gradient sont 2 paramètres `(GF_low, GF_high)` à définir entre 0% et 100%.
 Ils ont été introduits par Erik Baker dans [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
 
-Nommage : *Facteurs de gradient* sont nommés ainsi parce que :
-- ils sont appliqués comme un *facteur* multiplicatif à la sursaturation maximale autorisée de base (M-Value) de ZHL-16C
-- ils forment un *gradient* parce que la M-value est une *différence* entre la pression partielle tissulaire et la pression ambiante. C'est un peu trompeur car, techniquement, un "gradient" est défini comme un *taux* de variation, plutôt qu'une variation elle-même, mais c'est une technicité.
+Terminologie : *Facteurs de gradient* sont nommés ainsi parce que :
+- ils sont appliqués comme un *facteur* multiplicatif à la sursaturation maximale autorisée de base (M-Value) par ZHL-16C
+- ils forment un *gradient* parce que la M-value est une *différence* entre la pression partielle tissulaire et la pression partielle ambiante. (C'est un peu trompeur car, techniquement, un "gradient" est défini comme un *taux* de variation, plutôt qu'une variation elle-même.)
 
 Plus les FG sont petits, plus la plongée est « conservative ». Typiquement :
 - un petit `GF_low` tend à ajouter des paliers profonds
 - un petit `GF_high` tend à rendre les paliers peu profonds plus longs
 
-Plus "conservateur" signifie typiquement plus de paliers, des paliers plus profonds et plus longs. Mais pas nécessairement "plus sûr".
+Plus "conservateur" signifie typiquement plus de paliers, des paliers plus profonds et plus longs. Mais attention ce n'est pas nécessairement "plus sûr".
 
 ## Histoire
 
@@ -38,18 +38,18 @@ Il existe 2 grandes familles de modèles de décompression :
 - les modèles de contenu en gaz, comme Bühlmann ZHL-16C et d'autres [modèles d'Haldane](https://en.wikipedia.org/wiki/Haldane%27s_decompression_model)
 - les modèles de formation de bulles, comme le "Varying Permeability Model" mentionné par Pyle dans [The Importance of Deep Safety Stops: Rethinking Ascent Patterns From Decompression Dives, 1997](./media/1997_Pyle_bubbles.pdf)
 
-Pyle en 1997 a utilisé des modèles de bulles pour recommander des **paliers plus profonds** que Bühlmann, commençant à peu près à `max_depth/2`.
+Pyle en 1997 a utilisé des modèles de bulles pour recommander des **paliers plus profonds** que Bühlmann, commençant à peu près à `max_depth/2`. 
 
-Pour les concilier, Baker a introduit en 1999 les FG pour "forcer" Bühlmann à générer des paliers plus profonds. Par exemple, les FG 20/80 sont rapidement devenus une "norme" populaire en plongée technique.
+Pour "forcer" Bühlmann à générer des paliers plus profonds, Baker a introduit en 1999 les FG. Par exemple, les FG 20/80 sont rapidement devenus une "norme" populaire en plongée technique.
 
-Mais à partir de 2008, des [études empiriques](./media/2009_deepstops_workshop.pdf) ont commencé à montrer que les paliers profonds ne réduisaient pas toujours le risque d'ADD, et parfois l'augmentaient même. Les experts ont commencé à douter de l'utilité des soi-disant "deep stops" même si personne ne recommandait ZHL-16C brut. 
+Mais à partir de 2008, des [études empiriques](./media/2009_deepstops_workshop.pdf) ont commencé à montrer que les paliers profonds ne réduisaient pas toujours le risque d'ADD, et parfois l'augmentaient même. Les experts ont commencé à douter de l'utilité des soi-disant "deep stops". Mais personne ne recommandait ZHL-16C brut quand meme. 
 
-Intuitivement, des FG faibles ajoutent des paliers profonds pour éliminer du gaz des tissus "rapides", mais en même temps les paliers profonds peuvent augmenter la quantité de gaz dans les tissus "lents".
+Intuitivement, des FG trop faibles ajoutent des paliers profonds pour éliminer du gaz des tissus "rapides". Mais, en même temps, les paliers profonds peuvent augmenter la quantité de gaz dans les tissus "lents".
 
 Ainsi, plus conservateur (c.-à-d. FG plus bas) n'est pas toujours plus sûr.
 
 ## Valeurs
-On trouve une grande variété de recommandations.
+On trouve une grande variété de recommandations sur internet.
 
 ### Ordinateurs
 - Garmin Descent G2 : **35/75 (par défaut)** ou 40/85 ou 45/95 ou personnalisé

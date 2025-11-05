@@ -2,7 +2,7 @@
 title: Gradient Factors Visualiser
 --- 
 
-This tool is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
+[This tool](./index.html) is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
 
 This tool implements a simplified [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) algorithm in Javascript. 
 Time-to-surface (TTS) is computed for many gradient factors values. Resulting TTS are reported as a color-coded table. Decompression plans are shown as tiny plots on mouseover, and details are repoted below the table on mouse click.
@@ -90,7 +90,7 @@ We can find a wide variety of recommandation.
 
 ### Divers
 2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) in [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](./media/Protocoles-De_saturation.pdf)
->- pour une plongée à l'air ou au Nx, on peut utiliser un profil Bühlmann pur ou bien utiliser des GF 80/80 s'il s'agit d'une plongée engagée.
+>- for an air of nitrox dive, one can use a pure Bühlmann profile or GF GF 80/80 if the dive is "committed" ('engagée' in French)
 
 2018 R. Devanney in [Decompression Theory course](https://www.tdisdi.com/tdi-diver-news/decompression-theory-pt-4/) for [Technical Diving International](https://en.wikipedia.org/wiki/Technical_Diving_International) 
 >- To be clear, no-one knows what the optimal ascent profile should be for decompression dives. If GFs are the best approach, we don’t know what the best settings should be. Research does suggest that starting your deco shallower than as dictated by bubble models may create lower VGE counts, but how much shallower is not an answer anyone currently has. 
@@ -112,8 +112,8 @@ We can find a wide variety of recommandation.
 >- In summary, for nitrogen dives (air, nitrox), it is advisable to apply GFs of at least 90/90 and, depending onthe risk factors, to lower them to 85/85 (or even 80/80). In all cases, the choice of GF should be shared with themembers of the team before diving and accepted by all.
 
 2024 [plongerenfrance.free.fr](http://plongerenfrance.free.fr/facteurs_de_gradient.html)
->- un consensus semble se dessiner pour un réglage des facteurs de gradient sur un couple de valeurs standards de 90/90 ou 85/85
->- ordinateur [...] avec paramètres d'origine 40/85 ou 45/95 [...] adaptés [...] pour des plongées loisirs dans la zone 0 à 40 mètres. Par contre, pour [...] profondes [...] paramètres [...] par défaut, ne seront clairement pas adaptés. 
+>- a consensus seems to be emerging for setting gradient factors to a standard pair of values of 90/90 or 85/85 
+>- computer [...] with original settings 40/85 or 45/95 [...] adapted [...] for recreational dives in the 0 to 40 meter zone. However, for [...] deep dives [...] default parameters [...] will clearly not be suitable.
 
 
 Divers reporting their values on various forums 
