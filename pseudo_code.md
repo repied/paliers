@@ -1,3 +1,8 @@
+---
+title: Buhlmann Pseudo code
+toc: true
+--- 
+
 ALGORITHM_SETUP:
 
     // Define 16 Tissue Compartments (T_k)
