@@ -1,5 +1,6 @@
 ---
 title: Gradient Factors Visualiser
+toc: true
 --- 
 
 This tool is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
@@ -15,7 +16,7 @@ To simplify we suppose:
 - a constant ascent rate of [10 m/min](https://www.cmas.org/fact-sheets/correct-ascent-rate.html)
 - all units are in the metric system (bar, meters, minutes)
 
-## GFs definition
+## Definition
 
 Gradient factors determine the maximum allowed supersaturation in tissue compartments during a diving ascent. Supersaturation occur when a gaz partial pressure in the body is larger than its ambiant pressure. Typically the gaz is nitrogen for air dives. A small amount of supersaturation is fine and expected during ascent. But when it gets too big, bubbles can form and/or decompression sickness (DCS) can happen. A diver can use GFs to add some safety margin on top of the supersaturation limit given by base ZHL-16C. 
 
@@ -33,7 +34,7 @@ The smaller GFs, the more "conservative" is the dive. Typically
 
 More "conservative" typically means more stops, deeper stops and longer stops. But not necessary "safer".
 
-## GFs history
+## History
 
 There are 2 main families of decompression models:
 - models of gaz content, like Bühlmann's ZHL-16C and other [Haldanian models](https://en.wikipedia.org/wiki/Haldane%27s_decompression_model)
@@ -49,15 +50,16 @@ Intuitively, low GF add deep stops to remove gaz from "fast" tissues, but at the
 
 So more conservative (ie lower) GFs is not always safer.
 
-## GFs values
+## Values
 We can find a wide variety of recommandation.
-### Diving computer defaults (not all computers implement ZHL-16C)
+
+### Computers
 - Garmin Descent G2: **35/75 (default)** or 40/85 or 45/95 or personalised
 - Shearwater: 35/75 or 40/85 or 45/95 or personalised
 - Suunto (Ocean) : 45/80 by default or personalised.
 - Apeks: 90/90 ; 35/80 ; 30/70 or personalised.
 
-### Diving organisation
+### Organisations
 2015: A [DAN article](https://dan.org/alert-diver/article/gradient-factors/) advocates the use of GF, but doesn't recommend any values, just gives some examples
 >- 15/85 setting might be selected by someone who believes in deep stops and has substantial confidence in being bends-resistant
 >- 30/70 setting brings the diver farther off the bottom for the first stop, which reduces continued ongassing during the ascent. Reaching only 70 percent of the M-value during ascent provides a greater buffer for decompression safety
@@ -87,7 +89,7 @@ We can find a wide variety of recommandation.
 
 [FFESSM](https://ffessm-codep57.fr/uploads/menus/221/1PLj3v7koGqTbwDOU5ClWmpRnJNtdVhxysa8KIAHiX2/media/satdeco.pdf) No explicit advice has been found
 
-### Divers and researchers
+### Divers
 2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) in [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](./media/Protocoles-De_saturation.pdf)
 >- pour une plongée à l'air ou au Nx, on peut utiliser un profil Bühlmann pur ou bien utiliser des GF 80/80 s'il s'agit d'une plongée engagée.
 
@@ -121,7 +123,7 @@ Divers reporting their values on various forums
 - [plongeur.com (french)](https://www.plongeur.com/forums/topic/67263-du-choix-des-bons-gradient-factors-gf-en-plong%C3%A9e/#comments) and [another thread](https://www.plongeur.com/forums/topic/71388-gradient-factor/#comments) 80/80, 70/70, 15/85, 40/85, 80/80, 60/75, 50/70
 >
 
-## GFs choice
+## Choice
 Despites those different opinions, and the lack of definitive scientific results, one need to pick a value before each dive. From those readings, I would go for 85/85 for single, air, no-shallow, non-tec dive.
 
 However this would have to adapted to

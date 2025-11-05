@@ -16,7 +16,7 @@ Pour simplifier nous supposons :
 - un taux de remontée constant de [10 m/min](https://www.cmas.org/fact-sheets/correct-ascent-rate.html)
 - toutes les unités sont dans le système métrique (bar, mètres, minutes)
 
-## Définition des FG
+## Définition
 
 Les facteurs de gradient déterminent la sursaturation maximale autorisée dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps est supérieure à la pression ambiante. Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
 
@@ -33,7 +33,7 @@ Plus les FG sont petits, plus la plongée est « conservative ». Typiquement :
 
 Plus "conservateur" signifie typiquement plus de paliers, des paliers plus profonds et plus longs. Mais pas nécessairement "plus sûr".
 
-## Histoire des FG
+## Histoire
 
 Il existe 2 grandes familles de modèles de décompression :
 - les modèles de contenu en gaz, comme Bühlmann ZHL-16C et d'autres [modèles d'Haldane](https://en.wikipedia.org/wiki/Haldane%27s_decompression_model)
@@ -49,15 +49,16 @@ Intuitivement, des FG faibles ajoutent des paliers profonds pour éliminer du ga
 
 Ainsi, plus conservateur (c.-à-d. FG plus bas) n'est pas toujours plus sûr.
 
-## Valeurs des FG
+## Valeurs
 On trouve une grande variété de recommandations.
-### Valeurs par défaut des ordinateurs de plongée (tous les ordinateurs n'implémentent pas ZHL-16C)
+
+### Ordinateurs
 - Garmin Descent G2 : **35/75 (par défaut)** ou 40/85 ou 45/95 ou personnalisé
 - Shearwater : 35/75 ou 40/85 ou 45/95 ou personnalisé
 - Suunto (Ocean) : 45/80 par défaut ou personnalisé.
 - Apeks : 90/90 ; 35/80 ; 30/70 ou personnalisé.
 
-### Organisations de plongée
+### Organisations
 2015 : Un [article DAN](https://dan.org/alert-diver/article/gradient-factors/) préconise l'utilisation des FG, mais ne recommande aucune valeur, donnant juste quelques exemples
 >- le réglage 15/85 pourrait être choisi par quelqu'un qui croit aux paliers profonds et a une grande confiance en sa résistance aux accidents de décompression
 >- le réglage 30/70 éloigne le plongeur du fond pour le premier palier, ce qui réduit l'ongazage continu pendant la remontée. Atteindre seulement 70 pour cent de la M-value pendant la remontée offre une plus grande marge de sécurité pour la décompression
@@ -87,7 +88,7 @@ On trouve une grande variété de recommandations.
 
 [FFESSM](https://ffessm-codep57.fr/uploads/menus/221/1PLj3v7koGqTbwDOU5ClWmpRnJNtdVhxysa8KIAHiX2/media/satdeco.pdf) Aucune recommandation explicite trouvée
 
-### Plongeurs et chercheurs
+### Plongeurs
 2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) dans [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](./media/Protocoles-De_saturation.pdf)
 >- pour une plongée à l'air ou au Nx, on peut utiliser un profil Bühlmann pur ou bien utiliser des GF 80/80 s'il s'agit d'une plongée engagée.
 
@@ -120,7 +121,7 @@ Divers rapportant leurs valeurs sur divers forums
 - [plongeur.com (french)](https://www.plongeur.com/forums/topic/67263-du-choix-des-bons-gradient-factors-gf-en-plong%C3%A9e/#comments) and [another thread](https://www.plongeur.com/forums/topic/71388-gradient-factor/#comments) 80/80, 70/70, 15/85, 40/85, 80/80, 60/75, 50/70
 
 
-## Choix des FG
+## Choix
 Malgré ces opinions différentes, et l'absence de résultats scientifiques définitifs, il faut choisir des valeurs avant chaque plongée. D'après ces lectures, j'opterais pour 85/85 pour une plongée seule, à l'air, sans palier profond, non technique.
 
 Cependant ceci devra être adapté à
