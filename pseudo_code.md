@@ -1,6 +1,5 @@
 ---
 title: Buhlmann Pseudo code
-toc: true
 --- 
 
 ALGORITHM_SETUP:
