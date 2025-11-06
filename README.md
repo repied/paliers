@@ -2,7 +2,15 @@
 title: Gradient Factors Visualiser
 --- 
 
+Published in 2025. [Frech version](./lisezmoi.md)
+
 [This tool](./index.html) is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
+
+<div style="text-align: center;">
+  <a href="./index.html">
+    <img src="./media/toool_screenshot.png" alt="Tool screenshot" width="300" />
+  </a>
+</div>
 
 This tool implements a simplified [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) algorithm in Javascript. 
 Time-to-surface (TTS) is computed for many gradient factors values. Resulting TTS are reported as a color-coded table. Decompression plans are shown as tiny plots on mouseover, and details are repoted below the table on mouse click.

@@ -2,7 +2,15 @@
 title: Visualiseur des facteurs de gradient 
 --- 
 
+Publié en 2025. [English version](./README.md)
+
 [Cet outil](./index.html) est une page web simple montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
+
+<div style="text-align: center;">
+  <a href="./index.html">
+    <img src="./media/toool_screenshot.png" alt="Tool screenshot" width="300" />
+  </a>
+</div>
 
 Cet outil implémente un algorithme simplifié [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) en Javascript.
 La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont fournis en cliquant.
@@ -78,9 +86,7 @@ On trouve une grande variété de recommandations sur internet.
 
 2025 : [CMAS officialise](https://www.cmas.org/fact-sheets/gradient-factors-gf-and-dive-computers.html) des recommandations pour des valeurs élevées :
 >- Air/nitrox : GF_low=GF_high=entre 90 et 80% (par ex. 90/90; 85/85; 80/80) selon le facteur de risque.
->- Des FG plus bas (par ex. 75/75 ou 70/70) pourraient être envisagés en cas de facteurs de risque majeurs, mais en plongée récréative cela remettrait en question l'opportunité de plonger ce jour-là.
->- (Hélium (heliox, trimix) : GF_low entre 30 et 50, GF_high entre 70 et 80 (par ex. 50/80; 30/70).)
->- Les FG sont un moyen de prévention du risque d'ADD parmi d'autres. Ils sont, par définition, arbitraires et n'offrent aucune garantie.
+>- Des FG plus bas (par ex. 75/75 ou 70/70) pourraient être envisagés en cas de facteurs de risque majeurs, mais en plongée récréative cela remettrait en question l'opportun
 
 2025 : [LIFRAS](./media/2025%20-LIFRAS%20-%20%20Manuel%20Ma%20déco.pdf) (fédération belge)
 >- GFlow = GFhigh = entre 85% et 90%
