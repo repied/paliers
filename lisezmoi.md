@@ -2,7 +2,7 @@
 title: Visualiseur des facteurs de gradient 
 --- 
 
-Publié en 2025. [English version](./README.md)sdsd dfsfd
+Publié en 2025. [English version](./README.md)
 
 [Cet outil](./index.html) est une page web simple montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
 
