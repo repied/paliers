@@ -1,5 +1,3 @@
-
-
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas');
 const ctx = canvas.getContext('2d');
@@ -456,6 +454,55 @@ canvas.addEventListener('click', (e) => {
 // --- language listeners ---
 document.querySelectorAll('.lang-btn').forEach(b => {
     b.addEventListener('click', () => setLanguage(b.dataset.lang));
+});
+
+// Theme toggle logic
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const body = document.body;
+
+    function setDarkTheme(isDarkMode) {
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            themeToggleBtn.textContent = '☀️';
+            themeToggleBtn.title = 'Switch to light mode';
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggleBtn.textContent = '🌙';
+            themeToggleBtn.title = 'Switch to dark mode';
+        }
+    }
+
+    // Load theme preference from localStorage
+    function loadThemePreference() {
+        const savedTheme = localStorage.getItem('theme');
+        // Check for system preference if no saved theme
+        if (savedTheme === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setDarkTheme(true); // System is dark, apply dark mode
+                localStorage.setItem('theme', 'dark');
+            } else {
+                setDarkTheme(false); // System is light or no preference, apply light mode
+                localStorage.setItem('theme', 'light');
+            }
+        } else if (savedTheme === 'dark') {
+            setDarkTheme(true);
+        } else {
+            setDarkTheme(false);
+        }
+    }
+
+    // Toggle theme on button click
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const isDarkMode = body.classList.contains('dark-mode');
+            setDarkTheme(!isDarkMode);
+            localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
+        });
+    }
+
+    // Apply theme on page load
+    loadThemePreference();
 });
 
 // Initial launch
