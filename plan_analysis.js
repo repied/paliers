@@ -1,4 +1,4 @@
-function formatCellDataForDetails(planData) {
+function formatCellDataForDetails(plan) {
     const { dtr, stops, t_descent, totalDiveTime, params } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = params;
 
@@ -26,35 +26,65 @@ async function analysePlan(plan) {
 }
 
 function plotPlan(plan) {
-    console.log(plan)
     const { dtr, stops, t_descent, totalDiveTime, params } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = params;
 
-    const labelsX = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const dataLigne1 = labelsX.map(x => x * 2);
-    const dataLigne2 = labelsX.map(x => x * x);
-    const trace1 = {
-        x: labelsX,
-        y: dataLigne1,
+    const timePoints = [0];
+    const depthPoints = [0];
+    let currentTime = 0;
+
+    // Descent
+    currentTime += t_descent;
+    timePoints.push(currentTime);
+    depthPoints.push(maxDepth);
+
+    // Bottom
+    currentTime += bottomTime - t_descent;
+    timePoints.push(currentTime);
+    depthPoints.push(maxDepth);
+
+    // Stops (or direct ascent if no stops)
+    let lastDepth = maxDepth;
+    if (stops.length > 0) {
+        stops.forEach(stop => {
+            // Ascent to stop
+            let t_climb = (lastDepth - stop.depth) / ASCENT_RATE;
+            currentTime += t_climb;
+            timePoints.push(currentTime);
+            depthPoints.push(stop.depth);
+
+            // Time at stop
+            currentTime += stop.time;
+            timePoints.push(currentTime);
+            depthPoints.push(stop.depth);
+
+            lastDepth = stop.depth;
+        });
+    }
+
+    // Final ascent
+    let t_climb_final = lastDepth / ASCENT_RATE;
+    currentTime += t_climb_final;
+    timePoints.push(currentTime);
+    depthPoints.push(0);
+
+    const trace = {
+        x: timePoints,
+        y: depthPoints,
         mode: 'lines',
-        name: 'Ligne y = 2x'
-    };
-    const trace2 = {
-        x: labelsX,
-        y: dataLigne2,
-        mode: 'lines',
-        name: 'Ligne y = x^2'
+        name: 'Dive Profile'
     };
 
-    const data_ply = [trace1, trace2 /*, trace3, ... */];
+    const data_ply = [trace];
 
     const layout = {
-        title: 'Mon Super Graphique Plotly',
+        title: t('diveProfileTitle'),
         xaxis: {
-            title: 'Axe X'
+            title: 'Time (min)'
         },
         yaxis: {
-            title: 'Axe Y'
+            title: 'Depth (m)',
+            autorange: 'reversed'
         }
     };
 

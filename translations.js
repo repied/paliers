@@ -39,7 +39,7 @@ TRANSLATIONS = {
     "bottomTimeLabel": "Durée au fond :",
     "gradientFactorsLabel": "Facteurs de gradient :",
     "calculatedDTRLabel": "DTR :",
-    "calculatedt_descentLabel": "Durée descente:",
+    "calculatedt_descentLabel": "Durée descente :",
     "requiredStopsLabel": "Paliers requis :",
     "withGF": "GF"
   }
