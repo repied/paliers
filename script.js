@@ -7,8 +7,8 @@ const bottomTimeSlider = document.getElementById('bottomTimeSlider');
 const maxDepthSlider = document.getElementById('maxDepthSlider');
 
 const detailsContainer = document.getElementById('details-analysis-container');
-const detailsProfileLabel = document.getElementById('details-selected-profile');
-const detailsResult = document.getElementById('details-result');
+const detailsPlanH2 = document.getElementById('details-plan-h2');
+const detailsResult = document.getElementById('plan-as-string');
 const mainTitle = document.getElementById('main-title');
 const intro1 = document.getElementById('intro-1');
 const intro2 = document.getElementById('intro-2');
@@ -59,11 +59,11 @@ function calculatePlanForAllCells() {
         let row = [];
         for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const data = calculatePlan(BT, D, gfLow, gfHigh);
-            data.gfLow = Math.round(gfLow * 100);
-            data.gfHigh = Math.round(gfHigh * 100);
-            data.profileParams = { BT, maxDepth: D, t_descent: data.t_descent, totalDiveTime: data.totalDiveTime };
-            row.push(data);
+            const cellData = calculatePlan(BT, D, gfLow, gfHigh);
+            cellData.gfLow = Math.round(gfLow * 100);
+            cellData.gfHigh = Math.round(gfHigh * 100);
+            cellData.profileParams = { BT, maxDepth: D, t_descent: cellData.t_descent, totalDiveTime: cellData.totalDiveTime };
+            row.push(cellData);
         }
         currentGridData.push(row);
     }
@@ -414,10 +414,8 @@ canvas.addEventListener('click', (e) => {
     const cell = getCellFromMousePos(mouseX, mouseY);
 
     if (cell && cell.data && !isNaN(cell.data.dtr)) {
-        selectedCell = cell.data;
-        detailsContainer.style.display = 'block';
-        detailsProfileLabel.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(selectedCell)}`;
-        analysePlan(selectedCell);
+        detailsContainer.style.display = 'flex';
+        analysePlan(cell.data);
         detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
         detailsContainer.style.display = 'none';

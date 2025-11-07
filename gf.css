@@ -242,22 +242,15 @@ input[type="range"]::-moz-range-thumb {
 #details-analysis-container {
     /* hidden by default */
     display: none;
-    margin-top: 24px;
-    padding: 20px;
+    flex-direction: column;
+    align-items: center;
     border-radius: 8px;
     background-color: #f8f9fa;
     border: 1px solid #e0e0e0;
 }
 
-#details-selected-profile {
-    font-weight: 600;
-    color: #0056b3;
-    font-size: 1.1rem;
-    margin-bottom: 12px;
-}
-
 /* Analysis details */
-#details-result {
+#plan-as-string {
     margin-top: 16px;
     padding: 12px;
     background: #fff;
@@ -267,6 +260,11 @@ input[type="range"]::-moz-range-thumb {
     color: #333;
     white-space: pre-wrap;
     /* Préserve le formatage */
+}
+
+.plotlyplot {
+    width: 800px;
+    height: 500px;
 }
 
 /* DARK */
@@ -337,11 +335,8 @@ body.dark-mode #details-analysis-container {
     border-color: #5a5a5a;
 }
 
-body.dark-mode #details-selected-profile {
-    color: #90caf9;
-}
 
-body.dark-mode #details-result {
+body.dark-mode #plan-as-string {
     background: #4a4a4a;
     border-color: #5a5a5a;
     color: #e0e0e0;
