@@ -18,9 +18,10 @@ const labelMaxDepth = document.getElementById('label-maxDepth');
 const labelBottomTime = document.getElementById('label-bottomTime');
 
 // --- State variables ---
-let W = canvas.width;
+let W_all = canvas.width;
 let H = canvas.height;
-let LABEL_MARGIN = W * 0.1; // 10% margin for labels
+let LABEL_MARGIN = W_all * 0.1;
+let W = W_all - LABEL_MARGIN / 2
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_INCR); // N+1 cells for 0-100%
 let currentGridData = [];
 let tooltip = { active: false, x: 0, y: 0, data: null };
