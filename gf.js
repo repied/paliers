@@ -65,13 +65,13 @@ function getInterpolatedGF(d, d_start, GF_low, GF_high) {
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, totalDiveTime }
  */
-function calculatePlan(BT, maxDepth, GF_low, GF_high) {
-    if (BT <= 0 || maxDepth <= 0 || GF_low > GF_high) {
+function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
+    if (bottomTime <= 0 || maxDepth <= 0 || GF_low > GF_high) {
         return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0 };
     }
 
     let Tn2 = Array(16).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
-    let DTR = 0;
+    let dtr = 0;
     let stops = [];
     let totalDiveTime = 0;
 
@@ -84,10 +84,10 @@ function calculatePlan(BT, maxDepth, GF_low, GF_high) {
     }
 
     // 2. Bottom phase (Bottom Time)
-    totalDiveTime += BT;
+    totalDiveTime += bottomTime;
     const P_alv_bottom = depthToPressure(maxDepth) * FN2;
     for (let i = 0; i < 16; i++) {
-        Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, BT, BUEHLMANN_CONSTANTS[i].t12);
+        Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, bottomTime, BUEHLMANN_CONSTANTS[i].t12);
     }
 
     // 3. Ascent and stops phase
@@ -140,7 +140,7 @@ function calculatePlan(BT, maxDepth, GF_low, GF_high) {
                 }
 
                 stopTime += 1; // Stay 1 minute
-                DTR += 1;
+                dtr += 1;
                 totalDiveTime += 1;
 
                 // Desaturation during 1 min at stop 'nextDepth'
@@ -151,7 +151,8 @@ function calculatePlan(BT, maxDepth, GF_low, GF_high) {
 
                 // Infinite loop safety (impossible profile)
                 if (stopTime > 300) {
-                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime };
+                    plan = { dtr: Infinity, stops: [], t_descent, totalDiveTime };
+                    return plan;
                 }
             }
         } // End of stop loop (while !isSafeToAscend)
@@ -162,7 +163,7 @@ function calculatePlan(BT, maxDepth, GF_low, GF_high) {
         }
 
         // Ascent to next stop
-        DTR += t_climb;
+        dtr += t_climb;
         totalDiveTime += t_climb;
         Tn2 = [...Tn2_at_next_stop]; // Update tensions
         currentDepth = nextDepth;
@@ -170,6 +171,6 @@ function calculatePlan(BT, maxDepth, GF_low, GF_high) {
     } // End of ascent loop (while currentDepth > 0)
 
     // Stops are already in order (deepest -> surface)
-
-    return { dtr: Math.ceil(DTR), stops, t_descent, totalDiveTime: Math.ceil(totalDiveTime) };
+    plan = { dtr, stops, t_descent, totalDiveTime };
+    return plan;
 }

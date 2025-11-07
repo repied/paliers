@@ -23,7 +23,7 @@ let H = canvas.height;
 let LABEL_MARGIN = W_all * 0.1;
 let W = W_all - LABEL_MARGIN / 2
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_INCR); // N+1 cells for 0-100%
-let currentGridData = [];
+let calculatedPlans = [];
 let tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell = null;
 
@@ -50,22 +50,20 @@ function applyLanguageToDOM() {
 
 // --- Canvas drawing functions ---
 function calculatePlanForAllCells() {
-    const BT = parseInt(bottomTimeInput.value);
-    const D = parseInt(maxDepthInput.value);
+    const bottomTime = parseInt(bottomTimeInput.value);
+    const maxDepth = parseInt(maxDepthInput.value);
 
-    currentGridData = [];
+    calculatedPlans = [];
     for (let i = 0; i <= GF_N_INCR; i++) { // GF Low (0 to 100)
         const gfLow = (i * GF_INCREMENT) / 100;
         let row = [];
         for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const cellData = calculatePlan(BT, D, gfLow, gfHigh);
-            cellData.gfLow = Math.round(gfLow * 100);
-            cellData.gfHigh = Math.round(gfHigh * 100);
-            cellData.profileParams = { BT, maxDepth: D, t_descent: cellData.t_descent, totalDiveTime: cellData.totalDiveTime };
-            row.push(cellData);
+            const plan = calculatePlan(bottomTime, maxDepth, gfLow, gfHigh);
+            plan.params = { bottomTime, maxDepth, gfLow, gfHigh };
+            row.push(plan);
         }
-        currentGridData.push(row);
+        calculatedPlans.push(row);
     }
     // redraw and hide details
     drawCanvas();
@@ -129,11 +127,11 @@ function drawCanvas() {
     let maxDTR = 0;
     for (let i = 0; i <= GF_N_INCR; i++) { // GF Low (0 to 100)
         for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
-            data = currentGridData[i][j]
+            plan = calculatedPlans[i][j]
             // Color normalization (only for dives WITH stops)
-            if (data.dtr > 0 && data.dtr !== Infinity && data.stops.length > 0) {
-                minDTR = Math.min(minDTR, data.dtr);
-                maxDTR = Math.max(maxDTR, data.dtr);
+            if (plan.dtr > 0 && plan.dtr !== Infinity && plan.stops.length > 0) {
+                minDTR = Math.min(minDTR, plan.dtr);
+                maxDTR = Math.max(maxDTR, plan.dtr);
             }
         }
     }
@@ -142,10 +140,9 @@ function drawCanvas() {
     if (maxDTR === 0) maxDTR = 1;
     const rangeDTR = maxDTR - minDTR;
 
-    for (let i = 0; i < currentGridData.length; i++) {
-        for (let j = 0; j < currentGridData[i].length; j++) {
-            const data = currentGridData[i][j];
-            const { dtr, stops } = data;
+    for (let i = 0; i < calculatedPlans.length; i++) {
+        for (let j = 0; j < calculatedPlans[i].length; j++) {
+            const { dtr, stops } = calculatedPlans[i][j];
             const x = LABEL_MARGIN + j * CELL_SIZE;
             const y = LABEL_MARGIN + i * CELL_SIZE;
 
@@ -154,8 +151,7 @@ function drawCanvas() {
                 ctx.fillStyle = '#adb5bd'; // N/A (GF Low > GF High) or Impossible -> Gray background
             } else if (stops.length === 0) {
                 ctx.fillStyle = '#ffffff'; // White if "No Stop"
-            } else {
-                // Normalization
+            } else {  // Normalization
                 const norm = (rangeDTR > 0) ? (dtr - minDTR) / rangeDTR : 0;
                 ctx.fillStyle = getColorForValue(Math.max(0, Math.min(1, norm)));
             }
@@ -190,9 +186,9 @@ function drawCanvas() {
     }
 }
 
-function drawTooltip(mouseX, mouseY, data) {
-    const { dtr, stops, gfLow, gfHigh, profileParams } = data;
-    const { BT, maxDepth, t_descent, totalDiveTime } = profileParams;
+function drawTooltip(mouseX, mouseY, plan) {
+    const { dtr, stops, t_descent, totalDiveTime, params } = plan;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = params;
 
     // Tooltip dimensions
     const ttW = 200, ttH = 220;
@@ -262,7 +258,7 @@ function drawTooltip(mouseX, mouseY, data) {
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 3. Bottom
-    currentTime += BT;
+    currentTime += bottomTime;
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 4. Stops (or direct ascent if no stops)
@@ -329,8 +325,8 @@ function getCellFromMousePos(mouseX, mouseY) {
     const j = Math.floor((mouseX - LABEL_MARGIN) / CELL_SIZE); // Column (GF High)
     const i = Math.floor((mouseY - LABEL_MARGIN) / CELL_SIZE); // Row (GF Low)
 
-    if (i >= 0 && i < currentGridData.length && j >= 0 && j < currentGridData[0].length) {
-        return { i, j, data: currentGridData[i][j] };
+    if (i >= 0 && i < calculatedPlans.length && j >= 0 && j < calculatedPlans[0].length) {
+        return { i, j, data: calculatedPlans[i][j] };
     }
     return null;
 }
