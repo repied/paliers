@@ -334,33 +334,6 @@ function getCellFromMousePos(mouseX, mouseY) {
     return null;
 }
 
-function formatCellDataForDetails(data) {
-    const { dtr, stops, gfLow, gfHigh, profileParams } = data;
-    const { BT, maxDepth } = profileParams;
-
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
-    if (stops.length === 0) stopsStr = t('stopsNone');
-
-    return `${t('diveProfileTitle')}\n` +
-        `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
-        `- ${t('bottomTimeLabel')} ${BT} minutes\n` +
-        `- ${t('gradientFactorsLabel')} GF ${gfLow} / ${gfHigh}\n` +
-        `- ${t('calculatedDTRLabel')} ${dtr} minutes\n` +
-        `- ${t('requiredStopsLabel')} ${stopsStr}\n`;
-}
-function formatCellDataShort(data) {
-    const { dtr, stops, gfLow, gfHigh, profileParams } = data;
-    const { BT, maxDepth } = profileParams;
-    return `${BT}min @ ${maxDepth}m with GF ${gfLow} / ${gfHigh}`;
-}
-
-/**
- * Analyze the profile
- */
-async function callDetails(cellData) {
-    // TODO add graphs details
-    detailsResult.textContent = formatCellDataForDetails(cellData)
-}
 
 // --- Event listeners ---
 
@@ -443,7 +416,7 @@ canvas.addEventListener('click', (e) => {
         selectedCell = cell.data;
         detailsContainer.style.display = 'block';
         detailsProfileLabel.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(selectedCell)}`;
-        callDetails(selectedCell);
+        analysePlan(selectedCell);
         detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
         detailsContainer.style.display = 'none';
