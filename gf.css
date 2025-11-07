@@ -29,11 +29,19 @@ body {
     margin-bottom: 30px;
 }
 
-/* All buttons selector (top-right) */
 #lang-theme-selector-container {
     position: absolute;
     right: 32px;
     top: 28px;
+}
+
+/* Adjust the lang selector for small screens */
+@media (max-width: 720px) {
+    #lang-theme-selector-container {
+        position: static;
+        margin-bottom: 12px;
+        text-align: right;
+    }
 }
 
 #theme-toggle-btn {
@@ -65,13 +73,206 @@ body {
 }
 
 
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: center;
+}
 
-/* Dark mode styles */
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+p {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #495057;
+}
+
+h1 {
+    color: #0056b3;
+    text-align: center;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+h2 {
+    color: #095cb6;
+    font-weight: 300;
+    text-align: center;
+    padding-top: 16px;
+    margin-bottom: 24px;
+}
+
+h3 {
+    color: #343a40;
+    font-weight: 500;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+li {
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.7;
+}
+
+ul {
+    margin-left: 20px;
+    margin-bottom: 12px;
+}
+
+code {
+    background-color: #e9ecef;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.equation {
+    display: block;
+    text-align: center;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1.2rem;
+    padding: 15px;
+    margin: 15px 0;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+.inline-equation {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: bold;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    margin: 15px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #343a40;
+}
+
+input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+    margin-top: 12px;
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Canvas */
+#decoCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-width: 800px;
+    max-height: 800px;
+    margin: 0 auto 24px auto;
+    display: block;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    cursor: crosshair;
+}
+
+#details-analysis-container {
+    /* hidden by default */
+    display: none;
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+}
+
+#details-selected-profile {
+    font-weight: 600;
+    color: #0056b3;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+/* Analysis details */
+#details-result {
+    margin-top: 16px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    min-height: 40px;
+    color: #333;
+    white-space: pre-wrap;
+    /* Préserve le formatage */
+}
+
+/* DARK */
 body.dark-mode {
     background-color: #2c2c2c;
-    /* Dark background */
     color: #e0e0e0;
-    /* Light text */
 }
 
 body.dark-mode .container {
@@ -89,8 +290,20 @@ body.dark-mode h2 {
     color: #a7d9ff;
 }
 
+body.dark-mode h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode li {
+    color: #cccccc;
+}
+
 body.dark-mode p {
     color: #cccccc;
+}
+
+body.dark-mode a {
+    color: #64b5f6;
 }
 
 body.dark-mode label {
@@ -134,287 +347,13 @@ body.dark-mode #details-result {
     color: #e0e0e0;
 }
 
-body.dark-mode .text-container h2 {
-    color: #90caf9;
-    border-bottom-color: #4a4a4a;
-}
-
-body.dark-mode .text-container h3 {
-    color: #e0e0e0;
-}
-
-body.dark-mode .text-container p,
-body.dark-mode .text-container li {
-    color: #cccccc;
-}
-
-body.dark-mode .text-container code {
+body.dark-mode code {
     background-color: #4a4a4a;
     color: #e0e0e0;
 }
 
-body.dark-mode .text-container .equation {
+body.dark-mode .equation {
     background-color: #3a3a3a;
     border-color: #5a5a5a;
     color: #e0e0e0;
-}
-
-body.dark-mode .text-container a {
-    color: #64b5f6;
-}
-
-/* Utility: visually hidden (for labels) */
-.visually-hidden {
-    position: absolute !important;
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
-    clip: rect(1px, 1px, 1px, 1px);
-    white-space: nowrap;
-}
-
-h1 {
-    color: #0056b3;
-    text-align: center;
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
-    font-weight: 600;
-}
-
-h2 {
-    color: #095cb6;
-    text-align: center;
-    padding-top: 16px;
-    margin-bottom: 24px;
-    font-weight: 300;
-}
-
-
-p {
-    text-align: center;
-    margin-bottom: 24px;
-    color: #495057;
-}
-
-.input-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-    align-items: center;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #343a40;
-}
-
-input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-family: 'Inter', sans-serif;
-}
-
-/* Style moderne pour les sliders */
-input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 8px;
-    background: #e9ecef;
-    border-radius: 5px;
-    outline: none;
-    opacity: 0.7;
-    transition: opacity .2s;
-    margin-top: 12px;
-}
-
-input[type="range"]:hover {
-    opacity: 1;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #007bff;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #007bff;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-
-/* Canvas */
-#decoCanvas {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    max-width: 800px;
-    max-height: 800px;
-    margin: 0 auto 24px auto;
-    display: block;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    background-color: #fdfdfd;
-    cursor: crosshair;
-}
-
-/* Section d'analyse details */
-#details-analysis-container {
-    display: none;
-    /* Caché par défaut */
-    margin-top: 24px;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    border: 1px solid #e0e0e0;
-}
-
-#details-selected-profile {
-    font-weight: 600;
-    color: #0056b3;
-    font-size: 1.1rem;
-    margin-bottom: 12px;
-}
-
-#analyzeBtn {
-    background: #28a745;
-    color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-}
-
-#analyzeBtn:hover {
-    background: #218838;
-}
-
-#analyzeBtn:disabled {
-    background: #aaa;
-    cursor: not-allowed;
-}
-
-#details-result {
-    margin-top: 16px;
-    padding: 12px;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    min-height: 40px;
-    color: #333;
-    white-space: pre-wrap;
-    /* Préserve le formatage */
-}
-
-/* --- NOUVEAU STYLE pour le contenu texte --- */
-.text-container {
-    max-width: 900px;
-    /* Plus lisible pour le texte */
-    text-align: left;
-}
-
-.text-container h2 {
-    color: #0056b3;
-    font-weight: 600;
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 8px;
-    margin-top: 20px;
-    margin-bottom: 16px;
-}
-
-.text-container h3 {
-    color: #343a40;
-    font-weight: 500;
-    margin-top: 16px;
-    margin-bottom: 8px;
-}
-
-.text-container p,
-.text-container li {
-    color: #333;
-    margin-bottom: 12px;
-    line-height: 1.7;
-}
-
-.text-container ul {
-    margin-left: 20px;
-    margin-bottom: 12px;
-}
-
-.text-container code {
-    background-color: #e9ecef;
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-}
-
-.text-container .equation {
-    display: block;
-    text-align: center;
-    font-family: "Times New Roman", Times, serif;
-    font-size: 1.2rem;
-    padding: 15px;
-    margin: 15px 0;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    overflow-x: auto;
-    /* Pour les équations larges */
-}
-
-.text-container .inline-equation {
-    font-family: "Times New Roman", Times, serif;
-    font-weight: bold;
-}
-
-.text-container img {
-    max-width: 100%;
-    height: auto;
-    margin: 15px 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.text-container a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.text-container a:hover {
-    text-decoration: underline;
-}
-
-/* Adjust the lang selector for small screens */
-@media (max-width: 720px) {
-    #lang-theme-selector-container {
-        position: static;
-        margin-bottom: 12px;
-        text-align: right;
-    }
 }
