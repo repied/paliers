@@ -14,7 +14,6 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    /* Permet d'empiler les conteneurs */
     align-items: center;
 }
 
@@ -28,7 +27,6 @@ body {
     position: relative;
     border: 1px solid #e9ecef;
     margin-bottom: 30px;
-    /* Espace entre les conteneurs */
 }
 
 /* All buttons selector (top-right) */
@@ -52,7 +50,7 @@ body {
     border-color: #dee2e6;
 }
 
-#lang-toggle-btn {
+.lang-btn {
     background: transparent;
     border: 1px solid transparent;
     padding: 6px;
@@ -61,7 +59,7 @@ body {
     font-size: 18px;
 }
 
-#lang-toggle-btn:hover {
+.lang-btn:hover {
     background: #f1f5f9;
     border-color: #dee2e6;
 }
@@ -78,20 +76,17 @@ body.dark-mode {
 
 body.dark-mode .container {
     background: #3a3a3a;
-    /* Darker container */
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     border-color: #4a4a4a;
 }
 
 body.dark-mode h1 {
     color: #90caf9;
-    /* Lighter blue for headings */
     border-bottom-color: #4a4a4a;
 }
 
 body.dark-mode h2 {
     color: #a7d9ff;
-    /* Lighter blue for subheadings */
 }
 
 body.dark-mode p {
@@ -122,11 +117,6 @@ body.dark-mode input[type="range"]::-moz-range-thumb {
     background: #64b5f6;
     /* Lighter blue thumb */
     border-color: #3a3a3a;
-}
-
-body.dark-mode #decoCanvas {
-    border-color: #5a5a5a;
-    background-color: #3a3a3a;
 }
 
 body.dark-mode #details-analysis-container {
@@ -185,7 +175,6 @@ body.dark-mode .text-container a {
 
 h1 {
     color: #0056b3;
-    /* Bleu profond */
     text-align: center;
     border-bottom: 2px solid #e9ecef;
     padding-bottom: 16px;
@@ -195,7 +184,6 @@ h1 {
 
 h2 {
     color: #095cb6;
-    /* Bleu profond */
     text-align: center;
     padding-top: 16px;
     margin-bottom: 24px;
@@ -209,7 +197,6 @@ p {
     color: #495057;
 }
 
-/* Grille pour les entrées */
 .input-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
