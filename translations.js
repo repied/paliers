@@ -19,7 +19,12 @@ TRANSLATIONS = {
     "calculatedDTRLabel": "TTS:",
     "calculatedt_descentLabel": "Descent time:",
     "requiredStopsLabel": "Required stops:",
-    "withGF": "FG"
+    "GF": "GF",
+    "compartmentLabel": "C",
+    "timeLabel": "Time",
+    "depthLabel": "Depth",
+    "partialPressureLabel": "Partial Pressure",
+    "diveProfileLabel": "Dive profile"
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -41,7 +46,12 @@ TRANSLATIONS = {
     "calculatedDTRLabel": "DTR :",
     "calculatedt_descentLabel": "Durée descente :",
     "requiredStopsLabel": "Paliers requis :",
-    "withGF": "GF"
+    "GF": "FG",
+    "compartmentLabel": "C",
+    "timeLabel": "Temps",
+    "depthLabel": "Profondeur",
+    "partialPressureLabel": "Pression partielle",
+    "diveProfileLabel": "Profile de plongée"
   }
 }
 

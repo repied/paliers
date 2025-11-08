@@ -63,17 +63,22 @@ function getInterpolatedGF(d, d_start, GF_low, GF_high) {
 
 /**
  * Calculates the complete decompression profile
- * Returns { dtr (TTS), stops [], t_descent, totalDiveTime }
+ * Returns { dtr (TTS), stops [], t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes }
  */
 function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     if (bottomTime <= 0 || maxDepth <= 0 || GF_low > GF_high) {
-        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0 };
+        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, Tn2_history: [], compartmentHalfTimes: [] };
     }
 
     let Tn2 = Array(16).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
     let dtr = 0;
     let stops = [];
     let totalDiveTime = 0;
+    let Tn2_history = [];
+    const compartmentHalfTimes = BUEHLMANN_CONSTANTS.map(c => c.t12);
+
+    // Initial state at surface
+    Tn2_history.push({ time: 0, depth: 0, Tn2: [...Tn2] });
 
     // 1. Descent phase
     const t_descent = maxDepth / DESCENT_RATE;
@@ -82,13 +87,19 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     for (let i = 0; i < 16; i++) {
         Tn2[i] = schreinerEquation(Tn2[i], P_alv_descent, t_descent, BUEHLMANN_CONSTANTS[i].t12);
     }
+    Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
+
 
     // 2. Bottom phase (Bottom Time)
-    totalDiveTime += bottomTime;
+    // bottomTime is interpreted as the total time spent at maxDepth, including descent.
+    const durationAtBottom = Math.max(0, bottomTime - t_descent);
+    totalDiveTime += durationAtBottom;
     const P_alv_bottom = depthToPressure(maxDepth) * FN2;
     for (let i = 0; i < 16; i++) {
-        Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, bottomTime, BUEHLMANN_CONSTANTS[i].t12);
+        Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, durationAtBottom, BUEHLMANN_CONSTANTS[i].t12);
     }
+    Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
+
 
     // 3. Ascent and stops phase
     let currentDepth = maxDepth;
@@ -109,6 +120,12 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         for (let i = 0; i < 16; i++) {
             Tn2_at_next_stop[i] = schreinerEquation(Tn2[i], P_alv_climb, t_climb, BUEHLMANN_CONSTANTS[i].t12);
         }
+
+        // Update totalDiveTime and dtr for the ascent segment
+        totalDiveTime += t_climb;
+        dtr += t_climb;
+        Tn2_history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
+
 
         // Check if a stop is needed at 'nextDepth'
         let stopTime = 0;
@@ -148,11 +165,13 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 for (let i = 0; i < 16; i++) {
                     Tn2_at_next_stop[i] = schreinerEquation(Tn2_at_next_stop[i], P_alv_stop, 1, BUEHLMANN_CONSTANTS[i].t12);
                 }
+                Tn2_history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
+
 
                 // Infinite loop safety (impossible profile)
                 if (stopTime > 300) {
-                    plan = { dtr: Infinity, stops: [], t_descent, totalDiveTime };
-                    return plan;
+                    // Return an "impossible" plan
+                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes };
                 }
             }
         } // End of stop loop (while !isSafeToAscend)
@@ -162,15 +181,13 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
             stops.push({ depth: nextDepth, time: stopTime });
         }
 
-        // Ascent to next stop
-        dtr += t_climb;
-        totalDiveTime += t_climb;
-        Tn2 = [...Tn2_at_next_stop]; // Update tensions
+        // Tn2 is already updated in Tn2_at_next_stop
+        Tn2 = [...Tn2_at_next_stop]; // Update tensions for the next segment
         currentDepth = nextDepth;
 
     } // End of ascent loop (while currentDepth > 0)
 
     // Stops are already in order (deepest -> surface)
-    plan = { dtr, stops, t_descent, totalDiveTime };
+    plan = { dtr, stops, t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes };
     return plan;
 }

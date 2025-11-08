@@ -175,7 +175,7 @@ function drawCanvas() {
                 ctx.fillText('', x + CELL_SIZE / 2, y + CELL_SIZE / 2);
             } else {
                 ctx.font = 'bold 12px Inter';
-                ctx.fillText(dtr.toString(), x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+                ctx.fillText(Math.ceil(dtr).toString(), x + CELL_SIZE / 2, y + CELL_SIZE / 2);
             }
         }
     }
@@ -217,7 +217,7 @@ function drawTooltip(mouseX, mouseY, plan) {
     ctx.font = 'bold 14px Inter';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(`${t('withGF')} ${gfLow}/${gfHigh} | ${t('calculatedDTRLabel')} ${dtr} min`, ttX + ttPad, ttY + ttPad);
+    ctx.fillText(`${formatGFstrings(gfLow, gfHigh)} | ${t('calculatedDTRLabel')} ${Math.ceil(dtr)} min`, ttX + ttPad, ttY + ttPad);
 
     // Handle "No Stop" or "N/A" cases
     if (isNaN(dtr) || dtr === Infinity) {
