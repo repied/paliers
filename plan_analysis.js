@@ -3,8 +3,8 @@ function formatGFstrings(gfLow, gfHigh) {
 }
 
 function formatCellDataForDetails(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, params } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = params;
+    const { dtr, stops, t_descent, totalDiveTime, diveParams } = plan;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
     let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
     if (stops.length === 0) stopsStr = t('stopsNone');
@@ -15,11 +15,12 @@ function formatCellDataForDetails(plan) {
         `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
         `- ${t('calculatedDTRLabel')} ${Math.ceil(dtr)} minutes\n` +
         `- ${t('calculatedt_descentLabel')} ${t_descent} minutes\n` +
+        `- ${t('calculatedTotalDiveTimeLabel')} ${totalDiveTime} minutes\n` +
         `- ${t('requiredStopsLabel')} ${stopsStr}\n`;
 }
 function formatCellDataShort(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, params } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = params;
+    const { diveParams } = plan;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
     return `${bottomTime}min @ ${maxDepth}m with ${formatGFstrings(gfLow, gfHigh)}`;
 }
 
@@ -30,19 +31,18 @@ async function analysePlan(plan) {
 }
 
 function plotPlan(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, params, Tn2_history } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = params;
+    const { Tn2_history } = plan;
 
     const timePoints = Tn2_history.map(entry => entry.time);
     const depthPoints = Tn2_history.map(entry => entry.depth);
-    const Tn2_compartments_data = Array(16).fill(null).map(() => []);
-
+    // transpose to get a time series for each compartment
+    const Tn2_compartments_data = Array(N_COMPARTMENTS).fill(null).map(() => []);
     Tn2_history.forEach(entry => {
         entry.Tn2.forEach((tension, i) => {
             Tn2_compartments_data[i].push(tension);
         });
     });
-
+    // debugger;
     const traceDiveProfile = {
         x: timePoints,
         y: depthPoints,
@@ -54,16 +54,17 @@ function plotPlan(plan) {
 
     const data_ply = [traceDiveProfile];
 
-    for (let i = 0; i < 16; i++) {
-        data_ply.push({
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
+        traceComp = {
             x: timePoints,
             y: Tn2_compartments_data[i],
             mode: 'lines',
             name: `${t('compartmentLabel')} ${i + 1} (T1/2: ${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
-            line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / 16)}, 70%, 50%)` },
+            line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
             yaxis: 'y2',
             visible: 'legendonly'
-        });
+        };
+        data_ply.push(traceComp);
     }
 
     const layout = {

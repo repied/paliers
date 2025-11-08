@@ -60,7 +60,7 @@ function calculatePlanForAllCells() {
         for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const plan = calculatePlan(bottomTime, maxDepth, gfLow, gfHigh);
-            plan.params = { bottomTime, maxDepth, gfLow, gfHigh };
+            plan.diveParams = { bottomTime, maxDepth, gfLow, gfHigh };
             row.push(plan);
         }
         calculatedPlans.push(row);
@@ -187,8 +187,8 @@ function drawCanvas() {
 }
 
 function drawTooltip(mouseX, mouseY, plan) {
-    const { dtr, stops, t_descent, totalDiveTime, params } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = params;
+    const { dtr, stops, t_descent, totalDiveTime, diveParams } = plan;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
     // Tooltip dimensions
     const ttW = 200, ttH = 220;

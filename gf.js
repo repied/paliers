@@ -17,6 +17,8 @@ const BUEHLMANN_CONSTANTS = [
     { t12: 635.0, A: 0.2327, B: 0.9653 },
 ]
 
+const N_COMPARTMENTS = BUEHLMANN_CONSTANTS.length;
+
 // --- Simulation constants ---
 const GF_INCREMENT = 5
 const GF_N_INCR = Math.floor(100 / GF_INCREMENT)
@@ -70,7 +72,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, Tn2_history: [] };
     }
 
-    let Tn2 = Array(16).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
+    let Tn2 = Array(N_COMPARTMENTS).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
     let dtr = 0;
     let stops = [];
     let totalDiveTime = 0;
@@ -84,7 +86,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     const t_descent = maxDepth / DESCENT_RATE;
     totalDiveTime += t_descent;
     let P_alv_descent = depthToPressure(maxDepth / 2) * FN2; // Average P_N2
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
         Tn2[i] = schreinerEquation(Tn2[i], P_alv_descent, t_descent, BUEHLMANN_CONSTANTS[i].t12);
     }
     Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
@@ -95,7 +97,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     const durationAtBottom = Math.max(0, bottomTime - t_descent);
     totalDiveTime += durationAtBottom;
     const P_alv_bottom = depthToPressure(maxDepth) * FN2;
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
         Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, durationAtBottom, BUEHLMANN_CONSTANTS[i].t12);
     }
     Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
@@ -117,7 +119,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         // Approximation: average P_alv over the segment
         const P_alv_climb = depthToPressure((currentDepth + nextDepth) / 2) * FN2;
         let Tn2_at_next_stop = [];
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < N_COMPARTMENTS; i++) {
             Tn2_at_next_stop[i] = schreinerEquation(Tn2[i], P_alv_climb, t_climb, BUEHLMANN_CONSTANTS[i].t12);
         }
 
@@ -142,7 +144,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
 
             // Check if ALL compartments are below their M-Value
             isSafeToAscend = true;
-            for (let i = 0; i < 16; i++) {
+            for (let i = 0; i < N_COMPARTMENTS; i++) {
                 const M_mod = getModifiedMValue(BUEHLMANN_CONSTANTS[i].A, BUEHLMANN_CONSTANTS[i].B, P_next, GF_inter);
                 if (Tn2_at_next_stop[i] > M_mod) {
                     isSafeToAscend = false;
@@ -162,7 +164,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
 
                 // Desaturation during 1 min at stop 'nextDepth'
                 const P_alv_stop = P_next * FN2;
-                for (let i = 0; i < 16; i++) {
+                for (let i = 0; i < N_COMPARTMENTS; i++) {
                     Tn2_at_next_stop[i] = schreinerEquation(Tn2_at_next_stop[i], P_alv_stop, 1, BUEHLMANN_CONSTANTS[i].t12);
                 }
                 Tn2_history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
