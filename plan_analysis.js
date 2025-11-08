@@ -35,6 +35,7 @@ function plotPlan(plan) {
 
     const timePoints = Tn2_history.map(entry => entry.time);
     const depthPoints = Tn2_history.map(entry => entry.depth);
+    const P_N2_ambiantPoints = depthPoints.map(depth => FN2 * depthToPressure(depth));
     // transpose to get a time series for each compartment
     const Tn2_compartments_data = Array(N_COMPARTMENTS).fill(null).map(() => []);
     Tn2_history.forEach(entry => {
@@ -42,12 +43,12 @@ function plotPlan(plan) {
             Tn2_compartments_data[i].push(tension);
         });
     });
-    // debugger;
+
     const traceDiveProfile = {
         x: timePoints,
-        y: depthPoints,
+        y: P_N2_ambiantPoints,
         mode: 'lines',
-        name: t('diveProfileLabel'),
+        name: t('pn2ambiantLabel'),
         line: { color: 'blue', width: 3 },
         yaxis: 'y1'
     };
@@ -61,42 +62,24 @@ function plotPlan(plan) {
             mode: 'lines',
             name: `${t('compartmentLabel')} ${i + 1} (T1/2: ${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
             line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
-            yaxis: 'y2',
-            visible: 'legendonly'
+            // visible: 'legendonly'
         };
         data_ply.push(traceComp);
     }
 
     const layout = {
-        title: t('diveProfileTitle'),
-        // width: 1200,
+        title: t('tensionsTSTitle'),
         xaxis: {
             title: t('timeLabel') + ' (min)'
         },
         yaxis: {
-            title: t('depthLabel') + ' (m)',
-            autorange: 'reversed',
-            side: 'left',
-            position: 0.05
-        },
-        yaxis2: {
-            title: t('partialPressureLabel') + ' (bar)',
-            overlaying: 'y',
-            side: 'right',
-            showgrid: false,
-            zeroline: false,
-            position: 0.95,
-            rangemode: 'tozero',
-            autorange: 'reversed'
+            title: t('pn2ambiantLabel') + ' (bar)',
         },
         legend: {
-            x: 1.02,
+            x: 0.7,
             y: 1,
             xanchor: 'left'
         },
-        margin: {
-            r: 80
-        }
     };
 
     Plotly.newPlot('plotly-plot', data_ply, layout);

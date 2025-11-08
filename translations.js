@@ -25,7 +25,8 @@ TRANSLATIONS = {
     "timeLabel": "Time",
     "depthLabel": "Depth",
     "partialPressureLabel": "Partial Pressure",
-    "diveProfileLabel": "Dive profile"
+    "pn2ambiantLabel": "Ambiant P_N2",
+    "tensionsTSTitle": "Tensions evolutions over time"
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -53,7 +54,8 @@ TRANSLATIONS = {
     "timeLabel": "Temps",
     "depthLabel": "Profondeur",
     "partialPressureLabel": "Pression partielle",
-    "diveProfileLabel": "Profile de plongée"
+    "pn2ambiantLabel": "P_N2 ambiante",
+    "tensionsTSTitle": "Evolution des tensions au cours du temps"
   }
 }
 
