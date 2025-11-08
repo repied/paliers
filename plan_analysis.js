@@ -30,7 +30,7 @@ async function analysePlan(plan) {
 }
 
 function plotPlan(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, params, Tn2_history, compartmentHalfTimes } = plan;
+    const { dtr, stops, t_descent, totalDiveTime, params, Tn2_history } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = params;
 
     const timePoints = Tn2_history.map(entry => entry.time);
@@ -59,7 +59,7 @@ function plotPlan(plan) {
             x: timePoints,
             y: Tn2_compartments_data[i],
             mode: 'lines',
-            name: `${t('compartmentLabel')} ${i + 1} (T1/2: ${compartmentHalfTimes[i]} min)`,
+            name: `${t('compartmentLabel')} ${i + 1} (T1/2: ${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
             line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / 16)}, 70%, 50%)` },
             yaxis: 'y2',
             visible: 'legendonly'

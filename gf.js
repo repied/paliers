@@ -63,11 +63,11 @@ function getInterpolatedGF(d, d_start, GF_low, GF_high) {
 
 /**
  * Calculates the complete decompression profile
- * Returns { dtr (TTS), stops [], t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes }
+ * Returns { dtr (TTS), stops [], t_descent, totalDiveTime, Tn2_history }
  */
 function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     if (bottomTime <= 0 || maxDepth <= 0 || GF_low > GF_high) {
-        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, Tn2_history: [], compartmentHalfTimes: [] };
+        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, Tn2_history: [] };
     }
 
     let Tn2 = Array(16).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
@@ -171,7 +171,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 // Infinite loop safety (impossible profile)
                 if (stopTime > 300) {
                     // Return an "impossible" plan
-                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes };
+                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime, Tn2_history };
                 }
             }
         } // End of stop loop (while !isSafeToAscend)
@@ -188,6 +188,6 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     } // End of ascent loop (while currentDepth > 0)
 
     // Stops are already in order (deepest -> surface)
-    plan = { dtr, stops, t_descent, totalDiveTime, Tn2_history, compartmentHalfTimes };
+    plan = { dtr, stops, t_descent, totalDiveTime, Tn2_history };
     return plan;
 }
