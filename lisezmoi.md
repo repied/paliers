@@ -4,7 +4,7 @@ title: Visualiseur des facteurs de gradient
 
 Publié en 2025. [English version](./README.md)
 
-[Cet outil](./index.html) est une page web simple montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
+[Cet outil](./index.html) est une simple page web montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
 
 <div style="text-align: center;">
   <a href="./index.html">
@@ -13,6 +13,9 @@ Publié en 2025. [English version](./README.md)
 </div>
 
 Cet outil implémente un algorithme simplifié [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) en Javascript.
+
+Vous pouvez trouver [ici une description du fonctionnement](./algorithme_fr.md) de cet algorithme.  
+
 La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont fournis en cliquant.
 
 Pour simplifier nous supposons :

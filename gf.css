@@ -265,14 +265,15 @@ input[type="range"]::-moz-range-thumb {
     border: 1px solid #ddd;
     min-height: 40px;
     color: #333;
-    white-space: pre-wrap;
     /* Préserve le formatage */
+    white-space: pre-wrap;
 }
 
 
 #plotly-plot {
     width: 100%;
     height: 800px;
+    margin: 0 auto;
 }
 
 /* DARK */
