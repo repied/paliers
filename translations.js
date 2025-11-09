@@ -26,6 +26,7 @@ TRANSLATIONS = {
     "depthLabel": "Depth",
     "partialPressureLabel": "Partial Pressure",
     "pn2ambiantLabel": "Ambiant P_N2",
+    "compartmentTensionLabel": "Compartment Tension",
     "tensionsTSTitle": "Tensions evolutions over time"
   },
   "fr": {
@@ -55,6 +56,7 @@ TRANSLATIONS = {
     "depthLabel": "Profondeur",
     "partialPressureLabel": "Pression partielle",
     "pn2ambiantLabel": "P_N2 ambiante",
+    "compartmentTensionLabel": "Tension compartiment",
     "tensionsTSTitle": "Evolution des tensions au cours du temps"
   }
 }

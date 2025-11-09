@@ -44,46 +44,93 @@ function plotPlan(plan) {
         });
     });
 
+    const data_ply = [];
+
+    // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
     const traceDiveProfile = {
         x: timePoints,
         y: P_N2_ambiantPoints,
         mode: 'lines',
         name: t('pn2ambiantLabel'),
         line: { color: 'blue', width: 3 },
-        yaxis: 'y1'
+        yaxis: 'y1',
+        xaxis: 'x1'
     };
-
-    const data_ply = [traceDiveProfile];
+    data_ply.push(traceDiveProfile);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        traceComp = {
+        const traceComp = {
             x: timePoints,
             y: Tn2_compartments_data[i],
             mode: 'lines',
-            name: `${t('compartmentLabel')} ${i + 1} (T1/2: ${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
+            name: `${t('compartmentLabel')}${i + 1} (${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
             line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
-            // visible: 'legendonly'
+            yaxis: 'y1',
+            xaxis: 'x1',
+            legendgroup: `compartment${i}`
         };
+        if (!(i === 0 || i === N_COMPARTMENTS - 1 || i === Math.floor(N_COMPARTMENTS / 2))) {
+            traceComp.visible = 'legendonly';
+        }
         data_ply.push(traceComp);
+    }
+
+    // --- Second Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
+    const traceDiveProfile2 = {
+        x: P_N2_ambiantPoints,
+        y: P_N2_ambiantPoints,
+        mode: 'lines',
+        name: t('pn2ambiantLabel'),
+        line: { color: 'blue', width: 3 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        showlegend: false
+    };
+    data_ply.push(traceDiveProfile2);
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
+        const traceCompVsAmbient = {
+            x: P_N2_ambiantPoints,
+            y: Tn2_compartments_data[i],
+            mode: 'lines',
+            line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
+            yaxis: 'y2',
+            xaxis: 'x2',
+            showlegend: false,
+            legendgroup: `compartment${i}`
+        };
+        if (!(i === 0 || i === N_COMPARTMENTS - 1 || i === Math.floor(N_COMPARTMENTS / 2))) {
+            traceCompVsAmbient.visible = 'legendonly';
+        }
+        data_ply.push(traceCompVsAmbient);
     }
 
     const layout = {
         title: t('tensionsTSTitle'),
+        grid: {
+            rows: 2,
+            columns: 1,
+            pattern: 'independent',
+            roworder: 'top to bottom'
+        },
         xaxis: {
             title: t('timeLabel') + ' (min)'
         },
         yaxis: {
-            title: t('pn2ambiantLabel') + ' (bar)',
+            title: t('pn2ambiantLabel') + ' (bar)'
+        },
+        xaxis2: {
+            title: t('pn2ambiantLabel') + ' (bar)'
+        },
+        yaxis2: {
+            title: t('compartmentTensionLabel') + ' (bar)',
         },
         legend: {
-            x: 0.7,
+            x: 1,
             y: 1,
-            xanchor: 'left'
+            xanchor: 'right'
         },
+        height: 800
     };
 
     Plotly.newPlot('plotly-plot', data_ply, layout);
 }
-
-
-// now add on the same plotly graph a second vertical axis with the partial pressures of all 16 compartiments . you can use the schreinerEquation() functions from #file:gf.js to compute the pressures/tensions along the dive profile. Let the user have the possibility to select/unselect those curves by adding a legend
