@@ -1,4 +1,4 @@
-const BUEHLMANN_CONSTANTS = [
+const BUEHLMANN = [ // half-times in minutes, A and B coefficients
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
     { t12: 12.5, A: 0.8618, B: 0.7222 },
@@ -17,12 +17,12 @@ const BUEHLMANN_CONSTANTS = [
     { t12: 635.0, A: 0.2327, B: 0.9653 },
 ]
 
-const N_COMPARTMENTS = BUEHLMANN_CONSTANTS.length;
+const N_COMPARTMENTS = BUEHLMANN.length;
 
 // --- Simulation constants ---
 const GF_INCREMENT = 5
 const GF_N_INCR = Math.floor(100 / GF_INCREMENT)
-const AMBIENT_PRESSURE_BAR = 1.0; // bar
+const SURFACE_PRESSURE_BAR = 1.0; // bar
 const FN2 = 0.79; // Nitrogen Fraction in air
 const ASCENT_RATE = 10; // (m/min)
 const DESCENT_RATE = 20; //  (m/min)
@@ -32,75 +32,89 @@ const STOP_INTERVAL = 3; // Stops every 3m
 
 // --- Algorithm functions ---
 function depthToPressure(depth) {
-    return AMBIENT_PRESSURE_BAR + depth / 10;
+    return SURFACE_PRESSURE_BAR + depth / 10;
+}
+function depthToPN2(depth) {
+    return depthToPressure(depth) * FN2;
 }
 
 /**
  * Saturation/desaturation equation
- * Tn2 = P_alv + (T0 - P_alv) * exp(-k * t)
+ * returns Tn2 after time t at partial pressure P, if starting from tension T0
+ * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-function schreinerEquation(T0, P_alv, t, t_half) {
-    const k = Math.log(2) / t_half;
-    return P_alv + (T0 - P_alv) * Math.exp(-k * t);
+function updateTension(T0, PN2, t, compartment_t12) {
+    const k = Math.log(2) / compartment_t12;
+    const T1 = PN2 + (T0 - PN2) * Math.exp(-k * t);
+    return T1;
 }
 
 /**
- * Modified M-Value 
+ * Original M_Value (according to constants A and B)
+ * P_amb is a real pressure, not a partial pressure for N2
+*/
+function getMValue(A, B, P_amb) {
+    return A + P_amb / B;
+}
+/**
+ * Modified M-Value using gradient factor at current depth (ambient pressure)
+ * P_amb is a real pressure, not a partial pressure for N2
  * M_val = P_amb + (M_orig - P_amb) * GF
  */
 function getModifiedMValue(A, B, P_amb, GF) {
-    // Original M_Value (according to constants A and B)
-    const M_orig = A + P_amb / B;
-    // M_Value modified by Gradient Factor
-    return P_amb + (M_orig - P_amb) * GF;
+    const M_orig = getMValue(A, B, P_amb)
+    const M_mod = P_amb + (M_orig - P_amb) * GF;
+    return M_mod;
 }
-
-function getInterpolatedGF(d, d_start, GF_low, GF_high) {
-    if (d_start === 0) return GF_high; // Case without stop
-    if (d >= d_start) return GF_low;
-    if (d <= 0) return GF_high;
+/**
+ * Get the interpolated gradient factor (GF) for a given depth
+ */
+function getInterpolatedGF(depth, maxDepth, GF_low, GF_high) {
+    // if (maxDepth === 0) return GF_high; // TODO should not be useful
+    if (depth >= maxDepth) return GF_low;
+    if (depth <= 0) return GF_high;
     // Linear interpolation
-    return GF_high + (GF_low - GF_high) * (d / d_start);
+    return GF_high + (GF_low - GF_high) * (depth / maxDepth);
 }
 
 /**
  * Calculates the complete decompression profile
- * Returns { dtr (TTS), stops [], t_descent, totalDiveTime, Tn2_history }
+ * Returns { dtr (TTS), stops [], t_descent, totalDiveTime, history }
  */
 function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
-    if (bottomTime <= 0 || maxDepth <= 0 || GF_low > GF_high) {
-        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, Tn2_history: [] };
+    if (bottomTime <= 0 || maxDepth <= 0) { // || GF_low > GF_high
+        return { dtr: NaN, stops: [], t_descent: 0, totalDiveTime: 0, history: [] };
     }
 
-    let Tn2 = Array(N_COMPARTMENTS).fill(AMBIENT_PRESSURE_BAR * FN2); // Initial tension (surface)
+    let Tn2 = Array(N_COMPARTMENTS).fill(depthToPN2(0)); // Initial tension (surface)
     let dtr = 0;
     let stops = [];
     let totalDiveTime = 0;
-    let Tn2_history = [];
-    const compartmentHalfTimes = BUEHLMANN_CONSTANTS.map(c => c.t12);
+    let history = []; // will store the tn2 for each compartment over time
+    const halfTimes = BUEHLMANN.map(c => c.t12);
 
     // Initial state at surface
-    Tn2_history.push({ time: 0, depth: 0, Tn2: [...Tn2] });
+    history.push({ time: 0, depth: 0, Tn2: [...Tn2] });
 
     // 1. Descent phase
     const t_descent = maxDepth / DESCENT_RATE;
     totalDiveTime += t_descent;
-    let P_alv_descent = depthToPressure(maxDepth / 2) * FN2; // Average P_N2
+    let PN2_descent = depthToPN2(maxDepth / 2); // Average P_N2 TODO sample all minutes
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        Tn2[i] = schreinerEquation(Tn2[i], P_alv_descent, t_descent, BUEHLMANN_CONSTANTS[i].t12);
+        Tn2[i] = updateTension(Tn2[i], PN2_descent, t_descent, halfTimes[i]);
     }
-    Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
+    history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
 
 
-    // 2. Bottom phase (Bottom Time)
+    // 2. Bottom phase (Bottom Time) TODO sample all minutes
     // bottomTime is interpreted as the total time spent at maxDepth, including descent.
     const durationAtBottom = Math.max(0, bottomTime - t_descent);
     totalDiveTime += durationAtBottom;
-    const P_alv_bottom = depthToPressure(maxDepth) * FN2;
+    const PN2_bottom = depthToPN2(maxDepth);
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        Tn2[i] = schreinerEquation(Tn2[i], P_alv_bottom, durationAtBottom, BUEHLMANN_CONSTANTS[i].t12);
+        Tn2[i] = updateTension(Tn2[i], PN2_bottom, durationAtBottom, halfTimes[i]);
     }
-    Tn2_history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
+    history.push({ time: totalDiveTime, depth: maxDepth, Tn2: [...Tn2] });
 
 
     // 3. Ascent and stops phase
@@ -116,17 +130,17 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
 
         // Desaturation during ascent (segment)
-        // Approximation: average P_alv over the segment
-        const P_alv_climb = depthToPressure((currentDepth + nextDepth) / 2) * FN2;
+        // Approximation: average P over the segment
+        const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let Tn2_at_next_stop = [];
         for (let i = 0; i < N_COMPARTMENTS; i++) {
-            Tn2_at_next_stop[i] = schreinerEquation(Tn2[i], P_alv_climb, t_climb, BUEHLMANN_CONSTANTS[i].t12);
+            Tn2_at_next_stop[i] = updateTension(Tn2[i], PN2_climb, t_climb, halfTimes[i]);
         }
 
         // Update totalDiveTime and dtr for the ascent segment
         totalDiveTime += t_climb;
         dtr += t_climb;
-        Tn2_history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
+        history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
 
 
         // Check if a stop is needed at 'nextDepth'
@@ -140,12 +154,12 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
 
             // Calculate interpolated GF at 'nextDepth'
             // Note: firstStopDepth is 0 until the first stop is found
-            const GF_inter = getInterpolatedGF(nextDepth, firstStopDepth, GF_low, GF_high);
+            const GF_inter = getInterpolatedGF(nextDepth, maxDepth, GF_low, GF_high);
 
             // Check if ALL compartments are below their M-Value
             isSafeToAscend = true;
             for (let i = 0; i < N_COMPARTMENTS; i++) {
-                const M_mod = getModifiedMValue(BUEHLMANN_CONSTANTS[i].A, BUEHLMANN_CONSTANTS[i].B, P_next, GF_inter);
+                const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P_next, GF_inter);
                 if (Tn2_at_next_stop[i] > M_mod) {
                     isSafeToAscend = false;
                     break;
@@ -163,17 +177,17 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 totalDiveTime += 1;
 
                 // Desaturation during 1 min at stop 'nextDepth'
-                const P_alv_stop = P_next * FN2;
+                const P_stop = P_next * FN2;
                 for (let i = 0; i < N_COMPARTMENTS; i++) {
-                    Tn2_at_next_stop[i] = schreinerEquation(Tn2_at_next_stop[i], P_alv_stop, 1, BUEHLMANN_CONSTANTS[i].t12);
+                    Tn2_at_next_stop[i] = updateTension(Tn2_at_next_stop[i], P_stop, 1, halfTimes[i]);
                 }
-                Tn2_history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
+                history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
 
 
                 // Infinite loop safety (impossible profile)
                 if (stopTime > 300) {
                     // Return an "impossible" plan
-                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime, Tn2_history };
+                    return { dtr: Infinity, stops: [], t_descent, totalDiveTime, history };
                 }
             }
         } // End of stop loop (while !isSafeToAscend)
@@ -190,6 +204,6 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     } // End of ascent loop (while currentDepth > 0)
 
     // Stops are already in order (deepest -> surface)
-    plan = { dtr, stops, t_descent, totalDiveTime, Tn2_history };
+    plan = { dtr, stops, t_descent, totalDiveTime, history };
     return plan;
 }

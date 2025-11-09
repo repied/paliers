@@ -27,7 +27,9 @@ TRANSLATIONS = {
     "partialPressureLabel": "Partial Pressure",
     "pn2ambiantLabel": "Ambiant P_N2",
     "compartmentTensionLabel": "Compartment Tension",
-    "tensionsTSTitle": "Tensions evolutions over time"
+    "tensionsTSTitle": "Tensions evolutions over time",
+    "mValueLabel": "M-Value",
+    "modifiedMValueLabel": "modified M-Value"
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -57,7 +59,9 @@ TRANSLATIONS = {
     "partialPressureLabel": "Pression partielle",
     "pn2ambiantLabel": "P_N2 ambiante",
     "compartmentTensionLabel": "Tension compartiment",
-    "tensionsTSTitle": "Evolution des tensions au cours du temps"
+    "tensionsTSTitle": "Evolution des tensions au cours du temps",
+    "mValueLabel": "M-Value",
+    "modifiedMValueLabel": "modified M-Value"
   }
 }
 
