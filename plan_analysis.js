@@ -52,9 +52,10 @@ function plotPlan(plan) {
         y: P_N2_ambiantPoints,
         mode: 'lines',
         name: t('pn2ambiantLabel'),
-        line: { color: 'blue', width: 3 },
+        line: { color: 'black', width: 3 },
         yaxis: 'y1',
-        xaxis: 'x1'
+        xaxis: 'x1',
+        legendgroup: `P_N2_ambiant`
     };
     data_ply.push(traceDiveProfile);
 
@@ -64,7 +65,7 @@ function plotPlan(plan) {
             y: Tn2_compartments_data[i],
             mode: 'lines',
             name: `${t('compartmentLabel')}${i + 1} (${BUEHLMANN_CONSTANTS.map(c => c.t12)[i]} min)`,
-            line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
+            line: { width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
             yaxis: 'y1',
             xaxis: 'x1',
             legendgroup: `compartment${i}`
@@ -81,9 +82,10 @@ function plotPlan(plan) {
         y: P_N2_ambiantPoints,
         mode: 'lines',
         name: t('pn2ambiantLabel'),
-        line: { color: 'blue', width: 3 },
+        line: { color: 'black', width: 3 },
         yaxis: 'y2',
         xaxis: 'x2',
+        legendgroup: `P_N2_ambiant`,
         showlegend: false
     };
     data_ply.push(traceDiveProfile2);
@@ -92,7 +94,7 @@ function plotPlan(plan) {
             x: P_N2_ambiantPoints,
             y: Tn2_compartments_data[i],
             mode: 'lines',
-            line: { dash: 'dot', width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
+            line: { width: 1, color: `hsl(${i * (360 / N_COMPARTMENTS)}, 70%, 50%)` },
             yaxis: 'y2',
             xaxis: 'x2',
             showlegend: false,
@@ -107,22 +109,26 @@ function plotPlan(plan) {
     const layout = {
         title: t('tensionsTSTitle'),
         grid: {
-            rows: 2,
-            columns: 1,
+            rows: 1,
+            columns: 2,
             pattern: 'independent',
             roworder: 'top to bottom'
         },
         xaxis: {
-            title: t('timeLabel') + ' (min)'
+            title: t('timeLabel') + ' (min)',
+            rangemode: 'tozero'
         },
         yaxis: {
-            title: t('pn2ambiantLabel') + ' (bar)'
+            title: t('compartmentTensionLabel') + ' (bar)',
+            rangemode: 'tozero'
         },
         xaxis2: {
-            title: t('pn2ambiantLabel') + ' (bar)'
+            title: t('pn2ambiantLabel') + ' (bar)',
+            rangemode: 'tozero'
         },
         yaxis2: {
             title: t('compartmentTensionLabel') + ' (bar)',
+            rangemode: 'tozero'
         },
         legend: {
             x: 1,
