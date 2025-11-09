@@ -51,19 +51,19 @@ function updateTension(T0, PN2, t, compartment_t12) {
 
 /**
  * Original M_Value (according to constants A and B)
- * P_amb is a real pressure, not a partial pressure for N2
+ * pressure is a real pressure, not a partial pressure for N2
 */
-function getMValue(A, B, P_amb) {
-    return A + P_amb / B;
+function getMValue(A, B, pressure) {
+    return A + pressure / B;
 }
 /**
  * Modified M-Value using gradient factor at current depth (ambient pressure)
  * P_amb is a real pressure, not a partial pressure for N2
- * M_val = P_amb + (M_orig - P_amb) * GF
+ * M_val = pressure + (M_orig - pressure) * GF
  */
-function getModifiedMValue(A, B, P_amb, GF) {
-    const M_orig = getMValue(A, B, P_amb)
-    const M_mod = P_amb + (M_orig - P_amb) * GF;
+function getModifiedMValue(A, B, pressure, GF) {
+    const M_orig = getMValue(A, B, pressure)
+    const M_mod = pressure + (M_orig - pressure) * GF;
     return M_mod;
 }
 /**
