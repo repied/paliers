@@ -139,7 +139,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         }
 
         // Update totalDiveTime and dtr for the ascent segment
-        totalDiveTime += t_climb;
+        totalDiveTime += t_climb; // TODO understand why we add the ascent before computing stops
         dtr += t_climb;
         history.push({ time: totalDiveTime, depth: nextDepth, Tn2: [...Tn2_at_next_stop] });
 
@@ -203,6 +203,15 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         currentDepth = nextDepth;
 
     } // End of ascent loop (while currentDepth > 0)
+
+    // 4 . End of dive at surface waiting 20 minutes
+    const surfaceWaitTime = 20;
+    for (let t = 0; t <= surfaceWaitTime; t++) { // TODO somthing wrong here, point all ahve the same x
+        for (let i = 0; i < N_COMPARTMENTS; i++) {
+            Tn2[i] = updateTension(Tn2[i], depthToPN2(0), 1, halfTimes[i]);
+        }
+        history.push({ time: totalDiveTime + surfaceWaitTime, depth: 0, Tn2: [...Tn2] });
+    }
 
     // Stops are already in order (deepest -> surface)
     plan = { dtr, stops, t_descent, totalDiveTime, history };
