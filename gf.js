@@ -124,7 +124,8 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     // Ascent loop, stop by stop (every 3m)
     while (currentDepth > 0) {
         const nextDepth = Math.max(0, currentDepth - STOP_INTERVAL);
-        const P_next = depthToPressure(nextDepth);
+        const P_nextDepth = depthToPressure(nextDepth);
+        const GF_nextDepth = getInterpolatedGF(nextDepth, maxDepth, GF_low, GF_high);
 
         // Ascent time (without stop) to the next stop
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
@@ -154,12 +155,12 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
 
             // Calculate interpolated GF at 'nextDepth'
             // Note: firstStopDepth is 0 until the first stop is found
-            const GF_inter = getInterpolatedGF(nextDepth, maxDepth, GF_low, GF_high);
+
 
             // Check if ALL compartments are below their M-Value
             isSafeToAscend = true;
             for (let i = 0; i < N_COMPARTMENTS; i++) {
-                const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P_next, GF_inter);
+                const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P_nextDepth, GF_nextDepth);
                 if (Tn2_at_next_stop[i] > M_mod) {
                     isSafeToAscend = false;
                     break;
@@ -177,7 +178,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 totalDiveTime += 1;
 
                 // Desaturation during 1 min at stop 'nextDepth'
-                const P_stop = P_next * FN2;
+                const P_stop = P_nextDepth * FN2;
                 for (let i = 0; i < N_COMPARTMENTS; i++) {
                     Tn2_at_next_stop[i] = updateTension(Tn2_at_next_stop[i], P_stop, 1, halfTimes[i]);
                 }
