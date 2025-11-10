@@ -9,14 +9,22 @@ function formatCellDataForDetails(plan) {
     let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
     if (stops.length === 0) stopsStr = t('stopsNone');
 
+    let t_at_bottom = bottomTime - t_descent;
+    if (t_at_bottom < 0) t_at_bottom = 0;
+
+    let t_ascent = dtr - t_stops;
+    if (t_ascent < 0) t_ascent = 0;
+
     return `${t('diveProfileTitle')}\n` +
-        `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
-        `- ${t('bottomTimeLabel')} ${bottomTime} minutes\n` +
-        `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
-        `- ${t('calculatedDTRLabel')} ${Math.ceil(dtr)} minutes\n` +
-        `- ${t('calculatedt_descentLabel')} ${t_descent} minutes\n` +
-        `- ${t('calculatedTotalDiveTimeLabel')} ${t_dive_total} minutes\n` +
-        `- ${t('calculatedTotalStopTimeLabel')} ${t_stops} minutes\n` +
+        // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
+        // `- ${t('bottomTimeLabel')} ${bottomTime} minutes\n` +
+        // `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
+        `- ${t('calculatedDTRLabel')} ${parseFloat(dtr.toFixed(2))} minutes\n` +
+        `- ${t('calculatedTotalDiveTimeLabel')} ${parseFloat(t_dive_total.toFixed(2))} minutes\n` +
+        `   - ${t('calculatedt_descentLabel')} ${parseFloat(t_descent.toFixed(2))} minutes\n` +
+        `   - ${t('calculatedTotalBottomTimeLabel')} ${parseFloat(t_at_bottom.toFixed(2))} minutes\n` +
+        `   - ${t('calculatedTotalStopTimeLabel')} ${parseFloat(t_stops.toFixed(2))} minutes\n` +
+        `   - ${t('calculatedAscentTimeLabel')} ${parseFloat(t_ascent.toFixed(2))} minutes\n` +
         `- ${t('requiredStopsLabel')} ${stopsStr}\n`;
 }
 function formatCellDataShort(plan) {
@@ -107,11 +115,9 @@ function plotPlan(plan) {
 
     // --- Second Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
     // introduce a point slightly beyond max depth for better visualization
-    pn2_max = depthToPN2(maxDepth);
-    P_max = depthToPressure(maxDepth);
     const traceMainDiagonal = {
-        x: [0, pn2_max],
-        y: [0, pn2_max],
+        x: [depthToPN2(0), depthToPN2(maxDepth)],
+        y: [depthToPN2(0), depthToPN2(maxDepth)],
         mode: 'lines',
         name: t('pn2ambiantLabel'),
         line: { color: 'black', width: 3 },
@@ -141,8 +147,8 @@ function plotPlan(plan) {
         const A = BUEHLMANN[i].A;
         const B = BUEHLMANN[i].B;
         const traceMValues = {
-            x: [0, pn2_max],
-            y: [getMValue(SURFACE_PRESSURE_BAR, B, A), getMValue(A, B, P_max)],
+            x: [depthToPN2(0), depthToPN2(maxDepth)],
+            y: [getMValue(A, B, SURFACE_PRESSURE_BAR), getMValue(A, B, depthToPressure(maxDepth))],
             name: `${t('mValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dot' },
             mode: 'lines',
@@ -156,8 +162,8 @@ function plotPlan(plan) {
         // plot the modified M-Value line for this compartment
         const GF = getInterpolatedGF(maxDepth, maxDepth, gfLow, gfHigh);
         const traceModifiedMValues = {
-            x: [0, pn2_max],
-            y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, GF), getModifiedMValue(A, B, P_max, GF)],
+            x: [depthToPN2(0), depthToPN2(maxDepth)],
+            y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, GF), getModifiedMValue(A, B, depthToPressure(maxDepth), GF)],
             name: `${t('modifiedMValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
             mode: 'lines',
