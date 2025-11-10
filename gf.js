@@ -220,9 +220,9 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     history.push({ time: t_dive_total, depth: 0, tensions: [...tensions] });
 
     // 4 . End of dive at surface waiting 20 minutes
-    for (let t_min = 0; t_min <= SURFACE_WAIT_MIN; t_min += TIME_STEP) {
+    for (let t = TIME_STEP; t <= SURFACE_WAIT_MIN; t += TIME_STEP) {
         tensions = updateAllTensions(tensions, depthToPN2(0), TIME_STEP);
-        history.push({ time: t_dive_total + t_min, depth: 0, tensions: [...tensions] });
+        history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions] });
     }
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };
 }
