@@ -22,7 +22,7 @@ let W_all = canvas.width;
 let H = canvas.height;
 let LABEL_MARGIN = W_all * 0.1;
 let W = W_all - LABEL_MARGIN / 2
-let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_INCR); // N+1 cells for 0-100%
+let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_VALUES); // N+1 cells for 0-100%
 let calculatedPlans = [];
 let tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell = null;
@@ -54,10 +54,10 @@ function calculatePlanForAllCells() {
     const maxDepth = parseInt(maxDepthInput.value);
 
     calculatedPlans = [];
-    for (let i = 0; i <= GF_N_INCR; i++) { // GF Low (0 to 100)
+    for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
         const gfLow = (i * GF_INCREMENT) / 100;
         let row = [];
-        for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
+        for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const plan = calculatePlan(bottomTime, maxDepth, gfLow, gfHigh);
             plan.diveParams = { bottomTime, maxDepth, gfLow, gfHigh };
@@ -106,7 +106,7 @@ function drawCanvas() {
 
     // GF High Labels (X Axis)
     ctx.fillText(t('gfHigh'), (LABEL_MARGIN + W) / 2, LABEL_MARGIN / 2);
-    for (let j = 0; j <= GF_N_INCR; j++) {
+    for (let j = 0; j <= GF_N_VALUES; j++) {
         const x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
         ctx.fillText((j * GF_INCREMENT).toString(), x, LABEL_MARGIN - 20);
     }
@@ -117,7 +117,7 @@ function drawCanvas() {
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(t('gfLow'), 0, 0);
     ctx.restore();
-    for (let i = 0; i <= GF_N_INCR; i++) {
+    for (let i = 0; i <= GF_N_VALUES; i++) {
         const y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
         ctx.fillText((i * GF_INCREMENT).toString(), LABEL_MARGIN - 25, y);
     }
@@ -125,8 +125,8 @@ function drawCanvas() {
     // 2. Draw Grid
     let minDTR = Infinity;
     let maxDTR = 0;
-    for (let i = 0; i <= GF_N_INCR; i++) { // GF Low (0 to 100)
-        for (let j = 0; j <= GF_N_INCR; j++) { // GF High (0 to 100)
+    for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
+        for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
             plan = calculatedPlans[i][j]
             // Color normalization (only for dives WITH stops)
             if (plan.dtr > 0 && plan.dtr !== Infinity && plan.stops.length > 0) {
@@ -187,7 +187,7 @@ function drawCanvas() {
 }
 
 function drawTooltip(mouseX, mouseY, plan) {
-    const { dtr, stops, t_descent, totalDiveTime, diveParams } = plan;
+    const { dtr, stops, t_descent, t_dive_total, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
     // Tooltip dimensions
@@ -238,7 +238,7 @@ function drawTooltip(mouseX, mouseY, plan) {
     ctx.strokeRect(graphX, graphY, graphW, graphH);
 
     // Scale calculations
-    const maxTime = totalDiveTime;
+    const maxTime = t_dive_total;
     // Y scale: 0m (top) to maxDepth (bottom)
     const scaleY = (depth) => (depth / maxDepth) * graphH;
     // X scale: 0 (left) to maxTime (right)

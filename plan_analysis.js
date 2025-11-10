@@ -3,7 +3,7 @@ function formatGFstrings(gfLow, gfHigh) {
 }
 
 function formatCellDataForDetails(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, history, diveParams } = plan;
+    const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
     let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
@@ -15,7 +15,8 @@ function formatCellDataForDetails(plan) {
         `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
         `- ${t('calculatedDTRLabel')} ${Math.ceil(dtr)} minutes\n` +
         `- ${t('calculatedt_descentLabel')} ${t_descent} minutes\n` +
-        `- ${t('calculatedTotalDiveTimeLabel')} ${totalDiveTime} minutes\n` +
+        `- ${t('calculatedTotalDiveTimeLabel')} ${t_dive_total} minutes\n` +
+        `- ${t('calculatedTotalStopTimeLabel')} ${t_stops} minutes\n` +
         `- ${t('requiredStopsLabel')} ${stopsStr}\n`;
 }
 function formatCellDataShort(plan) {
@@ -59,18 +60,18 @@ function getCompartmentColor(i) {
 }
 
 function plotPlan(plan) {
-    const { dtr, stops, t_descent, totalDiveTime, history, diveParams } = plan;
+    const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
-    const P_N2_ambiantPoints = depthPoints.map(depthToPN2);
+    const PN2_Points = depthPoints.map(depthToPN2);
 
     // transpose to get a time series for each compartment
-    const Tn2_transposed = Array(N_COMPARTMENTS).fill(null).map(() => []);
+    const tensions_transp = Array(N_COMPARTMENTS).fill(null).map(() => []);
     history.forEach(entry => {
-        entry.Tn2.forEach((tension, i) => {
-            Tn2_transposed[i].push(tension);
+        entry.tensions.forEach((tension, i) => {
+            tensions_transp[i].push(tension);
         });
     });
 
@@ -79,7 +80,7 @@ function plotPlan(plan) {
     // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
     const traceDiveProfile = {
         x: timePoints,
-        y: P_N2_ambiantPoints,
+        y: PN2_Points,
         mode: 'lines+markers',
         name: t('pn2ambiantLabel'),
         line: { color: 'black', width: 3 },
@@ -92,7 +93,7 @@ function plotPlan(plan) {
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const traceComp = {
             x: timePoints,
-            y: Tn2_transposed[i],
+            y: tensions_transp[i],
             mode: 'lines+markers',
             name: `${t('compartmentLabel')}${i + 1} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
             line: { width: 1, color: getCompartmentColor(i) },
@@ -108,7 +109,7 @@ function plotPlan(plan) {
     // introduce a point slightly beyond max depth for better visualization
     pn2_max = depthToPN2(maxDepth);
     P_max = depthToPressure(maxDepth);
-    const traceMainDiag = {
+    const traceMainDiagonal = {
         x: [0, pn2_max],
         y: [0, pn2_max],
         mode: 'lines',
@@ -119,12 +120,13 @@ function plotPlan(plan) {
         legendgroup: `P_N2_ambiant`,
         showlegend: false
     };
-    data_ply.push(traceMainDiag);
+    data_ply.push(traceMainDiagonal);
+
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         // plot the tension
-        const traceCompVsAmbient = {
-            x: P_N2_ambiantPoints,
-            y: Tn2_transposed[i],
+        const traceTensionsVsPN2 = {
+            x: PN2_Points,
+            y: tensions_transp[i],
             mode: 'lines+markers',
             line: { width: 1, color: getCompartmentColor(i) },
             yaxis: 'y2',
@@ -132,43 +134,43 @@ function plotPlan(plan) {
             showlegend: false,
             legendgroup: `compartment${i}`
         };
-        if (hideTrace(i)) { traceCompVsAmbient.visible = 'legendonly'; }
-        data_ply.push(traceCompVsAmbient);
+        if (hideTrace(i)) { traceTensionsVsPN2.visible = 'legendonly'; }
+        data_ply.push(traceTensionsVsPN2);
 
         // plot the M-Value line for this compartment
         const A = BUEHLMANN[i].A;
         const B = BUEHLMANN[i].B;
-        const traceMValueLine = {
+        const traceMValues = {
             x: [0, pn2_max],
-            y: [0, getMValue(A, B, P_max)],
-            name: `${t('mValueLabel')} ${i + 1}`,
+            y: [getMValue(SURFACE_PRESSURE_BAR, B, A), getMValue(A, B, P_max)],
+            name: `${t('mValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dot' },
-            // showlegend: false,
             mode: 'lines',
             yaxis: 'y2',
             xaxis: 'x2', legendgroup: `compartment${i}`
         };
-        if (hideTrace(i)) { traceMValueLine.visible = 'legendonly'; }
-        data_ply.push(traceMValueLine);
+        if (i > 0) traceMValues.showlegend = false;
+        if (hideTrace(i)) { traceMValues.visible = 'legendonly'; }
+        data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
         const GF = getInterpolatedGF(maxDepth, maxDepth, gfLow, gfHigh);
-        const traceModifiedMValueLine = {
+        const traceModifiedMValues = {
             x: [0, pn2_max],
-            y: [0, getModifiedMValue(A, B, P_max, GF)],
-            name: `${t('modifiedMValueLabel')} ${i + 1}`,
+            y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, GF), getModifiedMValue(A, B, P_max, GF)],
+            name: `${t('modifiedMValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
-            // showlegend: false,
             mode: 'lines',
             yaxis: 'y2',
             xaxis: 'x2', legendgroup: `compartment${i}`
         };
-        if (hideTrace(i)) { traceModifiedMValueLine.visible = 'legendonly'; }
-        data_ply.push(traceModifiedMValueLine);
+        if (i > 0) traceModifiedMValues.showlegend = false;
+        if (hideTrace(i)) { traceModifiedMValues.visible = 'legendonly'; }
+        data_ply.push(traceModifiedMValues);
     }
 
     const layout = {
-        title: t('tensionsTSTitle'),
+        // title: t('tensionsTSTitle'),
         grid: {
             rows: 1,
             columns: 2,
