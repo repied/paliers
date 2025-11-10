@@ -6,7 +6,7 @@ function formatCellDataForDetails(plan) {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
+    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m [${s.saturatedCompartments.join(', ')}]`).join(', ');
     if (stops.length === 0) stopsStr = t('stopsNone');
 
     let t_at_bottom = bottomTime - t_descent;
@@ -40,7 +40,7 @@ async function analysePlan(plan) {
 }
 function hideTrace(i) {
     // || i === Math.floor(N_COMPARTMENTS / 2)
-    const displayTrace = (i === 0 || i === N_COMPARTMENTS - 1)
+    const displayTrace = (i === 0)//|| i === N_COMPARTMENTS - 1)
     return !displayTrace;
 }
 
@@ -103,7 +103,7 @@ function plotPlan(plan) {
             x: timePoints,
             y: tensions_transp[i],
             mode: 'lines+markers',
-            name: `${t('compartmentLabel')}${i + 1} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
+            name: `${t('compartmentLabel')}${i} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
             line: { width: 1, color: getCompartmentColor(i) },
             yaxis: 'y1',
             xaxis: 'x1',
@@ -160,10 +160,9 @@ function plotPlan(plan) {
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
-        const GF = getInterpolatedGF(maxDepth, maxDepth, gfLow, gfHigh);
         const traceModifiedMValues = {
             x: [depthToPN2(0), depthToPN2(maxDepth)],
-            y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, GF), getModifiedMValue(A, B, depthToPressure(maxDepth), GF)],
+            y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, gfHigh), getModifiedMValue(A, B, depthToPressure(maxDepth), gfLow)],
             name: `${t('modifiedMValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
             mode: 'lines',

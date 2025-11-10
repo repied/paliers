@@ -96,14 +96,16 @@ function isSafeAtDepth(depth, tensions, maxDepth, GF_low, GF_high) {
     const GF = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
     const P = depthToPressure(depth);
     let isSafe = true;
+    let satComp = -1; // index of the first compartment that is not safe
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P, GF);
         if (tensions[i] > M_mod) {
             isSafe = false;
+            satComp = i;
             break;
         }
     }
-    return isSafe;
+    return { isSafe, satComp };
 }
 
 /**
@@ -181,12 +183,13 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
         const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-        let isSafeToAscend = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high);
-        if (!isSafeToAscend) {
+        let { isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high);
+        if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
+            let satCompartments = [satComp];
             const PN2_stop = depthToPN2(currentDepth);
-            while (!isSafeToAscend) {
+            while (!isSafe) {
                 // make a single stop step
                 stopTime += TIME_STEP;
                 t_stops += TIME_STEP;
@@ -196,13 +199,16 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-                isSafeToAscend = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high);
+                ({ isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high));
+                if (!isSafe) {
+                    satCompartments.push(satComp);
+                }
                 // Return an "impossible" plan 
                 if (stopTime > MAX_STOP_TIME_BEFORE_INFTY) {
                     return { dtr: Infinity, stops: [], t_descent, t_dive_total, t_stops, history };
                 }
             }
-            stops.push({ depth: currentDepth, time: stopTime });
+            stops.push({ depth: currentDepth, time: stopTime, saturatedCompartments: satCompartments });
         }
         // Perform the ascent
         currentDepth = nextDepth;
