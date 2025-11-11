@@ -176,6 +176,8 @@ function plotPlan(plan) {
         data_ply.push(traceModifiedMValues);
     }
 
+    const isDarkMode = document.body.classList.contains('dark-mode');
+
     const layout = {
         title: t('tensionsTSTitle'),
         grid: {
@@ -186,19 +188,23 @@ function plotPlan(plan) {
         },
         xaxis: {
             title: t('timeLabel') + ' (min)',
-            rangemode: 'tozero'
+            rangemode: 'tozero',
+            gridcolor: isDarkMode ? '#444' : '#eee',
         },
         yaxis: {
             title: t('compartmentTensionLabel') + ' (bar)',
-            rangemode: 'tozero'
+            rangemode: 'tozero',
+            gridcolor: isDarkMode ? '#444' : '#eee',
         },
         xaxis2: {
             title: t('pn2ambiantLabel') + ' (bar)',
-            rangemode: 'tozero'
+            rangemode: 'tozero',
+            gridcolor: isDarkMode ? '#444' : '#eee',
         },
         yaxis2: {
             title: t('compartmentTensionLabel') + ' (bar)',
-            rangemode: 'tozero'
+            rangemode: 'tozero',
+            gridcolor: isDarkMode ? '#444' : '#eee',
         },
         legend: {
             xanchor: "left",
@@ -206,6 +212,11 @@ function plotPlan(plan) {
             x: 1,
             y: 1,
         },
+        paper_bgcolor: isDarkMode ? '#343a40' : '#ffffff',
+        plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
+        font: {
+            color: isDarkMode ? '#f8f9fa' : '#212529'
+        }
         // height: 800 // decided in the css
     };
 
