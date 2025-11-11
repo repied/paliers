@@ -1,6 +1,9 @@
 ---
-title: Algorithme
+title: Algorithme de désaturation
 ---
+
+Publié en 2025. [English version](./algorithme_en.md)
+
 
 Ce document décrit l'algorithme de décompression implémenté dans cet [outil](./index.html), qui est basé sur le **modèle Bühlmann ZHL-16C** avec Facteurs de Gradient (GF). L'algorithme simule l'absorption et la libération de gaz inerte (Azote) dans 16 compartiments tissulaires théoriques pendant une plongée et calcule un profil de décompression sûr.
 
@@ -52,11 +55,10 @@ C'est la partie la plus critique de l'algorithme, où les paliers de décompress
     *   Une fois que c'est sûr, le palier se termine, et les détails du palier sont ajoutés au tableau `stops`.
 5.  **Effectuer la Remontée**: Le plongeur remonte ensuite à la `nextDepth`.
 6.  **Répéter**: Les étapes 1 à 5 sont répétées jusqu'à ce que `currentDepth` soit inférieure ou égale à `LAST_STOP_DEPTH`.
-7.  Terminer la remontée.
 
 ## e. Remontée Finale à la Surface
 
-*   Une fois que le plongeur atteint `LAST_STOP_DEPTH`, une remontée finale à la surface (0m) est effectuée.
+*   Une fois que le plongeur atteint `LAST_STOP_DEPTH`, une remontée finale à la surface (0m) est effectuée sans palier.
 *   Les tensions sont mises à jour, et `t_dive_total` et `dtr` sont incrémentés.
 
 ## f. Attente en Surface

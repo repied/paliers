@@ -1,6 +1,8 @@
 ---
-title: Algorithm
+title: Desaturation algorithm
 ---
+
+Published in 2025. [French version](./algorithme_fr.md)
 
 This document describes the decompression algorithm implemented in this [tool](./index.html), which is based on the **Bühlmann ZHL-16C model** with Gradient Factors (GF). The algorithm simulates the absorption and release of inert gas (Nitrogen) in 16 theoretical tissue compartments during a dive and calculates a safe decompression profile.
 
@@ -52,11 +54,10 @@ This is the most critical part of the algorithm, where decompression stops are d
     *   Once it's safe, the stop ends, and the stop details are added to the `stops` array.
 5.  **Perform Ascent**: The diver then ascends to the `nextDepth`. `
 6.  **Repeat**: Steps 1-5 are repeated until `currentDepth` is less than or equal to `LAST_STOP_DEPTH`.
-7.  Finish the ascent
 
 ## e. Final Ascent to Surface
 
-*   Once the diver reaches `LAST_STOP_DEPTH`, a final ascent to the surface (0m) is performed.
+*   Once the diver reaches `LAST_STOP_DEPTH`, a final ascent to the surface (0m) is performed without any stops.
 *   Tensions are updated, and `t_dive_total` and `dtr` are incremented.
 
 ## f. Surface Wait

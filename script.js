@@ -14,6 +14,7 @@ const intro1 = document.getElementById('intro-1');
 const intro2 = document.getElementById('intro-2');
 const canvastitle = document.getElementById('canvas-title');
 const readmeLink = document.getElementById('readme-link');
+const algoLink = document.getElementById('algo-link');
 const labelMaxDepth = document.getElementById('label-maxDepth');
 const labelBottomTime = document.getElementById('label-bottomTime');
 
@@ -33,12 +34,15 @@ function applyLanguageToDOM() {
     intro1.textContent = t('intro1');
     canvastitle.textContent = t('canvastitle');
     readmeLink.textContent = t('readme');
+    algoLink.textContent = t('algo');
     labelMaxDepth.textContent = t('maxDepth');
     labelBottomTime.textContent = t('bottomTime');
     // update readme href from data attributes
     if (readmeLink) {
         const href = readmeLink.getAttribute(`data-href-${window.CURRENT_LANG}`);
         readmeLink.setAttribute('href', href);
+        const algoHref = algoLink.getAttribute(`data-href-${window.CURRENT_LANG}`);
+        algoLink.setAttribute('href', algoHref);
     }
     // set selector value and active btn
     const btns = document.querySelectorAll('.lang-btn');
