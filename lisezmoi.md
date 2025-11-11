@@ -14,7 +14,7 @@ Publié en 2025. [English version](./README.md)
 
 Cet outil implémente un algorithme simplifié [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) en Javascript.
 
-Vous pouvez trouver [ici une description du fonctionnement](./algorithme_fr.md) de cet algorithme.  
+Vous pouvez en trouver [ici une description](./algorithme_fr.md).  
 
 La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont fournis en cliquant.
 
@@ -28,14 +28,21 @@ Pour simplifier nous supposons :
 
 ## Définition
 
-Les facteurs de gradient déterminent la sursaturation maximale autorisée dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps (sa "tension") est supérieure à la pression ambiante. Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
+Les facteurs de gradient réduisent la sursaturation maximale autorisée (M-value) dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps (sa "tension") est supérieure à sa pression partielle "ambiante". Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
 
-Plus précisément, les facteurs de gradient sont 2 paramètres `(GF_low, GF_high)` à définir entre 0% et 100%.
-Ils ont été introduits par Erik Baker dans [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
+Plus précisément, les facteurs de gradient sont 2 paramètres `(GF_low, GF_high)` à définir entre 0% et 100%.  Ils ont été introduits par Erik Baker dans [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
 
-Terminologie : *Facteurs de gradient* sont nommés ainsi parce que :
-- ils sont appliqués comme un *facteur* multiplicatif à la sursaturation maximale autorisée de base (M-Value) par ZHL-16C
-- ils forment un *gradient* parce que la M-value est une *différence* entre la pression partielle tissulaire et la pression partielle ambiante. (C'est un peu trompeur car, techniquement, un "gradient" est défini comme un *taux* de variation, plutôt qu'une variation elle-même.)
+Les *facteurs de gradient* sont nommés ainsi parce que :
+- ils sont appliqués comme un *facteur* multiplicatif à la sursaturation maximale autorisée de base (M-Value) par ZHL-16C pour donner la rendre plus petite: la M-value modifiée.
+- ils définissent le *gradient*, c'est a dire la pente, de la droite de sursaturation maximale en fonction de la pression (i.e. de la profondeur).
+
+<div style="text-align: center;">
+  <a href="./index.html">
+    <img src="./media/gf_def.png" alt="Definition des FG" width="500" />
+  </a>
+</div>
+Sur ce graphique, on représente en y la tension dans un tissu, et en la presison partielle d'azote PN2 ambiante, qui augmente avec la profondeur. La droite noire est la pression ambiante.
+La zone de tension interdite est au dessus de la droite des M-values (pointillés blues). En utilisant des FGs inférieurs a 100%, on descend cette limite a la droite de M-value modifiée (tirets bleus).
 
 Plus les FG sont petits, plus la plongée est « conservative ». Typiquement :
 - un petit `GF_low` tend à ajouter des paliers profonds

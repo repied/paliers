@@ -29,7 +29,6 @@ const DESCENT_RATE = 20; // (m/min)
 const GF_INCREMENT = 5
 const STOP_INTERVAL = 3; // Stops every 3m
 const LAST_STOP_DEPTH = 3;
-const SURFACE_WAIT_TIME_MIN = 20; // after the return to surface, for plots mainly
 const SURFACE_WAIT_MIN = 20;
 const TIME_STEP = 1; // time step between 2 updates of tensions
 

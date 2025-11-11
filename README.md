@@ -14,7 +14,7 @@ Published in 2025. [Frech version](./lisezmoi.md)
 
 This tool implements a simplified [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) algorithm in Javascript. 
 
-You can find [here a simple description](./algorithme_fr.md) of this algorithm.  
+You can find [here a description](./algorithme_fr.md) of this algorithm.  
 
 Time-to-surface (TTS) is computed for many gradient factors values. Resulting TTS are reported as a color-coded table. Decompression plans are shown as tiny plots on mouseover, and details are repoted below the table on mouse click.
 
@@ -28,14 +28,23 @@ To simplify we suppose:
 
 ## Definition
 
-Gradient factors determine the maximum allowed supersaturation in tissue compartments during a diving ascent. Supersaturation occur when a gaz partial pressure in the body is larger than its ambiant pressure. Typically the gaz is nitrogen for air dives. A small amount of supersaturation is fine and expected during ascent. But when it gets too big, bubbles can form and/or decompression sickness (DCS) can happen. A diver can use GFs to add some safety margin on top of the supersaturation limit given by base ZHL-16C. 
+Gradient factors reduce the maximum allowed supersaturation in tissue compartments during a diving ascent. Supersaturation occur when a gaz tension in the body is larger than its ambiant partial pressure. Typically the gaz is nitrogen for air dives. A small amount of supersaturation is fine and expected during ascent. But when it gets too big, bubbles can form and/or decompression sickness (DCS) can happen. A diver can use GFs to add some safety margin on top of the supersaturation limit given by base ZHL-16C. 
 
 More specifically Gradient Factors are 2 parameters `(GF_low, GF_high)` to be set between 0% and 100%.
 They were introduced by Erik Baker in [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
 
 Naming: *Gradient Factors* are named that way because:
 - they are applied as a multiplicative *factor* to the base maximum allowed supersaturation (M-Value) of ZHL-16C 
-- they are a *gradient* because the M-value is a *difference* between the tissue partial pressure and the environment partial pressure. This is a bit misleading because, technically a "gradient" is defined as a *rate* of change, rather than a change itself, but this is a technicality.
+- they define the *gradient*, i.e., the slope, of the maximum supersaturation line as a function of pn2 pressure (i.e. depth).
+
+<div style="text-align: center;">
+  <a href="./index.html">
+    <img src="./media/gf_def.png" alt="Definition des FG" width="500" />
+  </a>
+</div>
+On this graph, the y-axis represents the tissue tension, and the x-axis represents the ambient nitrogen partial pressure (PN2), which increases with depth. The black line is the ambient pressure.
+The forbidden tension zone is above the M-value line (blue dotted lines). By using GFs below 100%, this limit is lowered to the modified M-value line (blue dashed lines).
+
 
 
 The smaller GFs, the more "conservative" is the dive. Typically
@@ -56,7 +65,7 @@ To reconcile them, Baker introduced in 1999 GFs to "force" Bühlmann to generate
 
 But from 2008, [empirical studies](./media/2009_deepstops_workshop.pdf) started to show that deeper stop didn't always reduce DCS risk, and even sometimes increased it. Experts started to doubt the usefulness of so called "deep stops" even if no one recommended raw ZHL-16C. 
 
-Intuitively, low GF add deep stops to remove gaz from "fast" tissues, but at the same time deep stops can increase the amount of gaz in "slow" tissues. 
+Intuitively, low GF add deep stops to remove gaz from "fast" tissues, but at the same time deep stops can increase the amount
 
 So more conservative (ie lower) GFs is not always safer.
 
