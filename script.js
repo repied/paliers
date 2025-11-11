@@ -161,6 +161,14 @@ function drawCanvas() {
             ctx.strokeStyle = '#dee2e6';
             ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
 
+            // Highlight selected cell
+            if (selectedCell && selectedCell.i === i && selectedCell.j === j) {
+                ctx.strokeStyle = '#007bff';
+                ctx.lineWidth = 5;
+                ctx.strokeRect(x + 1.5, y + 1.5, CELL_SIZE - 3, CELL_SIZE - 3);
+                ctx.lineWidth = 1; // Reset
+            }
+
             // Cell text (DTR)
             ctx.fillStyle = '#212529';
             ctx.textAlign = 'center';
@@ -409,13 +417,58 @@ canvas.addEventListener('click', (e) => {
 
     const cell = getCellFromMousePos(mouseX, mouseY);
 
-    if (cell && cell.data && !isNaN(cell.data.dtr)) {
-        detailsContainer.style.display = 'flex';
-        analysePlan(cell.data);
-        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (cell && cell.data) {
+        selectedCell = { i: cell.i, j: cell.j };
+        if (!isNaN(cell.data.dtr)) {
+            detailsContainer.style.display = 'flex';
+            analysePlan(cell.data);
+            // detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            detailsContainer.style.display = 'none';
+        }
+        drawCanvas();
     } else {
         detailsContainer.style.display = 'none';
         selectedCell = null;
+        drawCanvas();
+    }
+});
+
+window.addEventListener('keydown', (e) => {
+    if (!selectedCell) return;
+
+    let { i, j } = selectedCell;
+    let moved = false;
+
+    switch (e.key) {
+        case 'ArrowUp':
+            if (i > 0) { i--; moved = true; }
+            break;
+        case 'ArrowDown':
+            if (i < GF_N_VALUES) { i++; moved = true; }
+            break;
+        case 'ArrowLeft':
+            if (j > 0) { j--; moved = true; }
+            break;
+        case 'ArrowRight':
+            if (j < GF_N_VALUES) { j++; moved = true; }
+            break;
+        default:
+            return;
+    }
+
+    if (moved) {
+        e.preventDefault();
+        selectedCell = { i, j };
+        const newPlan = calculatedPlans[i][j];
+
+        if (newPlan && !isNaN(newPlan.dtr)) {
+            detailsContainer.style.display = 'flex';
+            analysePlan(newPlan);
+        } else {
+            detailsContainer.style.display = 'none';
+        }
+        drawCanvas();
     }
 });
 
@@ -475,5 +528,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initial launch
-document.addEventListener('DOMContentLoaded', calculatePlanForAllCells);
-document.addEventListener('DOMContentLoaded', applyLanguageToDOM);
+document.addEventListener('DOMContentLoaded', () => {
+    calculatePlanForAllCells();
+    applyLanguageToDOM();
+
+    // Select the first cell by default
+    if (calculatedPlans.length > 0 && calculatedPlans[0].length > 0) {
+        selectedCell = { i: 0, j: 0 };
+        const initialPlan = calculatedPlans[selectedCell.i][selectedCell.j];
+        if (initialPlan && !isNaN(initialPlan.dtr)) {
+            detailsContainer.style.display = 'flex';
+            analysePlan(initialPlan);
+        }
+        drawCanvas(); // Redraw to show selection
+    }
+});

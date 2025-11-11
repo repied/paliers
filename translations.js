@@ -2,7 +2,7 @@ TRANSLATIONS = {
   "en": {
     "title": "Bühlmann Gradient Factors visualizer",
     "canvastitle": "Time To Surface (TTS)",
-    "intro1": "This tool implements a simplified Bühlmann ZHL-16C algorithm. Total time to surface (TTS) is computed for different gradient factor values. Resulting TTS in minutes are shown in a color coded grid. Decompression profiles appear as small plots on hover and details on click.",
+    "intro1": "This tool implements a simplified Bühlmann ZHL-16C algorithm. Total time to surface (TTS) is computed for different gradient factor values. Resulting TTS in minutes are shown in a color coded grid. Decompression profiles appear as small plots on hover and details on click. Use UP DOWN LEFT RIGHT arrow keys to change GFs and update plots.",
     "readme": "Detailed explanations",
     "maxDepth": "Maximum depth (m):",
     "bottomTime": "Bottom time (with descent, min):",
@@ -41,7 +41,7 @@ TRANSLATIONS = {
   "fr": {
     "title": "Visualisation des facteurs de gradient",
     "canvastitle": "Durée Totale de Remontée (DTR)",
-    "intro1": "Cet outil implémente un algorithme Bühlmann ZHL-16C simplifié. La durée totale de remontée (DTR) est calculée pour de différentes valeurs des facteurs de gradient. Les DTR résultantes en minutes sont rapportés sous forme de tableau codé par couleur. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris. Des détails du plan sont aussi reportés lors d'un clic dans le tableau.",
+    "intro1": "Cet outil implémente un algorithme Bühlmann ZHL-16C simplifié. La durée totale de remontée (DTR) est calculée pour de différentes valeurs des facteurs de gradient. Les DTR résultantes en minutes sont rapportés sous forme de tableau codé par couleur. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris. Les saturation des tissus sont tracées en bas lors d'un clic. Il est possible d'utiliser les touches directionnelles UP DOWN LEFT RIGHT pour changer les FGs et mettre à jour les graphes.",
     "readme": "Explications détaillées",
     "maxDepth": "Profondeur maximale (m) :",
     "bottomTime": "Durée au fond (avec la descente, minutes) :",
