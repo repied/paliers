@@ -202,7 +202,8 @@ function plotPlan(plan) {
             rows: 2,
             columns: 1,
             pattern: 'independent',
-            roworder: 'top to bottom'
+            roworder: 'top to bottom',
+            ygap: 0.15
         },
         xaxis: {
             title: t('timeLabel') + ' (min)',
