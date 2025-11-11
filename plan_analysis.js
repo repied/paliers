@@ -34,8 +34,8 @@ function formatCellDataShort(plan) {
 }
 
 async function analysePlan(plan) {
-    detailsPlanH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
-    detailsResult.textContent = formatCellDataForDetails(plan)
+    planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
+    planDetailsTxt.textContent = formatCellDataForDetails(plan)
     plotPlan(plan)
 }
 function hideTrace(i) {
@@ -89,7 +89,7 @@ function plotPlan(plan) {
     const traceDiveProfile = {
         x: timePoints,
         y: PN2_Points,
-        mode: 'lines+markers',
+        mode: 'lines',
         name: t('pn2ambiantLabel'),
         line: { color: 'black', width: 3 },
         yaxis: 'y1',
@@ -175,10 +175,10 @@ function plotPlan(plan) {
     }
 
     const layout = {
-        // title: t('tensionsTSTitle'),
+        title: t('tensionsTSTitle'),
         grid: {
-            rows: 1,
-            columns: 2,
+            rows: 2,
+            columns: 1,
             pattern: 'independent',
             roworder: 'top to bottom'
         },
@@ -199,9 +199,10 @@ function plotPlan(plan) {
             rangemode: 'tozero'
         },
         legend: {
-            x: 0.5,
+            xanchor: "left",
+            yanchor: "top",
+            x: 1,
             y: 1,
-            xanchor: 'right'
         },
         height: 800
     };

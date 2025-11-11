@@ -7,8 +7,8 @@ const bottomTimeSlider = document.getElementById('bottomTimeSlider');
 const maxDepthSlider = document.getElementById('maxDepthSlider');
 
 const detailsContainer = document.getElementById('details-analysis-container');
-const detailsPlanH2 = document.getElementById('details-plan-h2');
-const detailsResult = document.getElementById('plan-as-string');
+const planDetailsTitle = document.getElementById('details-plan-h2');
+const planDetailsTxt = document.getElementById('plan-as-string');
 const mainTitle = document.getElementById('main-title');
 const intro1 = document.getElementById('intro-1');
 const intro2 = document.getElementById('intro-2');
@@ -412,7 +412,7 @@ canvas.addEventListener('click', (e) => {
     if (cell && cell.data && !isNaN(cell.data.dtr)) {
         detailsContainer.style.display = 'flex';
         analysePlan(cell.data);
-        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         detailsContainer.style.display = 'none';
         selectedCell = null;
