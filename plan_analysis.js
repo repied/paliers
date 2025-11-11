@@ -317,28 +317,39 @@ function plotPlan(plan) {
             x: 1,
             y: 1,
         },
-        // annotations: [
-        //     {
-        //         text: t('tensionsVsPN2Title'),
-        //         xref: 'paper',
-        //         yref: 'paper',
-        //         x: 0.5,
-        //         y: 0.45,
-        //         showarrow: false,
-        //         xanchor: 'middle',
-        //         yanchor: 'top',
-        //         font: {
-        //             size: 16,
-        //             color: isDarkMode ? '#f8f9fa' : '#212529'
-        //         }
-        //     }
-        // ],
+        annotations: [
+            {
+                text: 'GF High',
+                xref: 'x2',
+                yref: 'y2',
+                x: depthToPN2(0) - gf_shift - 0.05,
+                y: (y_modM_surf + depthToPressure(0)) / 2,
+                showarrow: false,
+                xanchor: 'right',
+                font: {
+                    color: 'cyan',
+                    size: 12
+                }
+            },
+            {
+                text: 'GF Low',
+                xref: 'x2',
+                yref: 'y2',
+                x: depthToPN2(maxDepth) + gf_shift + 0.05,
+                y: (y_modM_max + depthToPressure(maxDepth)) / 2,
+                showarrow: false,
+                xanchor: 'left',
+                font: {
+                    color: 'magenta',
+                    size: 12
+                }
+            }
+        ],
         paper_bgcolor: isDarkMode ? '#343a40' : '#ffffff',
         plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
         font: {
             color: isDarkMode ? '#f8f9fa' : '#212529'
         }
-        // height: 800 // decided in the css
     };
 
     if (window.innerWidth < 300) { // mobile device
@@ -346,4 +357,22 @@ function plotPlan(plan) {
     }
 
     Plotly.newPlot('plotly-plot', data_ply, layout, { scrollZoom: true });
+
+    const plotDiv = document.getElementById('plotly-plot');
+    plotDiv.on('plotly_legendclick', function (eventData) {
+        if (eventData.data[eventData.curveNumber].legendgroup === 'compartment0') {
+            // Determine the new visibility state for the annotation.
+            // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
+            // If the trace was hidden (false or 'legendonly'), it will become visible. So annotation should be visible.
+            const traceWasVisible = (eventData.fullData[eventData.curveNumber].visible === true || eventData.fullData[eventData.curveNumber].visible === undefined);
+            const newAnnotationVisibleState = !traceWasVisible;
+
+            // Update the 'GF High' annotation's visibility (it's the first annotation, index 0)
+            const update = {
+                [`annotations[0].visible`]: newAnnotationVisibleState,
+                [`annotations[1].visible`]: newAnnotationVisibleState
+            };
+            Plotly.relayout(plotDiv, update);
+        }
+    });
 }
