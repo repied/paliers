@@ -204,8 +204,12 @@ function plotPlan(plan) {
             x: 1,
             y: 1,
         },
-        height: 800
+        // height: 800 // decided in the css
     };
+
+    if (window.innerWidth < 300) { // mobile device
+        layout.showlegend = false;
+    }
 
     Plotly.newPlot('plotly-plot', data_ply, layout, { scrollZoom: true });
 }
