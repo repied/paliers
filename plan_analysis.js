@@ -96,7 +96,12 @@ function plotPlan(plan) {
         line: { color: 'black', width: 3 },
         yaxis: 'y1',
         xaxis: 'x1',
-        legendgroup: `P_N2_ambiant`
+        legendgroup: `P_N2_ambiant`,
+        customdata: depthPoints,
+        hovertemplate:
+            `${t('timeLabel')}: %{x:.2f} min<br>` +
+            `${t('depthLabel')}: %{customdata:.0f} m<br>` +
+            `${t('pn2ambiantLabel')}: %{y:.2f} bar`
     };
     data_ply.push(traceDiveProfile);
 
@@ -109,7 +114,10 @@ function plotPlan(plan) {
             line: { width: 1, color: getCompartmentColor(i) },
             yaxis: 'y1',
             xaxis: 'x1',
-            legendgroup: `compartment${i}`
+            legendgroup: `compartment${i}`,
+            hovertemplate:
+                `${t('tensionLabel')}: %{y:.2f} bar<br>`
+
         };
         if (hideTrace(i)) { traceComp.visible = 'legendonly'; }
         data_ply.push(traceComp);
@@ -126,7 +134,8 @@ function plotPlan(plan) {
         yaxis: 'y2',
         xaxis: 'x2',
         legendgroup: `P_N2_ambiant`,
-        showlegend: false
+        showlegend: false,
+        hoverinfo: 'none'
     };
     data_ply.push(traceMainDiagonal);
 
@@ -136,11 +145,18 @@ function plotPlan(plan) {
             x: PN2_Points,
             y: tensions_transp[i],
             mode: 'lines+markers',
+            name: `${t('compartmentLabel')}${i} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
             line: { width: 1, color: getCompartmentColor(i) },
             yaxis: 'y2',
             xaxis: 'x2',
             showlegend: false,
-            legendgroup: `compartment${i}`
+            legendgroup: `compartment${i}`,
+            customdata: timePoints.map((t, idx) => [t, depthPoints[idx]]),
+            hovertemplate:
+                `${t('timeLabel')}: %{customdata[0]:.2f} min<br>` +
+                `${t('depthLabel')}: %{customdata[1]:.0f} m<br>` +
+                `${t('pn2ambiantLabel')}: %{x:.2f} bar<br>` +
+                `${t('tensionLabel')}: %{y:.2f} bar`
         };
         if (hideTrace(i)) { traceTensionsVsPN2.visible = 'legendonly'; }
         data_ply.push(traceTensionsVsPN2);
@@ -155,7 +171,8 @@ function plotPlan(plan) {
             line: { width: 1, color: getCompartmentColor(i), dash: 'dot' },
             mode: 'lines',
             yaxis: 'y2',
-            xaxis: 'x2', legendgroup: `compartment${i}`
+            xaxis: 'x2', legendgroup: `compartment${i}`,
+            hoverinfo: 'none'
         };
         if (i > 0) traceMValues.showlegend = false;
         if (hideTrace(i)) { traceMValues.visible = 'legendonly'; }
@@ -169,7 +186,8 @@ function plotPlan(plan) {
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
             mode: 'lines',
             yaxis: 'y2',
-            xaxis: 'x2', legendgroup: `compartment${i}`
+            xaxis: 'x2', legendgroup: `compartment${i}`,
+            hoverinfo: 'none'
         };
         if (i > 0) traceModifiedMValues.showlegend = false;
         if (hideTrace(i)) { traceModifiedMValues.visible = 'legendonly'; }
@@ -212,6 +230,22 @@ function plotPlan(plan) {
             x: 1,
             y: 1,
         },
+        // annotations: [
+        //     {
+        //         text: t('tensionsVsPN2Title'),
+        //         xref: 'paper',
+        //         yref: 'paper',
+        //         x: 0.5,
+        //         y: 0.45,
+        //         showarrow: false,
+        //         xanchor: 'middle',
+        //         yanchor: 'top',
+        //         font: {
+        //             size: 16,
+        //             color: isDarkMode ? '#f8f9fa' : '#212529'
+        //         }
+        //     }
+        // ],
         paper_bgcolor: isDarkMode ? '#343a40' : '#ffffff',
         plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
         font: {

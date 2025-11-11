@@ -412,7 +412,7 @@ canvas.addEventListener('click', (e) => {
     if (cell && cell.data && !isNaN(cell.data.dtr)) {
         detailsContainer.style.display = 'flex';
         analysePlan(cell.data);
-        // detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         detailsContainer.style.display = 'none';
         selectedCell = null;

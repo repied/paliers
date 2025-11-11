@@ -34,6 +34,8 @@ TRANSLATIONS = {
     "modifiedMValueLabel": "modified M-Value",
     "calculatedTotalBottomTimeLabel": "Actual bottom time:",
     "calculatedAscentTimeLabel": "Ascent time:",
+    "tensionLabel": "Tension",
+
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -70,6 +72,7 @@ TRANSLATIONS = {
     "modifiedMValueLabel": "modified M-Value",
     "calculatedTotalBottomTimeLabel": "Durée réelle au fond :",
     "calculatedAscentTimeLabel": "Durée de la remontée :",
+    "tensionLabel": "Tension",
   }
 }
 
