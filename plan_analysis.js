@@ -6,7 +6,8 @@ function formatCellDataForDetails(plan) {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
 
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m [${s.saturatedCompartments.join(', ')}]`).join(', ');
+    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
+    let comptStr = stops.map(s => `[${s.saturatedCompartments.join(', ')}]`).join(', ');
     if (stops.length === 0) stopsStr = t('stopsNone');
 
     let t_at_bottom = bottomTime - t_descent;
@@ -25,7 +26,8 @@ function formatCellDataForDetails(plan) {
         `   - ${t('calculatedTotalBottomTimeLabel')} ${parseFloat(t_at_bottom.toFixed(2))} minutes\n` +
         `   - ${t('calculatedTotalStopTimeLabel')} ${parseFloat(t_stops.toFixed(2))} minutes\n` +
         `   - ${t('calculatedAscentTimeLabel')} ${parseFloat(t_ascent.toFixed(2))} minutes\n` +
-        `- ${t('requiredStopsLabel')} ${stopsStr}\n`;
+        `- ${t('requiredStopsLabel')} ${stopsStr}\n` +
+        `- ${t('compartmentstopsLabel')} ${comptStr}\n`;
 }
 function formatCellDataShort(plan) {
     const { diveParams } = plan;

@@ -200,7 +200,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
                 ({ isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high));
-                if (!isSafe) {
+                if (!isSafe && !satCompartments.includes(satComp)) {
                     satCompartments.push(satComp);
                 }
                 // Return an "impossible" plan 
