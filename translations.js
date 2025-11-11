@@ -19,7 +19,7 @@ TRANSLATIONS = {
     "calculatedDTRLabel": "TTS:",
     "calculatedt_descentLabel": "Descent time:",
     "calculatedTotalDiveTimeLabel": "Total dive time:",
-    "requiredStopsLabel": "Stops [saturated compartments]:",
+    "requiredStopsLabel": "Stops :",
     "compartmentstopsLabel": "Critical compartments:",
     "GF": "GF",
     "compartmentLabel": "C",
