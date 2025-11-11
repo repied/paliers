@@ -76,6 +76,7 @@ function plotPlan(plan) {
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
     const PN2_Points = depthPoints.map(depthToPN2);
+    const P_Points = depthPoints.map(depthToPressure);
 
     // transpose to get a time series for each compartment
     const tensions_transp = Array(N_COMPARTMENTS).fill(null).map(() => []);
@@ -88,7 +89,7 @@ function plotPlan(plan) {
     const data_ply = [];
 
     // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
-    const traceDiveProfile = {
+    const tracePN2 = {
         x: timePoints,
         y: PN2_Points,
         mode: 'lines',
@@ -103,7 +104,19 @@ function plotPlan(plan) {
             `${t('depthLabel')}: %{customdata:.0f} m<br>` +
             `${t('pn2ambiantLabel')}: %{y:.2f} bar`
     };
-    data_ply.push(traceDiveProfile);
+    data_ply.push(tracePN2);
+    const tracePressure = {
+        x: timePoints,
+        y: P_Points,
+        mode: 'lines',
+        name: t('pressureLabel'),
+        line: { color: 'black', width: 1 },
+        yaxis: 'y1',
+        xaxis: 'x1',
+        legendgroup: `P_ambiant`,
+        hoveerinfo: 'none'
+    };
+    data_ply.push(tracePressure);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const traceComp = {
@@ -124,8 +137,7 @@ function plotPlan(plan) {
     }
 
     // --- Second Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
-    // introduce a point slightly beyond max depth for better visualization
-    const traceMainDiagonal = {
+    const traceMainDiagonalPN2 = {
         x: [depthToPN2(0), depthToPN2(maxDepth)],
         y: [depthToPN2(0), depthToPN2(maxDepth)],
         mode: 'lines',
@@ -137,7 +149,20 @@ function plotPlan(plan) {
         showlegend: false,
         hoverinfo: 'none'
     };
-    data_ply.push(traceMainDiagonal);
+    data_ply.push(traceMainDiagonalPN2);
+    const traceMainDiagonalP = {
+        x: [depthToPN2(0), depthToPN2(maxDepth)],
+        y: [depthToPressure(0), depthToPressure(maxDepth)],
+        mode: 'lines',
+        name: t('pressureLabel'),
+        line: { color: 'black', width: 1 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        legendgroup: `P_ambiant`,
+        showlegend: false,
+        hoverinfo: 'none'
+    };
+    data_ply.push(traceMainDiagonalP);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         // plot the tension
@@ -193,6 +218,67 @@ function plotPlan(plan) {
         if (hideTrace(i)) { traceModifiedMValues.visible = 'legendonly'; }
         data_ply.push(traceModifiedMValues);
     }
+
+    // Add GF Low/High visualization segments for the **first compartment only**
+    const A0 = BUEHLMANN[0].A;
+    const B0 = BUEHLMANN[0].B;
+    const gf_shift = 0.1;
+
+    // GF High at surface
+    const y_modM_surf = getModifiedMValue(A0, B0, SURFACE_PRESSURE_BAR, gfHigh);
+    const y_M_surf = getMValue(A0, B0, SURFACE_PRESSURE_BAR);
+    const traceGFHighMain = {
+        x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
+        y: [depthToPressure(0), y_modM_surf],
+        mode: 'lines',
+        name: `GF High (${Math.round(gfHigh * 100)}%)`,
+        line: { color: 'cyan', width: 5 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        legendgroup: `compartment0`,
+        hoverinfo: 'name'
+    };
+    data_ply.push(traceGFHighMain);
+    const traceGFHighRemaining = {
+        x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
+        y: [y_modM_surf, y_M_surf],
+        mode: 'lines',
+        line: { color: 'cyan', width: 1 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        showlegend: false,
+        legendgroup: 'compartment0',
+        hoverinfo: 'none'
+    };
+    data_ply.push(traceGFHighRemaining);
+
+    // GF Low at max depth
+    const y_modM_max = getModifiedMValue(A0, B0, depthToPressure(maxDepth), gfLow);
+    const y_M_max = getMValue(A0, B0, depthToPressure(maxDepth));
+    const traceGFLowMain = {
+        x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
+        y: [depthToPressure(maxDepth), y_modM_max],
+        mode: 'lines',
+        name: `GF Low (${Math.round(gfLow * 100)}%)`,
+        line: { color: 'magenta', width: 5 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        legendgroup: 'compartment0',
+        hoverinfo: 'name'
+    };
+    data_ply.push(traceGFLowMain);
+    const traceGFLowRemaining = {
+        x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
+        y: [y_modM_max, y_M_max],
+        mode: 'lines',
+        line: { color: 'magenta', width: 1 },
+        yaxis: 'y2',
+        xaxis: 'x2',
+        showlegend: false,
+        legendgroup: 'compartment0',
+        hoverinfo: 'none'
+    };
+    data_ply.push(traceGFLowRemaining);
 
     const isDarkMode = document.body.classList.contains('dark-mode');
 

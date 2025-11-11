@@ -82,10 +82,8 @@ function getModifiedMValue(A, B, pressure, GF) {
  * Get the interpolated gradient factor (GF) for a given depth
  */
 function getInterpolatedGF(depth, maxDepth, GF_low, GF_high) {
-    // if (maxDepth === 0) return GF_high; // TODO should not be useful
     if (depth >= maxDepth) return GF_low;
     if (depth <= 0) return GF_high;
-    // Linear interpolation
     return GF_high + (GF_low - GF_high) * (depth / maxDepth);
 }
 
