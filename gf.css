@@ -371,5 +371,6 @@ body.dark-mode .equation {
 @media (max-width: 1200px) {
     body {
         flex-direction: column;
+        align-items: center;
     }
 }
