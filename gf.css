@@ -366,3 +366,10 @@ body.dark-mode .equation {
     border-color: #5a5a5a;
     color: #e0e0e0;
 }
+
+/* Adjust body flex-direction for small screens */
+@media (max-width: 1200px) {
+    body {
+        flex-direction: column;
+    }
+}

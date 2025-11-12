@@ -352,7 +352,7 @@ function plotPlan(plan) {
         }
     };
 
-    if (window.innerWidth < 300) { // mobile device
+    if (window.innerWidth < 700) { // mobile device
         layout.showlegend = false;
     }
 
