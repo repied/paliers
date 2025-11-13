@@ -19,7 +19,7 @@ const BUEHLMANN = [ // half-times in minutes, A and B coefficients
 
 const N_COMPARTMENTS = BUEHLMANN.length;
 const HALF_LIFES = BUEHLMANN.map(c => c.t12)
-const MAX_STOP_TIME_BEFORE_INFTY = 300; // minutes
+const MAX_STOP_TIME_BEFORE_INFTY = 60 * 24; // minutes
 
 // --- Simulation constants ---
 const SURFACE_PRESSURE_BAR = 1.0; // bar
