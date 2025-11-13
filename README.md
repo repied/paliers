@@ -2,7 +2,7 @@
 title: Gradient Factors Visualiser
 --- 
 
-Published in 2025. [Frech version](./lisezmoi.md)
+Published in 2025. [French version](./lisezmoi.md)
 
 [This tool](./index.html) is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
 
