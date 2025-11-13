@@ -356,8 +356,17 @@ function plotPlan(plan) {
     if (window.innerWidth < 700) { // mobile device
         layout.showlegend = false;
     }
+    const config = {
+        scrollZoom: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'resetScale2d', 'toImage',
+            'toggleSpikelines', 'hoverClosestCartesian', 'hoverCompareCartesian'
+        ],
+        displaylogo: false,
+        responsive: true,
+    }
 
-    Plotly.newPlot('plotly-plot', data_ply, layout, { scrollZoom: true });
+    Plotly.newPlot('plotly-plot', data_ply, layout, config);
 
     const plotDiv = document.getElementById('plotly-plot');
     plotDiv.on('plotly_legendclick', function (eventData) {
