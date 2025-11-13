@@ -15,6 +15,7 @@ body {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+    gap: 10px;
 }
 
 .container {
@@ -26,8 +27,6 @@ body {
     width: 100%;
     position: relative;
     border: 1px solid #e9ecef;
-    margin-bottom: 30px;
-    margin-right: 30px;
 }
 
 #details-analysis-container {
@@ -43,24 +42,22 @@ body {
     width: 100%;
     position: relative;
     border: 1px solid #e9ecef;
-    margin-bottom: 30px;
 }
 
 
-#lang-theme-selector-container {
+/* #lang-theme-selector-container {
     position: absolute;
     right: 32px;
     top: 28px;
+} */
+
+#lang-theme-selector-container {
+    position: static;
+    margin-bottom: 12px;
+    text-align: right;
 }
 
-/* Adjust the lang selector for small screens */
-@media (max-width: 720px) {
-    #lang-theme-selector-container {
-        position: static;
-        margin-bottom: 12px;
-        text-align: right;
-    }
-}
+/* Adjust the lang selector for small screens @media (max-width: 720px) {} */
 
 #theme-toggle-btn {
     background: transparent;
