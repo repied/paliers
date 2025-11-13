@@ -295,6 +295,7 @@ function plotPlan(plan) {
             title: t('timeLabel') + ' (min)',
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
+            range: [0, 200],
         },
         yaxis: {
             title: t('compartmentTensionLabel') + ' (bar)',
