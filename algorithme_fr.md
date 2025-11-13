@@ -2,7 +2,7 @@
 title: Algorithme de désaturation
 ---
 
-Publié en 2025. [English version](./algorithme_en.md)
+Publié en 2025. [English version](./algorithm_en.md)
 
 
 Ce document décrit l'algorithme de décompression implémenté dans cet [outil](./index.html), qui est basé sur le **modèle Bühlmann ZHL-16C** avec Facteurs de Gradient (GF). L'algorithme simule l'absorption et la libération de gaz inerte (Azote) dans 16 compartiments tissulaires théoriques pendant une plongée et calcule un profil de décompression sûr.
