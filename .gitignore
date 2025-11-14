@@ -1,0 +1,5 @@
+# Compiled JS files
+*.js
+
+# JetBrains
+.idea
