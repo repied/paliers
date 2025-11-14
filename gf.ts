@@ -1,4 +1,4 @@
-const BUEHLMANN = [ // half-times in minutes, A and B coefficients
+const BUEHLMANN: Array<CoefficientPair> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
     { t12: 12.5, A: 0.8618, B: 0.7222 },
@@ -15,10 +15,10 @@ const BUEHLMANN = [ // half-times in minutes, A and B coefficients
     { t12: 390.0, A: 0.261, B: 0.9544 },
     { t12: 498.0, A: 0.248, B: 0.9602 },
     { t12: 635.0, A: 0.2327, B: 0.9653 },
-]
+]; // half-times in minutes, A and B coefficients
 
 const N_COMPARTMENTS = BUEHLMANN.length;
-const HALF_LIFES = BUEHLMANN.map(c => c.t12)
+const HALF_LIFES = BUEHLMANN.map(c => c.t12);
 const MAX_STOP_TIME_BEFORE_INFTY = 60 * 24; // minutes
 
 // --- Simulation constants ---
@@ -26,27 +26,26 @@ const SURFACE_PRESSURE_BAR = 1.0; // bar
 const FN2 = 0.79; // Nitrogen Fraction in air
 const ASCENT_RATE = 10; // (m/min)
 const DESCENT_RATE = 20; // (m/min)
-const GF_INCREMENT = 5
+const GF_INCREMENT = 5;
 const STOP_INTERVAL = 3; // Stops every 3m
 const LAST_STOP_DEPTH = 3;
 const SURFACE_WAIT_MIN = 20;
 const TIME_STEP = 1; // time step between 2 updates of tensions
 
-
 // --- Algorithm functions ---
-const GF_N_VALUES = Math.floor(100 / GF_INCREMENT)
-function depthToPressure(depth) {
+const GF_N_VALUES = Math.floor(100 / GF_INCREMENT);
+function depthToPressure(depth: number) {
     return SURFACE_PRESSURE_BAR + depth / 10;
 }
-function depthToPN2(depth) {
+function depthToPN2(depth: Depth) {
     return depthToPressure(depth) * FN2;
 }
 
 /**
-* Returns a single tension after time t at partial pressure P, if starting from tension T0
+ * Returns a single tension after time t at partial pressure P, if starting from tension T0
  * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-function updateTension(T0, PN2, t, compartment_t12) {
+function updateTension(T0: Tension, PN2: PN2, t: Time, compartment_t12: HalfTime): Tension {
     const k = Math.log(2) / compartment_t12;
     const T1 = PN2 + (T0 - PN2) * Math.exp(-k * t);
     return T1;
@@ -55,7 +54,7 @@ function updateTension(T0, PN2, t, compartment_t12) {
 /**
  * Computes new tensions for all compartments after time t at PN2
  */
-function updateAllTensions(tensions, PN2, t) {
+function updateAllTensions(tensions: Array<Tension>, PN2: PN2, t: Time): Array<Tension> {
     return HALF_LIFES.map((t12, i) => updateTension(tensions[i], PN2, t, t12));
 }
 
@@ -63,8 +62,8 @@ function updateAllTensions(tensions, PN2, t) {
 /**
  * Original M_Value (according to constants A and B)
  * pressure is a real pressure, not a partial pressure for N2
-*/
-function getMValue(A, B, pressure) {
+ */
+function getMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure): MValue {
     return A + pressure / B;
 }
 /**
@@ -72,24 +71,24 @@ function getMValue(A, B, pressure) {
  * P_amb is a real pressure, not a partial pressure for N2
  * M_val = pressure + (M_orig - pressure) * GF
  */
-function getModifiedMValue(A, B, pressure, GF) {
-    const M_orig = getMValue(A, B, pressure)
+function getModifiedMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure, GF: GradientFactor): MValue {
+    const M_orig = getMValue(A, B, pressure);
     const M_mod = pressure + (M_orig - pressure) * GF;
     return M_mod;
 }
 /**
  * Get the interpolated gradient factor (GF) for a given depth
  */
-function getInterpolatedGF(depth, maxDepth, GF_low, GF_high) {
-    if (depth >= maxDepth) return GF_low;
-    if (depth <= 0) return GF_high;
+function getInterpolatedGF(depth: Depth, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): GradientFactor {
+    if (depth >= maxDepth) { return GF_low; }
+    if (depth <= 0) { return GF_high; }
     return GF_high + (GF_low - GF_high) * (depth / maxDepth);
 }
 
 /**
  * Checks if all compartments are within their modified M-Values at given depth
  */
-function isSafeAtDepth(depth, tensions, maxDepth, GF_low, GF_high) {
+function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Safe {
     const GF = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
     const P = depthToPressure(depth);
     let isSafe = true;
@@ -109,7 +108,7 @@ function isSafeAtDepth(depth, tensions, maxDepth, GF_low, GF_high) {
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
-function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
+function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Plan {
     if (bottomTime <= 0 || maxDepth <= 0) { // || GF_low > GF_high
         return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
@@ -128,7 +127,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
     let t_descent = 0;
     let currentDepth = 0;
     let nextDepth = currentDepth + DESCENT_RATE * TIME_STEP;
-    while (nextDepth < maxDepth) { // Make descent during TIME_STEP_MIN to nextDepth 
+    while (nextDepth < maxDepth) { // Make descent during TIME_STEP_MIN to nextDepth
         let PN2_descent = depthToPN2((currentDepth + nextDepth) / 2);
         tensions = updateAllTensions(tensions, PN2_descent, TIME_STEP);
         t_dive_total += TIME_STEP;
@@ -138,7 +137,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
         nextDepth = currentDepth + DESCENT_RATE * TIME_STEP;
     }
     // last bit of descent to maxDepth
-    let t_last_bit = (maxDepth - currentDepth) / DESCENT_RATE
+    let t_last_bit = (maxDepth - currentDepth) / DESCENT_RATE;
     t_dive_total += t_last_bit;
     t_descent += t_last_bit;
     let PN2_descent = depthToPN2((currentDepth + maxDepth) / 2);
@@ -200,7 +199,7 @@ function calculatePlan(bottomTime, maxDepth, GF_low, GF_high) {
                 if (!isSafe && !satCompartments.includes(satComp)) {
                     satCompartments.push(satComp);
                 }
-                // Return an "impossible" plan 
+                // Return an "impossible" plan
                 if (stopTime > MAX_STOP_TIME_BEFORE_INFTY) {
                     return { dtr: Infinity, stops: [], t_descent, t_dive_total, t_stops, history };
                 }
