@@ -86,3 +86,7 @@ interface EventData { curveNumber: number; data: Record<number, { legendgroup: '
 // script.ts
 type SelectedCell = { i: number; j: number; data?: Plan; } | null;
 interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
+
+// translations.ts
+type Lang = keyof typeof TRANSLATIONS;
+interface Window { CURRENT_LANG: Lang; }
