@@ -30,3 +30,55 @@ interface Plan {
     history: Array<Entry>;
     diveParams?: DiveParams;
 }
+
+// plan_analysis.ts
+type Color = string;
+interface Trace {
+    x: Array<number>;
+    y: Array<number>;
+    mode: 'lines' | 'lines+markers' | 'tozero';
+    name?: string;
+    line: { color: Color; width: number; dash?: 'dash' | 'dot'; };
+    yaxis: 'y1' | 'y2';
+    xaxis: 'x1' | 'x2';
+    legendgroup: string;
+    customdata?: Array<number|Array<number>>;
+    hovertemplate?: string;
+    showlegend?: boolean;
+    hoverinfo?: 'none' | 'name';
+    visible?: 'legendonly';
+}
+
+interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
+interface Axis { title: string; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
+interface Font { color: Color; size?: number; }
+interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
+interface Layout {
+    title: string;
+    grid: Grid;
+    xaxis: Axis;
+    yaxis:Axis;
+    xaxis2: Axis;
+    yaxis2: Axis;
+    legend: Legend;
+    annotations: Array<Annotation>;
+    paper_bgcolor: Color;
+    plot_bgcolor: Color;
+    font: Font;
+    showlegend?: boolean;
+}
+
+interface PlotConfig {
+    scrollZoom: boolean;
+    displayModeBar: boolean;
+    modeBarButtonsToRemove: Array<string>;
+    displaylogo: boolean;
+    responsive: boolean;
+}
+type PlotDivElement = HTMLDivElement & { on: Function; };
+declare const Plotly: {
+    newPlot: (plot: string, traces: Array<Trace>, layout: Layout, config: PlotConfig) => void;
+    relayout: (plotDiv:PlotDivElement, update: Record<string, boolean>) => void;
+};
+interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }

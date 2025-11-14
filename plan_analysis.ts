@@ -1,20 +1,20 @@
-function formatGFstrings(gfLow, gfHigh) {
+function formatGFstrings(gfLow: GradientFactorLo, gfHigh: GradientFactorHi): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
 
-function formatCellDataForDetails(plan) {
+function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
     let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
     let comptStr = stops.map(s => `[${s.saturatedCompartments.join(', ')}]`).join(', ');
-    if (stops.length === 0) stopsStr = t('stopsNone');
+    if (stops.length === 0) { stopsStr = t('stopsNone'); }
 
     let t_at_bottom = bottomTime - t_descent;
-    if (t_at_bottom < 0) t_at_bottom = 0;
+    if (t_at_bottom < 0) { t_at_bottom = 0; }
 
     let t_ascent = dtr - t_stops;
-    if (t_ascent < 0) t_ascent = 0;
+    if (t_ascent < 0) { t_ascent = 0; }
 
     return `${t('diveProfileTitle')}\n` +
         // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
@@ -29,25 +29,25 @@ function formatCellDataForDetails(plan) {
         `- ${t('requiredStopsLabel')} ${stopsStr}\n` +
         `- ${t('compartmentstopsLabel')} ${comptStr}\n`;
 }
-function formatCellDataShort(plan) {
+function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
     return `${bottomTime}min @ ${maxDepth}m with ${formatGFstrings(gfLow, gfHigh)}`;
 }
 
-async function analysePlan(plan) {
+async function analysePlan(plan: Plan): Promise<void> {
     planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
-    plotPlan(plan)
+    plotPlan(plan);
 }
-function hideTrace(i) {
+function hideTrace(i: CompartmentIdx): boolean {
     // || i === Math.floor(N_COMPARTMENTS / 2)
-    const displayTrace = (i === 0)//|| i === N_COMPARTMENTS - 1)
+    const displayTrace = (i === 0); //|| i === N_COMPARTMENTS - 1)
     return !displayTrace;
 }
 
 // Define a color palette for the compartment traces
-const colorPalette = [
+const colorPalette: Array<Color> = [
     '#1f77b4',
     '#ff7f0e',
     '#2ca02c',
@@ -65,13 +65,13 @@ const colorPalette = [
     '#c5b0d5',
     '#c49c94'
 ];
-function getCompartmentColor(i) {
+function getCompartmentColor(i: CompartmentIdx): Color {
     return colorPalette[i % colorPalette.length];
 }
 
-function plotPlan(plan) {
+function plotPlan(plan: Plan): void {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
@@ -79,17 +79,17 @@ function plotPlan(plan) {
     const P_Points = depthPoints.map(depthToPressure);
 
     // transpose to get a time series for each compartment
-    const tensions_transp = Array(N_COMPARTMENTS).fill(null).map(() => []);
+    const tensions_transp: Array<Array<Tension>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
     history.forEach(entry => {
         entry.tensions.forEach((tension, i) => {
             tensions_transp[i].push(tension);
         });
     });
 
-    const data_ply = [];
+    const data_ply: Array<Trace> = [];
 
     // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
-    const tracePN2 = {
+    const tracePN2: Trace = {
         x: timePoints,
         y: PN2_Points,
         mode: 'lines',
@@ -105,7 +105,7 @@ function plotPlan(plan) {
             `${t('pn2ambiantLabel')}: %{y:.2f} bar`
     };
     data_ply.push(tracePN2);
-    const tracePressure = {
+    const tracePressure: Trace = {
         x: timePoints,
         y: P_Points,
         mode: 'lines',
@@ -114,12 +114,12 @@ function plotPlan(plan) {
         yaxis: 'y1',
         xaxis: 'x1',
         legendgroup: `P_ambiant`,
-        hoveerinfo: 'none'
+        hoverinfo: 'none'
     };
     data_ply.push(tracePressure);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const traceComp = {
+        const traceComp: Trace = {
             x: timePoints,
             y: tensions_transp[i],
             mode: 'lines+markers',
@@ -130,14 +130,13 @@ function plotPlan(plan) {
             legendgroup: `compartment${i}`,
             hovertemplate:
                 `${t('tensionLabel')}: %{y:.2f} bar<br>`
-
         };
         if (hideTrace(i)) { traceComp.visible = 'legendonly'; }
         data_ply.push(traceComp);
     }
 
     // --- Second Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
-    const traceMainDiagonalPN2 = {
+    const traceMainDiagonalPN2: Trace = {
         x: [depthToPN2(0), depthToPN2(maxDepth)],
         y: [depthToPN2(0), depthToPN2(maxDepth)],
         mode: 'lines',
@@ -150,7 +149,7 @@ function plotPlan(plan) {
         hoverinfo: 'none'
     };
     data_ply.push(traceMainDiagonalPN2);
-    const traceMainDiagonalP = {
+    const traceMainDiagonalP: Trace = {
         x: [depthToPN2(0), depthToPN2(maxDepth)],
         y: [depthToPressure(0), depthToPressure(maxDepth)],
         mode: 'lines',
@@ -166,7 +165,7 @@ function plotPlan(plan) {
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         // plot the tension
-        const traceTensionsVsPN2 = {
+        const traceTensionsVsPN2: Trace = {
             x: PN2_Points,
             y: tensions_transp[i],
             mode: 'lines+markers',
@@ -189,7 +188,7 @@ function plotPlan(plan) {
         // plot the M-Value line for this compartment
         const A = BUEHLMANN[i].A;
         const B = BUEHLMANN[i].B;
-        const traceMValues = {
+        const traceMValues: Trace = {
             x: [depthToPN2(0), depthToPN2(maxDepth)],
             y: [getMValue(A, B, SURFACE_PRESSURE_BAR), getMValue(A, B, depthToPressure(maxDepth))],
             name: `${t('mValueLabel')}`,
@@ -199,12 +198,12 @@ function plotPlan(plan) {
             xaxis: 'x2', legendgroup: `compartment${i}`,
             hoverinfo: 'none'
         };
-        if (i > 0) traceMValues.showlegend = false;
+        if (i > 0) { traceMValues.showlegend = false; }
         if (hideTrace(i)) { traceMValues.visible = 'legendonly'; }
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
-        const traceModifiedMValues = {
+        const traceModifiedMValues: Trace = {
             x: [depthToPN2(0), depthToPN2(maxDepth)],
             y: [getModifiedMValue(A, B, SURFACE_PRESSURE_BAR, gfHigh), getModifiedMValue(A, B, depthToPressure(maxDepth), gfLow)],
             name: `${t('modifiedMValueLabel')}`,
@@ -214,7 +213,7 @@ function plotPlan(plan) {
             xaxis: 'x2', legendgroup: `compartment${i}`,
             hoverinfo: 'none'
         };
-        if (i > 0) traceModifiedMValues.showlegend = false;
+        if (i > 0) { traceModifiedMValues.showlegend = false; }
         if (hideTrace(i)) { traceModifiedMValues.visible = 'legendonly'; }
         data_ply.push(traceModifiedMValues);
     }
@@ -227,7 +226,7 @@ function plotPlan(plan) {
     // GF High at surface
     const y_modM_surf = getModifiedMValue(A0, B0, SURFACE_PRESSURE_BAR, gfHigh);
     const y_M_surf = getMValue(A0, B0, SURFACE_PRESSURE_BAR);
-    const traceGFHighMain = {
+    const traceGFHighMain: Trace = {
         x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
         y: [depthToPressure(0), y_modM_surf],
         mode: 'lines',
@@ -239,7 +238,7 @@ function plotPlan(plan) {
         hoverinfo: 'name'
     };
     data_ply.push(traceGFHighMain);
-    const traceGFHighRemaining = {
+    const traceGFHighRemaining: Trace = {
         x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
         y: [y_modM_surf, y_M_surf],
         mode: 'lines',
@@ -255,7 +254,7 @@ function plotPlan(plan) {
     // GF Low at max depth
     const y_modM_max = getModifiedMValue(A0, B0, depthToPressure(maxDepth), gfLow);
     const y_M_max = getMValue(A0, B0, depthToPressure(maxDepth));
-    const traceGFLowMain = {
+    const traceGFLowMain: Trace = {
         x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
         y: [depthToPressure(maxDepth), y_modM_max],
         mode: 'lines',
@@ -267,7 +266,7 @@ function plotPlan(plan) {
         hoverinfo: 'name'
     };
     data_ply.push(traceGFLowMain);
-    const traceGFLowRemaining = {
+    const traceGFLowRemaining: Trace = {
         x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
         y: [y_modM_max, y_M_max],
         mode: 'lines',
@@ -282,7 +281,7 @@ function plotPlan(plan) {
 
     const isDarkMode = document.body.classList.contains('dark-mode');
 
-    const layout = {
+    const layout: Layout = {
         title: t('tensionsTSTitle'),
         grid: {
             rows: 2,
@@ -356,7 +355,7 @@ function plotPlan(plan) {
     if (window.innerWidth < 700) { // mobile device
         layout.showlegend = false;
     }
-    const config = {
+    const config: PlotConfig = {
         scrollZoom: true,
         displayModeBar: true,
         modeBarButtonsToRemove: ['select2d', 'lasso2d', 'resetScale2d', 'toImage',
@@ -364,12 +363,12 @@ function plotPlan(plan) {
         ],
         displaylogo: false,
         responsive: true,
-    }
+    };
 
     Plotly.newPlot('plotly-plot', data_ply, layout, config);
 
-    const plotDiv = document.getElementById('plotly-plot');
-    plotDiv.on('plotly_legendclick', function (eventData) {
+    const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
+    plotDiv.on('plotly_legendclick', function (eventData: EventData) {
         if (eventData.data[eventData.curveNumber].legendgroup === 'compartment0') {
             // Determine the new visibility state for the annotation.
             // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
