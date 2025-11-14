@@ -50,7 +50,7 @@ interface Trace {
 }
 
 interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-interface Axis { title: string; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+interface Axis { title: string; autorange?: true | 'reversed' ; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
 interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
 interface Font { color: Color; size?: number; }
 interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
@@ -69,10 +69,13 @@ interface Layout {
     showlegend?: boolean;
 }
 
+interface PlotlyIcon { width: number; height: number; path: string; }
+interface ModeBarButton { name: string; title: string; icon: PlotlyIcon; click: Function; }
 interface PlotConfig {
     scrollZoom: boolean;
     displayModeBar: boolean;
     modeBarButtonsToRemove: Array<string>;
+    modeBarButtonsToAdd: Array<ModeBarButton>;
     displaylogo: boolean;
     responsive: boolean;
 }
@@ -80,6 +83,7 @@ type PlotDivElement = HTMLDivElement & { on: Function; };
 declare const Plotly: {
     newPlot: (plot: string, traces: Array<Trace>, layout: Layout, config: PlotConfig) => void;
     relayout: (plotDiv:PlotDivElement, update: Record<string, boolean>) => void;
+    Icons: Record<string, PlotlyIcon>;
 };
 interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
 

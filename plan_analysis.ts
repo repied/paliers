@@ -292,12 +292,14 @@ function plotPlan(plan: Plan): void {
         },
         xaxis: {
             title: t('timeLabel') + ' (min)',
+            autorange: true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
             range: [0, 200],
         },
         yaxis: {
             title: t('compartmentTensionLabel') + ' (bar)',
+            autorange: localStorage.getItem('upsideDown') === 'true' ? 'reversed' : true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
         },
@@ -358,8 +360,14 @@ function plotPlan(plan: Plan): void {
     const config: PlotConfig = {
         scrollZoom: true,
         displayModeBar: true,
-        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'resetScale2d', 'toImage',
+        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'resetScale2d',
             'toggleSpikelines', 'hoverClosestCartesian', 'hoverCompareCartesian'
+        ],
+        modeBarButtonsToAdd: [
+            { name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
+                localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
+                plotPlan(plan);
+            }}
         ],
         displaylogo: false,
         responsive: true,
