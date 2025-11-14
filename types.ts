@@ -82,3 +82,7 @@ declare const Plotly: {
     relayout: (plotDiv:PlotDivElement, update: Record<string, boolean>) => void;
 };
 interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
+
+// script.ts
+type SelectedCell = { i: number; j: number; data?: Plan; } | null;
+interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }

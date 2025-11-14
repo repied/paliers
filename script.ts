@@ -1,35 +1,35 @@
 // --- DOM References ---
-const canvas = document.getElementById('decoCanvas');
-const ctx = canvas.getContext('2d');
-const bottomTimeInput = document.getElementById('bottomTime');
-const maxDepthInput = document.getElementById('maxDepth');
-const bottomTimeSlider = document.getElementById('bottomTimeSlider');
-const maxDepthSlider = document.getElementById('maxDepthSlider');
+const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+const bottomTimeInput = document.getElementById('bottomTime') as HTMLInputElement;
+const maxDepthInput = document.getElementById('maxDepth') as HTMLInputElement;
+const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
+const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
-const detailsContainer = document.getElementById('details-analysis-container');
-const planDetailsTitle = document.getElementById('details-plan-h2');
-const planDetailsTxt = document.getElementById('plan-as-string');
-const mainTitle = document.getElementById('main-title');
-const intro1 = document.getElementById('intro-1');
-const intro2 = document.getElementById('intro-2');
-const canvastitle = document.getElementById('canvas-title');
-const readmeLink = document.getElementById('readme-link');
-const algoLink = document.getElementById('algo-link');
-const labelMaxDepth = document.getElementById('label-maxDepth');
-const labelBottomTime = document.getElementById('label-bottomTime');
+const detailsContainer = document.getElementById('details-analysis-container') as HTMLDivElement;
+const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
+const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
+const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
+const intro1 = document.getElementById('intro-1') as HTMLParagraphElement;
+const intro2 = document.getElementById('intro-2') as HTMLParagraphElement;
+const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
+const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
+const algoLink = document.getElementById('algo-link') as HTMLAnchorElement;
+const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
+const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabelElement;
 
 // --- State variables ---
 let W_all = canvas.width;
 let H = canvas.height;
 let LABEL_MARGIN = W_all * 0.1;
-let W = W_all - LABEL_MARGIN / 2
+let W = W_all - LABEL_MARGIN / 2;
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_VALUES); // N+1 cells for 0-100%
-let calculatedPlans = [];
-let tooltip = { active: false, x: 0, y: 0, data: null };
-let selectedCell = null;
+let calculatedPlans: Array<Array<Plan>> = [];
+let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
+let selectedCell: SelectedCell = null;
 
 // --- Language functions ---
-function applyLanguageToDOM() {
+function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
     intro1.textContent = t('intro1');
     canvastitle.textContent = t('canvastitle');
@@ -39,13 +39,13 @@ function applyLanguageToDOM() {
     labelBottomTime.textContent = t('bottomTime');
     // update readme href from data attributes
     if (readmeLink) {
-        const href = readmeLink.getAttribute(`data-href-${window.CURRENT_LANG}`);
+        const href = readmeLink.getAttribute(`data-href-${window.CURRENT_LANG}`) as string;
         readmeLink.setAttribute('href', href);
-        const algoHref = algoLink.getAttribute(`data-href-${window.CURRENT_LANG}`);
+        const algoHref = algoLink.getAttribute(`data-href-${window.CURRENT_LANG}`) as string;
         algoLink.setAttribute('href', algoHref);
     }
     // set selector value and active btn
-    const btns = document.querySelectorAll('.lang-btn');
+    const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
     btns.forEach(b => b.classList.toggle('active', b.dataset.lang === window.CURRENT_LANG));
     drawCanvas();
     detailsContainer.style.display = 'none';
@@ -53,14 +53,14 @@ function applyLanguageToDOM() {
 }
 
 // --- Canvas drawing functions ---
-function calculatePlanForAllCells() {
+function calculatePlanForAllCells(): void {
     const bottomTime = parseInt(bottomTimeInput.value);
     const maxDepth = parseInt(maxDepthInput.value);
 
     calculatedPlans = [];
     for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
         const gfLow = (i * GF_INCREMENT) / 100;
-        let row = [];
+        let row: Array<Plan> = [];
         for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const plan = calculatePlan(bottomTime, maxDepth, gfLow, gfHigh);
@@ -75,14 +75,14 @@ function calculatePlanForAllCells() {
     selectedCell = null;
 }
 
-function getColorForValue(value) {
+function getColorForValue(value: number): Color {
     // Short/aggressive DTR (close to 0) -> Green
     // Long/conservative DTR (close to 1) -> Red
     const C1 = { r: 40, g: 167, b: 69 }; // Green
     const C2 = { r: 255, g: 193, b: 7 }; // Yellow
     const C3 = { r: 220, g: 53, b: 69 }; // Red
 
-    let color = {};
+    let color: { r?: number; g?: number; b?: number; } = {};
     if (value <= 0.5) {
         // Goes from C1 (Green) to C2 (Yellow)
         const ratio = value * 2;
@@ -99,7 +99,7 @@ function getColorForValue(value) {
     return `rgb(${color.r}, ${color.g}, ${color.b})`;
 }
 
-function drawCanvas() {
+function drawCanvas(): void {
     ctx.clearRect(0, 0, W, H);
 
     // 1. Draw Labels
@@ -131,7 +131,7 @@ function drawCanvas() {
     let maxDTR = 0;
     for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
         for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
-            plan = calculatedPlans[i][j]
+            const plan = calculatedPlans[i][j];
             // Color normalization (only for dives WITH stops)
             if (plan.dtr > 0 && plan.dtr !== Infinity && plan.stops.length > 0) {
                 minDTR = Math.min(minDTR, plan.dtr);
@@ -198,9 +198,9 @@ function drawCanvas() {
     }
 }
 
-function drawTooltip(mouseX, mouseY, plan) {
+function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     const { dtr, stops, t_descent, t_dive_total, diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
     // Tooltip dimensions
     const ttW = 200, ttH = 220;
@@ -210,14 +210,15 @@ function drawTooltip(mouseX, mouseY, plan) {
     // Positioning (avoid going off screen)
     let ttX = mouseX + 15;
     let ttY = mouseY + 15;
-    if (ttX + ttW > W) ttX = mouseX - ttW - 15;
-    if (ttY + ttH > H) ttY = mouseY - ttH - 15;
+    if (ttX + ttW > W) { ttX = mouseX - ttW - 15; }
+    if (ttY + ttH > H) { ttY = mouseY - ttH - 15; }
 
     // Background
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 2;
     ctx.beginPath();
+    // @ts-ignore `roundRect() available since TypeScript 4.9`
     ctx.roundRect(ttX, ttY, ttW, ttH, 8);
     ctx.fill();
     ctx.stroke();
@@ -252,9 +253,9 @@ function drawTooltip(mouseX, mouseY, plan) {
     // Scale calculations
     const maxTime = t_dive_total;
     // Y scale: 0m (top) to maxDepth (bottom)
-    const scaleY = (depth) => (depth / maxDepth) * graphH;
+    const scaleY = (depth: Depth) => (depth / maxDepth) * graphH;
     // X scale: 0 (left) to maxTime (right)
-    const scaleX = (time) => (time / maxTime) * graphW;
+    const scaleX = (time: Time) => (time / maxTime) * graphW;
 
     ctx.strokeStyle = '#007bff'; // Profile color
     ctx.lineWidth = 2;
@@ -309,7 +310,7 @@ function drawTooltip(mouseX, mouseY, plan) {
     }
 
     // Function to wrap text
-    function wrapText(text, x, y, maxWidth, lineHeight) {
+    function wrapText(text: string, x: number, y: number, maxWidth: number, lineHeight: number): void {
         let words = text.split(' ');
         let line = '';
         for (let n = 0; n < words.length; n++) {
@@ -330,7 +331,7 @@ function drawTooltip(mouseX, mouseY, plan) {
     wrapText(`${t('stopsLabel')} ${stopsStr}`, legendX, legendY, graphW, 14);
 }
 
-function getCellFromMousePos(mouseX, mouseY) {
+function getCellFromMousePos(mouseX: number, mouseY: number): SelectedCell {
     if (mouseX < LABEL_MARGIN || mouseY < LABEL_MARGIN) {
         return null;
     }
@@ -347,9 +348,10 @@ function getCellFromMousePos(mouseX, mouseY) {
 // --- Event listeners ---
 
 // Debounce function
-function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
+function debounce(func: Function, wait: number): Function {
+    let timeout: number;
+    return function (...args: Array<unknown>) {
+        // @ts-ignore
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
@@ -367,8 +369,8 @@ const debouncedRunCalculation = debounce(calculatePlanForAllCells, 250);
     });
     // Synchronize to sliders
     input.addEventListener('input', () => {
-        if (input.id === 'bottomTime') bottomTimeSlider.value = input.value;
-        if (input.id === 'maxDepth') maxDepthSlider.value = input.value;
+        if (input.id === 'bottomTime') { bottomTimeSlider.value = input.value; }
+        if (input.id === 'maxDepth') { maxDepthSlider.value = input.value; }
     });
 });
 
@@ -403,12 +405,12 @@ canvas.addEventListener('mousemove', (e) => {
     } else {
         tooltip.active = false;
     }
-    drawCanvas()
+    drawCanvas();
 });
 
 canvas.addEventListener('mouseout', () => {
     tooltip.active = false;
-    drawCanvas()
+    drawCanvas();
 });
 
 // display details on click on a cell
@@ -439,7 +441,7 @@ canvas.addEventListener('click', (e) => {
 });
 
 window.addEventListener('keydown', (e) => {
-    if (!selectedCell) return;
+    if (!selectedCell) { return; }
 
     let { i, j } = selectedCell;
     let moved = false;
@@ -477,16 +479,16 @@ window.addEventListener('keydown', (e) => {
 });
 
 // --- language listeners ---
-document.querySelectorAll('.lang-btn').forEach(b => {
-    b.addEventListener('click', () => setLanguage(b.dataset.lang));
+document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
+    b.addEventListener('click', () => setLanguage(b.dataset.lang as Lang));
 });
 
 // Theme toggle logic
 document.addEventListener('DOMContentLoaded', () => {
-    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement;
     const body = document.body;
 
-    function setDarkTheme(isDarkMode) {
+    function setDarkTheme(isDarkMode: boolean) {
         if (isDarkMode) {
             body.classList.add('dark-mode');
             themeToggleBtn.textContent = '☀️';
@@ -500,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load theme preference from localStorage
-    function loadThemePreference() {
+    function loadThemePreference(): void {
         const savedTheme = localStorage.getItem('theme');
         // Check for system preference if no saved theme
         if (savedTheme === null) {
@@ -542,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialPlan = calculatedPlans[selectedCell.i][selectedCell.j];
         if (initialPlan && !isNaN(initialPlan.dtr)) {
             detailsContainer.style.display = 'flex';
-            analysePlan(initialPlan);
+            analysePlan(initialPlan).catch();
         }
         drawCanvas(); // Redraw to show selection
     }
