@@ -45,13 +45,8 @@ body {
 }
 
 
-/* #lang-theme-selector-container {
-    position: absolute;
-    right: 32px;
-    top: 28px;
-} */
-
 #lang-theme-selector-container {
+    /* above all the text*/
     position: static;
     margin-bottom: 12px;
     text-align: right;
@@ -364,7 +359,7 @@ body.dark-mode .equation {
     color: #e0e0e0;
 }
 
-/* Adjust body flex-direction for small screens */
+/* Adjust body flex-direction for small screens :mobile */
 @media (max-width: 1200px) {
     body {
         flex-direction: column;
