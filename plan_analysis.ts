@@ -40,9 +40,14 @@ async function analysePlan(plan: Plan): Promise<void> {
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
 }
-function hideTrace(i: CompartmentIdx): boolean {
+function hideTrace(i: CompartmentIdx, plan: Plan): boolean {
     // || i === Math.floor(N_COMPARTMENTS / 2)
-    const displayTrace = (i === 0); //|| i === N_COMPARTMENTS - 1)
+    let displayTrace = (i === 0); //|| i === N_COMPARTMENTS - 1)
+    // FIXME: should improve efficiency
+    if (localStorage.getItem('showAllSatComps') === 'true') {
+        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
+        displayTrace ||= satComps.has(i);
+    }
     return !displayTrace;
 }
 
@@ -131,7 +136,7 @@ function plotPlan(plan: Plan): void {
             hovertemplate:
                 `${t('tensionLabel')}: %{y:.2f} bar<br>`
         };
-        if (hideTrace(i)) { traceComp.visible = 'legendonly'; }
+        if (hideTrace(i, plan)) { traceComp.visible = 'legendonly'; }
         data_ply.push(traceComp);
     }
 
@@ -182,7 +187,7 @@ function plotPlan(plan: Plan): void {
                 `${t('pn2ambiantLabel')}: %{x:.2f} bar<br>` +
                 `${t('tensionLabel')}: %{y:.2f} bar`
         };
-        if (hideTrace(i)) { traceTensionsVsPN2.visible = 'legendonly'; }
+        if (hideTrace(i, plan)) { traceTensionsVsPN2.visible = 'legendonly'; }
         data_ply.push(traceTensionsVsPN2);
 
         // plot the M-Value line for this compartment
@@ -199,7 +204,7 @@ function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceMValues.showlegend = false; }
-        if (hideTrace(i)) { traceMValues.visible = 'legendonly'; }
+        if (hideTrace(i, plan)) { traceMValues.visible = 'legendonly'; }
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
@@ -214,7 +219,7 @@ function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceModifiedMValues.showlegend = false; }
-        if (hideTrace(i)) { traceModifiedMValues.visible = 'legendonly'; }
+        if (hideTrace(i, plan)) { traceModifiedMValues.visible = 'legendonly'; }
         data_ply.push(traceModifiedMValues);
     }
 
@@ -366,6 +371,10 @@ function plotPlan(plan: Plan): void {
         modeBarButtonsToAdd: [
             { name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
                 localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
+                plotPlan(plan);
+            }},
+            { name: 'showAllSatComps', title: 'Show All Saturated Compartments', icon: Plotly.Icons.drawline, click: () => {
+                localStorage.setItem('showAllSatComps', String(localStorage.getItem('showAllSatComps') === 'false'));
                 plotPlan(plan);
             }}
         ],
