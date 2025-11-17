@@ -1,6 +1,4 @@
 # TODO
-- fix all links
-- make TS work locally
 - make TS work on github pages
 - make issues for all the ideas
     - TechDiveFrontline
