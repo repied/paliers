@@ -4,11 +4,11 @@ title: Gradient Factors Visualiser
 
 Published in 2025. [French version](./gf_fr.md)
 
-[This tool](./index.html) is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
+[This tool](../index.html) is a client-side webpage showing how **gradient factors** (GFs) impact the decompression plan of scuba dives. It is possible to choose GFs on most recent computers, but there is no strong guidance from manufacturers on how to do so. And default values may not be great for all situations. The goal of this tool is to build intuition on the effect of GFs.
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/toool_screenshot.png" alt="Tool screenshot" width="300" />
+    <img src="../media/toool_screenshot.png" alt="Tool screenshot" width="300" />
   </a>
 </div>
 
@@ -31,7 +31,7 @@ To simplify we suppose:
 Gradient factors reduce the maximum allowed supersaturation in tissue compartments during a diving ascent. Supersaturation occur when a gaz tension in the body is larger than its ambiant partial pressure. Typically the gaz is nitrogen for air dives. A small amount of supersaturation is fine and expected during ascent. But when it gets too big, bubbles can form and/or decompression sickness (DCS) can happen. A diver can use GFs to add some safety margin on top of the supersaturation limit given by base ZHL-16C. 
 
 More specifically Gradient Factors are 2 parameters `(GF_low, GF_high)` to be set between 0% and 100%.
-They were introduced by Erik Baker in [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
+They were introduced by Erik Baker in [Understanding M-values, 1999](../media/1999_Baker_understanding_Mvalues.pdf).
 
 Naming: *Gradient Factors* are named that way because:
 - they are applied as a multiplicative *factor* to the base maximum allowed supersaturation (M-Value) of ZHL-16C 
@@ -39,7 +39,7 @@ Naming: *Gradient Factors* are named that way because:
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/gf_def.png" alt="Definition des FG" width="500" />
+    <img src="../media/gf_def.png" alt="Definition des FG" width="500" />
   </a>
 </div>
 On this graph, the y-axis represents the tissue tension, and the x-axis represents the ambient nitrogen partial pressure (PN2), which increases with depth. The black line is the ambient pressure.
@@ -57,13 +57,13 @@ More "conservative" typically means more stops, deeper stops and longer stops. B
 
 There are 2 main families of decompression models:
 - models of gaz content, like Bühlmann's ZHL-16C and other [Haldanian models](https://en.wikipedia.org/wiki/Haldane%27s_decompression_model)
-- models of bubble formations, like "Varying Permeability Model" mentioned by Pyle in [The Importance of Deep Safety Stops: Rethinking Ascent Patterns From Decompression Dives, 1997](./media/1997_Pyle_bubbles.pdf)
+- models of bubble formations, like "Varying Permeability Model" mentioned by Pyle in [The Importance of Deep Safety Stops: Rethinking Ascent Patterns From Decompression Dives, 1997](../media/1997_Pyle_bubbles.pdf)
 
 Pyle in 1997 used bubble models to advise for **deeper stops** than Bühlmann, starting at roughly `max_depth/2`.
 
 To reconcile them, Baker introduced in 1999 GFs to "force" Bühlmann to generate deeper stops. For instance 20/80 GFs soon became a popular "norm" in technical diving.
 
-But from 2008, [empirical studies](./media/2009_deepstops_workshop.pdf) started to show that deeper stop didn't always reduce DCS risk, and even sometimes increased it. Experts started to doubt the usefulness of so called "deep stops" even if no one recommended raw ZHL-16C. 
+But from 2008, [empirical studies](../media/2009_deepstops_workshop.pdf) started to show that deeper stop didn't always reduce DCS risk, and even sometimes increased it. Experts started to doubt the usefulness of so called "deep stops" even if no one recommended raw ZHL-16C. 
 
 Intuitively, low GF add deep stops to remove gaz from "fast" tissues, but at the same time deep stops can increase the amount
 
@@ -86,7 +86,7 @@ We can find a wide variety of recommandation.
 2015: A [DAN blog post](https://dan.org/safety-prevention/diver-safety/divers-blog/gradient-factors-can-be-used-to-control-for-depth-time-exposure-and-alleviate-the-risk-of-decompression-sickness-in-recreational-diving/) show empirical finding that lower GFs is associated with less DCS
 >- Depending on personal risk tolerance, the GF setting may vary but should not be greater than 0.80.
 
-2022: [Belgium Navy presentation](./media/2022%20Be%20navy%20%20-%20Gradient%20Factor%20OptimizationPublic.pptx.pdf) recommends high and symmetrical values
+2022: [Belgium Navy presentation](../media/2022%20Be%20navy%20%20-%20Gradient%20Factor%20OptimizationPublic.pptx.pdf) recommends high and symmetrical values
 >- Set GFlow = 100% to keep the first stop depth as shallow as possible
 >- Increase ‘safety’ by selecting a lower GFhigh to increase the stop times
 >- Current software restriction do not allow these optimal settings, therefore use symmetrical GFsettings, e.g. 90/90, 80/80, etc. 
@@ -103,13 +103,13 @@ We can find a wide variety of recommandation.
 >- (Helium (heliox, trimix): GF_low between 30 and 50, GF_high between 70 and 80 (e.g. 50/80; 30/70).)
 >- GFs are one means of DCS risk prevention, among others. They are, by definition, arbitrary and offer no guarantee.
 
-2025: [LIFRAS](./media/2025%20-LIFRAS%20-%20%20Manuel%20Ma%20déco.pdf) (Belgium federation)
+2025: [LIFRAS](../media/2025%20-LIFRAS%20-%20%20Manuel%20Ma%20déco.pdf) (Belgium federation)
 >- GFlow = GFhigh = between 85% and 90%
 
 [FFESSM](https://ffessm-codep57.fr/uploads/menus/221/1PLj3v7koGqTbwDOU5ClWmpRnJNtdVhxysa8KIAHiX2/media/satdeco.pdf) No explicit advice has been found
 
 ### Divers
-2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) in [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](./media/Protocoles-De_saturation.pdf)
+2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) in [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](../media/Protocoles-De_saturation.pdf)
 >- for an air of nitrox dive, one can use a pure Bühlmann profile or GF GF 80/80 if the dive is "committed" ('engagée' in French)
 
 2018 R. Devanney in [Decompression Theory course](https://www.tdisdi.com/tdi-diver-news/decompression-theory-pt-4/) for [Technical Diving International](https://en.wikipedia.org/wiki/Technical_Diving_International) 
@@ -176,4 +176,4 @@ decompression stops.
 
 
 ## References
-[Historical original documents from Bühlmann](./media/bulmann_src_presentation.pdf)
+[Historical original documents from Bühlmann](../media/bulmann_src_presentation.pdf)

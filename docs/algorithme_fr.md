@@ -5,7 +5,7 @@ title: Algorithme de désaturation
 Publié en 2025. [English version](./algorithm_en.md)
 
 
-Ce document décrit l'algorithme de décompression implémenté dans cet [outil](./index.html), qui est basé sur le **modèle Bühlmann ZHL-16C** avec Facteurs de Gradient (GF). L'algorithme simule l'absorption et la libération de gaz inerte (Azote) dans 16 compartiments tissulaires théoriques pendant une plongée et calcule un profil de décompression sûr.
+Ce document décrit l'algorithme de décompression implémenté dans cet [outil](../index.html), qui est basé sur le **modèle Bühlmann ZHL-16C** avec Facteurs de Gradient (GF). L'algorithme simule l'absorption et la libération de gaz inerte (Azote) dans 16 compartiments tissulaires théoriques pendant une plongée et calcule un profil de décompression sûr.
 
 # Concepts
 
@@ -34,7 +34,7 @@ Les 16 compartiments commencent avec des tensions égales à la PN2 de surface (
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/simple_profile.png" alt="Profil simple" width="500" />
+    <img src="../media/simple_profile.png" alt="Profil simple" width="500" />
   </a>
 </div>
 Sur ce graphique, nous voyons les tensions de 3 compartiments (le plus rapide, le plus lent et un intermédiaire) augmenter pendant la descente et le temps de fond, puis diminuer après la remontée à la surface.
@@ -69,7 +69,7 @@ C'est la partie la plus critique de l'algorithme, où les paliers de décompress
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/corridor.png" alt="Safe corridor" width="500" />
+    <img src="../media/corridor.png" alt="Safe corridor" width="500" />
   </a>
 </div>
 Nous pouvons visualiser le plan de plongée dans l'espace `(p_N2, tension)`. La plongée commence en bas à gauche, se déplace vers le bas à droite pendant la descente. Pendant le temps de fond, la tension

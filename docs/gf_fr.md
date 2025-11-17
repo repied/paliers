@@ -4,11 +4,11 @@ title: Visualiseur des facteurs de gradient
 
 Publié en 2025. [English version](./gf_en.md)
 
-[Cet outil](./index.html) est une simple page web montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
+[Cet outil](../index.html) est une simple page web montrant comment les **facteurs de gradient** (FG) impactent le plan de décompression des plongées sous-marines. Il est possible de choisir des FG sur la plupart des ordinateurs récents, mais il n'existe pas de directives solides des fabricants sur la façon de le faire. Et les valeurs par défaut peuvent ne pas être adaptées à toutes les situations. L'objectif de cet outil est de construire une intuition sur l'effet des FG.
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/toool_screenshot.png" alt="Tool screenshot" width="300" />
+    <img src="../media/toool_screenshot.png" alt="Tool screenshot" width="300" />
   </a>
 </div>
 
@@ -30,7 +30,7 @@ Pour simplifier nous supposons :
 
 Les facteurs de gradient réduisent la sursaturation maximale autorisée (M-value) dans les compartiments tissulaires durant une remontée de plongée. La sursaturation survient lorsqu'une pression partielle de gaz dans le corps (sa "tension") est supérieure à sa pression partielle "ambiante". Typiquement le gaz est l'azote pour les plongées à l'air. Une petite quantité de sursaturation est normale et attendue pendant la remontée. Mais lorsqu'elle devient trop importante, des bulles peuvent se former et/ou un accident de décompression (ADD) peut se produire. Un plongeur peut utiliser les FG pour ajouter une marge de sécurité sur la limite de sursaturation donnée par la base ZHL-16C.
 
-Plus précisément, les facteurs de gradient sont 2 paramètres `(GF_low, GF_high)` à définir entre 0% et 100%.  Ils ont été introduits par Erik Baker dans [Understanding M-values, 1999](./media/1999_Baker_understanding_Mvalues.pdf).
+Plus précisément, les facteurs de gradient sont 2 paramètres `(GF_low, GF_high)` à définir entre 0% et 100%.  Ils ont été introduits par Erik Baker dans [Understanding M-values, 1999](../media/1999_Baker_understanding_Mvalues.pdf).
 
 Les *facteurs de gradient* sont nommés ainsi parce que :
 - ils sont appliqués comme un *facteur* multiplicatif à la sursaturation maximale autorisée de base (M-Value) par ZHL-16C pour donner la rendre plus petite: la M-value modifiée.
@@ -38,7 +38,7 @@ Les *facteurs de gradient* sont nommés ainsi parce que :
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/gf_def.png" alt="Definition des FG" width="500" />
+    <img src="../media/gf_def.png" alt="Definition des FG" width="500" />
   </a>
 </div>
 Sur ce graphique, on représente en y la tension dans un tissu, et en la presison partielle d'azote PN2 ambiante, qui augmente avec la profondeur. La droite noire est la pression ambiante.
@@ -54,13 +54,13 @@ Plus "conservateur" signifie typiquement plus de paliers, des paliers plus profo
 
 Il existe 2 grandes familles de modèles de décompression :
 - les modèles de contenu en gaz, comme Bühlmann ZHL-16C et d'autres [modèles d'Haldane](https://en.wikipedia.org/wiki/Haldane%27s_decompression_model)
-- les modèles de formation de bulles, comme le "Varying Permeability Model" mentionné par Pyle dans [The Importance of Deep Safety Stops: Rethinking Ascent Patterns From Decompression Dives, 1997](./media/1997_Pyle_bubbles.pdf)
+- les modèles de formation de bulles, comme le "Varying Permeability Model" mentionné par Pyle dans [The Importance of Deep Safety Stops: Rethinking Ascent Patterns From Decompression Dives, 1997](../media/1997_Pyle_bubbles.pdf)
 
 Pyle en 1997 a utilisé des modèles de bulles pour recommander des **paliers plus profonds** que Bühlmann, commençant à peu près à `max_depth/2`. 
 
 Pour "forcer" Bühlmann à générer des paliers plus profonds, Baker a introduit en 1999 les FG. Par exemple, les FG 20/80 sont rapidement devenus une "norme" populaire en plongée technique.
 
-Mais à partir de 2008, des [études empiriques](./media/2009_deepstops_workshop.pdf) ont commencé à montrer que les paliers profonds ne réduisaient pas toujours le risque d'ADD, et parfois l'augmentaient même. Les experts ont commencé à douter de l'utilité des soi-disant "deep stops". Mais personne ne recommandait ZHL-16C brut quand meme. 
+Mais à partir de 2008, des [études empiriques](../media/2009_deepstops_workshop.pdf) ont commencé à montrer que les paliers profonds ne réduisaient pas toujours le risque d'ADD, et parfois l'augmentaient même. Les experts ont commencé à douter de l'utilité des soi-disant "deep stops". Mais personne ne recommandait ZHL-16C brut quand meme. 
 
 Intuitivement, des FG trop faibles ajoutent des paliers profonds pour éliminer du gaz des tissus "rapides". Mais, en même temps, les paliers profonds peuvent augmenter la quantité de gaz dans les tissus "lents".
 
@@ -83,7 +83,7 @@ On trouve une grande variété de recommandations sur internet.
 2015 : Un [billet de blog DAN](https://dan.org/safety-prevention/diver-safety/divers-blog/gradient-factors-can-be-used-to-control-for-depth-time-exposure-and-alleviate-the-risk-of-decompression-sickness-in-recreational-diving/) montre des résultats empiriques que des FG plus faibles sont associés à moins d'ADD
 >- Selon la tolérance au risque personnelle, le réglage des FG peut varier mais ne devrait pas être supérieur à 0.80.
 
-2022 : [Présentation de la Marine belge](./media/2022%20Be%20navy%20%20-%20Gradient%20Factor%20OptimizationPublic.pptx.pdf) recommande des valeurs élevées et symétriques
+2022 : [Présentation de la Marine belge](../media/2022%20Be%20navy%20%20-%20Gradient%20Factor%20OptimizationPublic.pptx.pdf) recommande des valeurs élevées et symétriques
 >- Fixer GFlow = 100% pour garder le premier palier le plus peu profond possible
 >- Augmenter la « sécurité » en sélectionnant un GFhigh plus faible pour augmenter les temps de palier
 >- Les restrictions logicielles actuelles n'autorisent pas ces réglages optimaux, donc utiliser des réglages GF symétriques, par ex. 90/90, 80/80, etc.
@@ -98,13 +98,13 @@ On trouve une grande variété de recommandations sur internet.
 >- Air/nitrox : GF_low=GF_high=entre 90 et 80% (par ex. 90/90; 85/85; 80/80) selon le facteur de risque.
 >- Des FG plus bas (par ex. 75/75 ou 70/70) pourraient être envisagés en cas de facteurs de risque majeurs, mais en plongée récréative cela remettrait en question l'opportun
 
-2025 : [LIFRAS](./media/2025%20-LIFRAS%20-%20%20Manuel%20Ma%20déco.pdf) (fédération belge)
+2025 : [LIFRAS](../media/2025%20-LIFRAS%20-%20%20Manuel%20Ma%20déco.pdf) (fédération belge)
 >- GFlow = GFhigh = entre 85% et 90%
 
 [FFESSM](https://ffessm-codep57.fr/uploads/menus/221/1PLj3v7koGqTbwDOU5ClWmpRnJNtdVhxysa8KIAHiX2/media/satdeco.pdf) Aucune recommandation explicite trouvée
 
 ### Plongeurs
-2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) dans [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](./media/Protocoles-De_saturation.pdf)
+2014 M. Dugrenot, J. Gallien [IANTD](https://www.iantdbenelux.com/fr/home) dans [Quel Trimix pour quelle plongée : exemples et explications de protocoles.](../media/Protocoles-De_saturation.pdf)
 >- pour une plongée à l'air ou au Nx, on peut utiliser un profil Bühlmann pur ou bien utiliser des GF 80/80 s'il s'agit d'une plongée engagée.
 
 2018 R. Devanney dans [Decompression Theory course](https://www.tdisdi.com/tdi-diver-news/decompression-theory-pt-4/) pour [Technical Diving International](https://en.wikipedia.org/wiki/Technical_Diving_International)
@@ -169,4 +169,4 @@ Cependant ceci devra être adapté à
 
 
 ## References
-[Documents historiques de Bühlmann](./media/bulmann_src_presentation.pdf)
+[Documents historiques de Bühlmann](../media/bulmann_src_presentation.pdf)

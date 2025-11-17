@@ -1,4 +1,13 @@
-
+# TODO
+- fix all links
+- make TS work locally
+- make TS work on github pages
+- make issues for all the ideas
+    - TechDiveFrontline
+    - plongee plaisir
+    - scuba forum
+- rewrtie reademe
+- write permission to TechDiveFrontline
 
 # Intro
 
@@ -75,7 +84,10 @@ Pages are linked in the header, if they are mentioned in _config.yml
 # Typescript
 
 # Local dev
+Intall Typescript
 ```
 sudo apt update
 sudo apt install nodejs npm
+sudo npm install -g typescript
 ```
+Use Typescript `tsc -w` to watch and transpile.

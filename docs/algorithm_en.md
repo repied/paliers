@@ -4,7 +4,7 @@ title: Desaturation algorithm
 
 Published in 2025. [French version](./algorithme_fr.md)
 
-This document describes the decompression algorithm implemented in this [tool](./index.html), which is based on the **Bühlmann ZHL-16C model** with Gradient Factors (GF). The algorithm simulates the absorption and release of inert gas (Nitrogen) in 16 theoretical tissue compartments during a dive and calculates a safe decompression profile.
+This document describes the decompression algorithm implemented in this [tool](../index.html), which is based on the **Bühlmann ZHL-16C model** with Gradient Factors (GF). The algorithm simulates the absorption and release of inert gas (Nitrogen) in 16 theoretical tissue compartments during a dive and calculates a safe decompression profile.
 
 # Concepts
 
@@ -33,7 +33,7 @@ All 16 compartments start with tensions equal to the surface PN2 (0.79 bar). `bo
 
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/simple_profile.png" alt="Simple profile" width="500" />
+    <img src="../media/simple_profile.png" alt="Simple profile" width="500" />
   </a>
 </div>
 On this plot we see the tensions of 3 compartments (the fastest, the slowest and an intermediate one) raising during descent and bottom time, the decreasing after the ascent to the surface.
@@ -68,7 +68,7 @@ This is the most critical part of the algorithm, where decompression stops are d
 ## g. Visualisation
 <div style="text-align: center;">
   <a href="./index.html">
-    <img src="./media/corridor.png" alt="Safe corridor" width="500" />
+    <img src="../media/corridor.png" alt="Safe corridor" width="500" />
   </a>
 </div>
 We can see the dive plan in the `(p_N2, tension)` space. The dive starts in the lower left, goes to the lower right during descent. During bottom time, the tension raises (vertical as the depth is constant). Then we can ascend until we reach the modified M-value (blue dashed lines), so we see a horizontal leftward move. Before hitting the modified M-value we make a stop to decrease tension, and the resume the ascent to reach a second stop in this example.
