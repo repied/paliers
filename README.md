@@ -1,15 +1,6 @@
-# TODO
-- make TS work on github pages
-- make issues for all the ideas
-    - TechDiveFrontline
-    - plongee plaisir
-    - scuba forum
-- rewrtie reademe
-- write permission to TechDiveFrontline
-
 # Intro
 
-These pages are rendered automatically on git push of the `release` branch by Github at [repied.github.io](http:\\repied.github.io).
+These pages are rendered automatically on git push of the `main` branch at [https://repied.github.io/paliers/]
 
 # Jekyll
 Jekyll is a Ruby Gem, it is a static site generator. It takes text written in your favorite markup language and uses layouts to create a static website.
