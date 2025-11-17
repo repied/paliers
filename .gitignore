@@ -1,3 +1,24 @@
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints
+.env
+.venv
+
+# data
+*.parquet
+*.pqt
+*.pq
+*.pkl
+*.pickle
+*.db
+
+# Jekyll rendered site
+_site/
+.jekyll-metadata
+
 # Compiled JS files
 *.js
 
