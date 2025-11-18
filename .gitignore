@@ -20,7 +20,7 @@ _site/
 .jekyll-metadata
 
 # Compiled JS files
-# *.js
+*.js
 
 # JetBrains
 .idea

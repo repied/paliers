@@ -25,9 +25,11 @@ plugins:
   - jekyll-seo-tag
 
 exclude: 
+  - src
   - .vscode
   - .devcontainer
   - .gitignore
+  - .github
   - .venv
   - .python-version
   - uv.clock 
