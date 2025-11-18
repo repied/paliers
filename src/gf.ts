@@ -165,7 +165,7 @@ function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactor
     currentDepth = maxDepth;
 
     // Ascent loop
-    while (currentDepth > LAST_STOP_DEPTH) {
+    while (currentDepth >= LAST_STOP_DEPTH) {
         // Find the next stop depth:
         const remaining_to_laststop = currentDepth - LAST_STOP_DEPTH;
         const n_full_intervals = Math.floor((remaining_to_laststop + 0.00001) / STOP_INTERVAL);
@@ -213,7 +213,7 @@ function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactor
         dtr += t_climb;
         history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
     }
-    // Finish ascent to surface as we have now currentDepth > LAST_STOP_DEPTH
+    // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
     const t_final_ascent = currentDepth / ASCENT_RATE;
     const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2);
     tensions = updateAllTensions(tensions, PN2_final_ascent, t_final_ascent);
