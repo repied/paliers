@@ -27,11 +27,7 @@
     "testMatch": ["**/*.test.ts"],
     "moduleFileExtensions": ["ts", "js"],
     "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/types.ts",
-      "!src/script.ts",
-      "!src/plan_analysis.ts",
-      "!src/translations.ts"
+      "src/**/*.ts"
     ]
   },
   "files": [
