@@ -1,8 +1,12 @@
-function formatGFstrings(gfLow: GradientFactorLo, gfHigh: GradientFactorHi): string {
+import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE_BAR } from "./gf";
+import { t } from "./translations";
+import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types";
+
+export function formatGFstrings(gfLow: GradientFactorLo, gfHigh: GradientFactorHi): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
 
-function formatCellDataForDetails(plan: Plan): string {
+export function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
@@ -29,18 +33,21 @@ function formatCellDataForDetails(plan: Plan): string {
         `- ${t('requiredStopsLabel')} ${stopsStr}\n` +
         `- ${t('compartmentstopsLabel')} ${comptStr}\n`;
 }
-function formatCellDataShort(plan: Plan): string {
+export function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
     return `${bottomTime}min @ ${maxDepth}m with ${formatGFstrings(gfLow, gfHigh)}`;
 }
 
-async function analysePlan(plan: Plan): Promise<void> {
+const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
+const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
+
+export async function analysePlan(plan: Plan): Promise<void> {
     planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
 }
-function hideTrace(i: CompartmentIdx, plan: Plan): boolean {
+export function hideTrace(i: CompartmentIdx, plan: Plan): boolean {
     // || i === Math.floor(N_COMPARTMENTS / 2)
     let displayTrace = (i === 0); //|| i === N_COMPARTMENTS - 1)
     // FIXME: should improve efficiency
@@ -70,11 +77,11 @@ const colorPalette: Array<Color> = [
     '#c5b0d5',
     '#c49c94'
 ];
-function getCompartmentColor(i: CompartmentIdx): Color {
+export function getCompartmentColor(i: CompartmentIdx): Color {
     return colorPalette[i % colorPalette.length];
 }
 
-function plotPlan(plan: Plan): void {
+export function plotPlan(plan: Plan): void {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
@@ -369,14 +376,18 @@ function plotPlan(plan: Plan): void {
             'toggleSpikelines', 'hoverClosestCartesian', 'hoverCompareCartesian'
         ],
         modeBarButtonsToAdd: [
-            { name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
-                localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
-                plotPlan(plan);
-            }},
-            { name: 'showAllSatComps', title: 'Show All Saturated Compartments', icon: Plotly.Icons.drawline, click: () => {
-                localStorage.setItem('showAllSatComps', String(localStorage.getItem('showAllSatComps') === 'false'));
-                plotPlan(plan);
-            }}
+            {
+                name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
+                    localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
+                    plotPlan(plan);
+                }
+            },
+            {
+                name: 'showAllSatComps', title: 'Show All Saturated Compartments', icon: Plotly.Icons.drawline, click: () => {
+                    localStorage.setItem('showAllSatComps', String(localStorage.getItem('showAllSatComps') === 'false'));
+                    plotPlan(plan);
+                }
+            }
         ],
         displaylogo: false,
         responsive: true,

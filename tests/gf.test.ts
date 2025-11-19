@@ -11,6 +11,9 @@ import {
     calculatePlan
 } from '../src/gf';
 
+import { Stop } from '../src/types';
+
+
 // Constants from gf.ts (re-declared for test readability)
 const BUEHLMANN_TEST = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
@@ -280,7 +283,7 @@ describe('calculatePlan', () => {
     test('should have all stops at valid depths', () => {
         const plan = calculatePlan(30, 30, 0.3, 0.85);
 
-        plan.stops.forEach(stop => {
+        plan.stops.forEach((stop: Stop) => {
             expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH_TEST);
             expect(stop.depth % STOP_INTERVAL_TEST).toBe(0);
             expect(stop.time).toBeGreaterThan(0);

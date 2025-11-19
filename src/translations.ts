@@ -1,4 +1,13 @@
-const TRANSLATIONS = {
+
+import { applyLanguageToDOM } from "./script";
+
+declare global {
+  interface Window { CURRENT_LANG: Lang; }
+}
+
+export type Lang = keyof typeof TRANSLATIONS;
+
+export const TRANSLATIONS = {
   "en": {
     "title": "Bühlmann Gradient Factors visualizer",
     "canvastitle": "Time To Surface (TTS)",
@@ -82,12 +91,12 @@ const TRANSLATIONS = {
 
 window.CURRENT_LANG = window.CURRENT_LANG || (localStorage && localStorage.getItem && localStorage.getItem('paliers_lang')) || 'fr';
 
-function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
+export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
   const dict = TRANSLATIONS[window.CURRENT_LANG];
   return (dict && dict[key]) || `Missing ${window.CURRENT_LANG} translation for ${key}`;
 }
 
-function setLanguage(lang: Lang) {
+export function setLanguage(lang: Lang) {
   window.CURRENT_LANG = lang;
   localStorage.setItem('paliers_lang', lang);
   applyLanguageToDOM();

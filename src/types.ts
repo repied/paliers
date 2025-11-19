@@ -1,27 +1,27 @@
 // gf.ts
-type Depth = number;
-type Tension = number;
-type Pressure = number;
-type PartPressure = Pressure;
-type PN2 = PartPressure;
-type Time = number;
-type HalfTime = Time;
-type Coefficient = number;
-type CoefficientA = Coefficient;
-type CoefficientB = Coefficient;
-interface CoefficientPair { t12: HalfTime; A: CoefficientA; B: CoefficientB; }
-type MValue = number;
-type GradientFactor = number;
-type GradientFactorLo = GradientFactor;
-type GradientFactorHi = GradientFactor;
-type CompartmentIdx = number;
-interface Safe { isSafe: boolean, satComp: CompartmentIdx } // index of the first compartment that is not safe
+export type Depth = number;
+export type Tension = number;
+export type Pressure = number;
+export type PartPressure = Pressure;
+export type PN2 = PartPressure;
+export type Time = number;
+export type HalfTime = Time;
+export type Coefficient = number;
+export type CoefficientA = Coefficient;
+export type CoefficientB = Coefficient;
+export interface CoefficientPair { t12: HalfTime; A: CoefficientA; B: CoefficientB; }
+export type MValue = number;
+export type GradientFactor = number;
+export type GradientFactorLo = GradientFactor;
+export type GradientFactorHi = GradientFactor;
+export type CompartmentIdx = number;
+export interface Safe { isSafe: boolean, satComp: CompartmentIdx } // index of the first compartment that is not safe
 
 
-interface Stop { time: Time, depth: Depth, saturatedCompartments: Array<CompartmentIdx>, }
-interface Entry { time: Time, depth: Depth, tensions: Array<Tension>, }
-interface DiveParams { bottomTime: Time, maxDepth: Depth, gfLow: GradientFactorLo, gfHigh: GradientFactorHi, }
-interface Plan {
+export interface Stop { time: Time, depth: Depth, saturatedCompartments: Array<CompartmentIdx>, }
+export interface Entry { time: Time, depth: Depth, tensions: Array<Tension>, }
+export interface DiveParams { bottomTime: Time, maxDepth: Depth, gfLow: GradientFactorLo, gfHigh: GradientFactorHi, }
+export interface Plan {
     dtr: Time;
     stops: Array<Stop>;
     t_descent: Time;
@@ -32,8 +32,8 @@ interface Plan {
 }
 
 // plan_analysis.ts
-type Color = string;
-interface Trace {
+export type Color = string;
+export interface Trace {
     x: Array<number>;
     y: Array<number>;
     mode: 'lines' | 'lines+markers' | 'tozero';
@@ -42,23 +42,23 @@ interface Trace {
     yaxis: 'y1' | 'y2';
     xaxis: 'x1' | 'x2';
     legendgroup: string;
-    customdata?: Array<number|Array<number>>;
+    customdata?: Array<number | Array<number>>;
     hovertemplate?: string;
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
     visible?: 'legendonly';
 }
 
-interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-interface Axis { title: string; autorange?: true | 'reversed' ; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
-interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
-interface Font { color: Color; size?: number; }
-interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
-interface Layout {
+export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
+export interface Axis { title: string; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
+export interface Font { color: Color; size?: number; }
+export interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
+export interface Layout {
     title: string;
     grid: Grid;
     xaxis: Axis;
-    yaxis:Axis;
+    yaxis: Axis;
     xaxis2: Axis;
     yaxis2: Axis;
     legend: Legend;
@@ -69,9 +69,9 @@ interface Layout {
     showlegend?: boolean;
 }
 
-interface PlotlyIcon { width: number; height: number; path: string; }
-interface ModeBarButton { name: string; title: string; icon: PlotlyIcon; click: Function; }
-interface PlotConfig {
+export interface PlotlyIcon { width: number; height: number; path: string; }
+export interface ModeBarButton { name: string; title: string; icon: PlotlyIcon; click: Function; }
+export interface PlotConfig {
     scrollZoom: boolean;
     displayModeBar: boolean;
     modeBarButtonsToRemove: Array<string>;
@@ -79,18 +79,19 @@ interface PlotConfig {
     displaylogo: boolean;
     responsive: boolean;
 }
-type PlotDivElement = HTMLDivElement & { on: Function; };
-declare const Plotly: {
-    newPlot: (plot: string, traces: Array<Trace>, layout: Layout, config: PlotConfig) => void;
-    relayout: (plotDiv:PlotDivElement, update: Record<string, boolean>) => void;
-    Icons: Record<string, PlotlyIcon>;
-};
-interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
+export type PlotDivElement = HTMLDivElement & { on: Function; };
+declare global {
+    const Plotly: {
+        newPlot: (plot: string, traces: Array<Trace>, layout: Layout, config: PlotConfig) => void;
+        relayout: (plotDiv: PlotDivElement, update: Record<string, boolean>) => void;
+        Icons: Record<string, PlotlyIcon>;
+    };
+}
+
+export interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
 
 // script.ts
-type SelectedCell = { i: number; j: number; data?: Plan; } | null;
-interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
+export type SelectedCell = { i: number; j: number; data?: Plan; } | null;
+export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
 
 // translations.ts
-type Lang = keyof typeof TRANSLATIONS;
-interface Window { CURRENT_LANG: Lang; }

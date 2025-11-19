@@ -1,4 +1,6 @@
-const BUEHLMANN: Array<CoefficientPair> = [
+import { CoefficientPair, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types";
+
+export const BUEHLMANN: Array<CoefficientPair> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
     { t12: 12.5, A: 0.8618, B: 0.7222 },
@@ -17,23 +19,23 @@ const BUEHLMANN: Array<CoefficientPair> = [
     { t12: 635.0, A: 0.2327, B: 0.9653 },
 ]; // half-times in minutes, A and B coefficients
 
-const N_COMPARTMENTS = BUEHLMANN.length;
-const HALF_LIFES = BUEHLMANN.map(c => c.t12);
-const MAX_STOP_TIME_BEFORE_INFTY = 60 * 24; // minutes
+export const N_COMPARTMENTS = BUEHLMANN.length;
+export const HALF_LIFES = BUEHLMANN.map(c => c.t12);
+export const MAX_STOP_TIME_BEFORE_INFTY = 60 * 24; // minutes
 
 // --- Simulation constants ---
-const SURFACE_PRESSURE_BAR = 1.0; // bar
-const FN2 = 0.79; // Nitrogen Fraction in air
-const ASCENT_RATE = 10; // (m/min)
-const DESCENT_RATE = 20; // (m/min)
-const GF_INCREMENT = 5;
-const STOP_INTERVAL = 3; // Stops every 3m
-const LAST_STOP_DEPTH = 3;
-const SURFACE_WAIT_MIN = 20;
-const TIME_STEP = 1; // time step between 2 updates of tensions
+export const SURFACE_PRESSURE_BAR = 1.0; // bar
+export const FN2 = 0.79; // Nitrogen Fraction in air
+export const ASCENT_RATE = 10; // (m/min)
+export const DESCENT_RATE = 20; // (m/min)
+export const GF_INCREMENT = 5;
+export const STOP_INTERVAL = 3; // Stops every 3m
+export const LAST_STOP_DEPTH = 3;
+export const SURFACE_WAIT_MIN = 20;
+export const TIME_STEP = 1; // time step between 2 updates of tensions
 
 // --- Algorithm functions ---
-const GF_N_VALUES = Math.floor(100 / GF_INCREMENT);
+export const GF_N_VALUES = Math.floor(100 / GF_INCREMENT);
 export function depthToPressure(depth: number) {
     return SURFACE_PRESSURE_BAR + depth / 10;
 }
@@ -45,9 +47,9 @@ export function depthToPN2(depth: Depth) {
  * Returns a single tension after time t at partial pressure P, if starting from tension T0
  * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-export function updateTension(T0: Tension, PN2: PN2, t: Time, compartment_t12: HalfTime): Tension {
+export function updateTension(t0: Tension, pn2: PN2, t: Time, compartment_t12: HalfTime): Tension {
     const k = Math.log(2) / compartment_t12;
-    const T1 = PN2 + (T0 - PN2) * Math.exp(-k * t);
+    const T1 = pn2 + (t0 - pn2) * Math.exp(-k * t);
     return T1;
 }
 

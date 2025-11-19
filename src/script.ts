@@ -1,3 +1,8 @@
+import { BUEHLMANN, depthToPN2, depthToPressure, getMValue, getModifiedMValue, GF_N_VALUES, GF_INCREMENT, N_COMPARTMENTS, SURFACE_PRESSURE_BAR, HALF_LIFES, calculatePlan, ASCENT_RATE } from "./gf";
+import { t, setLanguage, Lang } from "./translations";
+import { analysePlan, formatGFstrings, plotPlan } from "./plan_analysis";
+import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types";
+
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -7,8 +12,6 @@ const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInpu
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
 const detailsContainer = document.getElementById('details-analysis-container') as HTMLDivElement;
-const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
-const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const intro1 = document.getElementById('intro-1') as HTMLParagraphElement;
 const intro2 = document.getElementById('intro-2') as HTMLParagraphElement;
@@ -29,7 +32,7 @@ let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell: SelectedCell = null;
 
 // --- Language functions ---
-function applyLanguageToDOM(): void {
+export function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
     intro1.textContent = t('intro1');
     canvastitle.textContent = t('canvastitle');
@@ -354,7 +357,7 @@ function debounce(func: Function, wait: number): Function {
         // @ts-ignore
         const context = this;
         clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), wait);
+        timeout = window.setTimeout(() => func.apply(context, args), wait);
     };
 }
 const debouncedRunCalculation = debounce(calculatePlanForAllCells, 250);
