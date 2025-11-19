@@ -34,10 +34,10 @@ const TIME_STEP = 1; // time step between 2 updates of tensions
 
 // --- Algorithm functions ---
 const GF_N_VALUES = Math.floor(100 / GF_INCREMENT);
-function depthToPressure(depth: number) {
+export function depthToPressure(depth: number) {
     return SURFACE_PRESSURE_BAR + depth / 10;
 }
-function depthToPN2(depth: Depth) {
+export function depthToPN2(depth: Depth) {
     return depthToPressure(depth) * FN2;
 }
 
@@ -45,7 +45,7 @@ function depthToPN2(depth: Depth) {
  * Returns a single tension after time t at partial pressure P, if starting from tension T0
  * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-function updateTension(T0: Tension, PN2: PN2, t: Time, compartment_t12: HalfTime): Tension {
+export function updateTension(T0: Tension, PN2: PN2, t: Time, compartment_t12: HalfTime): Tension {
     const k = Math.log(2) / compartment_t12;
     const T1 = PN2 + (T0 - PN2) * Math.exp(-k * t);
     return T1;
@@ -54,7 +54,7 @@ function updateTension(T0: Tension, PN2: PN2, t: Time, compartment_t12: HalfTime
 /**
  * Computes new tensions for all compartments after time t at PN2
  */
-function updateAllTensions(tensions: Array<Tension>, PN2: PN2, t: Time): Array<Tension> {
+export function updateAllTensions(tensions: Array<Tension>, PN2: PN2, t: Time): Array<Tension> {
     return HALF_LIFES.map((t12, i) => updateTension(tensions[i], PN2, t, t12));
 }
 
@@ -63,7 +63,7 @@ function updateAllTensions(tensions: Array<Tension>, PN2: PN2, t: Time): Array<T
  * Original M_Value (according to constants A and B)
  * pressure is a real pressure, not a partial pressure for N2
  */
-function getMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure): MValue {
+export function getMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure): MValue {
     return A + pressure / B;
 }
 /**
@@ -71,7 +71,7 @@ function getMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure): MValue
  * P_amb is a real pressure, not a partial pressure for N2
  * M_val = pressure + (M_orig - pressure) * GF
  */
-function getModifiedMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure, GF: GradientFactor): MValue {
+export function getModifiedMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure, GF: GradientFactor): MValue {
     const M_orig = getMValue(A, B, pressure);
     const M_mod = pressure + (M_orig - pressure) * GF;
     return M_mod;
@@ -79,7 +79,7 @@ function getModifiedMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure,
 /**
  * Get the interpolated gradient factor (GF) for a given depth
  */
-function getInterpolatedGF(depth: Depth, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): GradientFactor {
+export function getInterpolatedGF(depth: Depth, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): GradientFactor {
     if (depth >= maxDepth) { return GF_low; }
     if (depth <= 0) { return GF_high; }
     return GF_high + (GF_low - GF_high) * (depth / maxDepth);
@@ -88,7 +88,7 @@ function getInterpolatedGF(depth: Depth, maxDepth: Depth, GF_low: GradientFactor
 /**
  * Checks if all compartments are within their modified M-Values at given depth
  */
-function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Safe {
+export function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Safe {
     const GF = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
     const P = depthToPressure(depth);
     let isSafe = true;
@@ -108,7 +108,7 @@ function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: Depth, 
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
-function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Plan {
+export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Plan {
     if (bottomTime <= 0 || maxDepth <= 0) { // || GF_low > GF_high
         return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }

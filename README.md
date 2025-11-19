@@ -80,3 +80,17 @@ sudo apt install nodejs npm
 sudo npm install -g typescript
 ```
 Use Typescript `tsc -w` to watch and transpile.
+
+# Local tests
+Install dependencies (first time only):
+```
+npm install
+```
+Run all tests:
+```
+npm test
+```
+Run tests with coverage (optional):
+```
+npm test -- --coverage
+```

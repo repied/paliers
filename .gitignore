@@ -21,6 +21,8 @@ _site/
 
 # Compiled JS files
 *.js
+node_modules/
+coverage/
 
 # JetBrains
 .idea

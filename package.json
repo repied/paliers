@@ -1,0 +1,47 @@
+{
+  "name": "paliers",
+  "version": "1.0.0",
+  "description": "Client side tool to display scuba diving desaturation plan",
+  "main": "dist/gf.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/repied/paliers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/repied/paliers/issues"
+  },
+  "homepage": "https://github.com/repied/paliers#readme",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/tests"],
+    "testMatch": ["**/*.test.ts"],
+    "moduleFileExtensions": ["ts", "js"],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/types.ts",
+      "!src/script.ts",
+      "!src/plan_analysis.ts",
+      "!src/translations.ts"
+    ]
+  },
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  }
+}
