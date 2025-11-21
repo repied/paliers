@@ -20,9 +20,7 @@ minima:
   #   - petrole.md
 
 plugins:
-  - jekyll-sitemap
   - jekyll-remote-theme 
-  - jekyll-seo-tag
 
 exclude: 
   - src
