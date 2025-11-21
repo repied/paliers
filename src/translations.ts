@@ -1,5 +1,5 @@
 
-import { applyLanguageToDOM } from "./script";
+import { applyLanguageToDOM } from "./script.js";
 
 declare global {
   interface Window { CURRENT_LANG: Lang; }

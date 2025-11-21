@@ -15,6 +15,9 @@ __pycache__/
 *.pickle
 *.db
 
+# JetBrains
+.idea
+
 # Jekyll rendered site
 _site/
 .jekyll-metadata
@@ -23,6 +26,3 @@ _site/
 *.js
 node_modules/
 coverage/
-
-# JetBrains
-.idea

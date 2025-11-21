@@ -1,6 +1,6 @@
 {
   "include": [
-    "src/**/*.ts"
+    "src/*.ts"
   ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
@@ -10,10 +10,10 @@
       "ES2020",
       "DOM"
     ], /* Specify a set of bundled library declaration files that describe the target runtime environment. */
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "outDir": "./js",
+    "rootDir": "./src/",
     /* Modules */
-    "module": "commonjs", /* Specify what module code is generated. */
+    "module": "ESNext", /* "None commonjs ESNext", Specify what module code is generated. */
     /* Interop Constraints */
     "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */

@@ -1,7 +1,7 @@
 {
     "files.exclude": {
         "**/node_modules": true,
-        "**/coverage": true
+        "**/coverage": false
     },
     "search.exclude": {
         "**/node_modules": true,

@@ -1,7 +1,7 @@
-import { BUEHLMANN, depthToPN2, depthToPressure, getMValue, getModifiedMValue, GF_N_VALUES, GF_INCREMENT, N_COMPARTMENTS, SURFACE_PRESSURE_BAR, HALF_LIFES, calculatePlan, ASCENT_RATE } from "./gf";
-import { t, setLanguage, Lang } from "./translations";
-import { analysePlan, formatGFstrings, plotPlan } from "./plan_analysis";
-import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types";
+import { BUEHLMANN, depthToPN2, depthToPressure, getMValue, getModifiedMValue, GF_N_VALUES, GF_INCREMENT, N_COMPARTMENTS, SURFACE_PRESSURE_BAR, HALF_LIFES, calculatePlan, ASCENT_RATE } from "./gf.js";
+import { t, setLanguage, Lang } from "./translations.js";
+import { analysePlan, formatGFstrings, plotPlan } from "./plan_analysis.js";
+import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types.js";
 
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;

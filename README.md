@@ -15,8 +15,7 @@ It can also be downloaded locally and opened in the browser.
 
 The tool is composed of:
 - `index.html`: main file to open in the browser
-- `src/ts/`: typescript files for the calculations and interactivity. Compiled to `.js` files by `tsc`
-- `src/css/`: stylesheet
+- `src/`: typescript files for the calculations and interactivity. Compiled to `.js` files by `tsc`
 - `docs/`: markdown files explaining the algorithm. Markdown files are compiled to `html` by `Jekyll`
 - `media/`: documents, images, whitepapers referenced in the docs
 - `tests/`: unit test for the typescript
@@ -27,14 +26,13 @@ The `ts` code is packaged according to `package.json`.
 
 ## Build in CI
 
-The tool is tested, built (`.ts` and `.md`) and deployed to Github pages on a push of the `main` branch. See github action config in `./github/*.yml`.
+The tool is automatically tested, built (`.ts` and `.md`) and deployed to Github pages on a push of the `main` branch. See github action config in `./github/*.yml`.
 
 ## Build locally
 
 Instructions for a linux system.
 
 ### Jekyll
-
 Install [Ruby and Jekyll](https://jekyllrb.com/docs/installation/ubuntu/):
 ```
 sudo apt update
@@ -48,7 +46,7 @@ bundle update
 bundle install
 ```
 
-Then, to build and serve locally:
+Then, build and serve locally:
 ```
 bundle exec jekyll serve --incremental --watch --livereload
 ```
@@ -59,12 +57,11 @@ Install typescript
 sudo apt update
 sudo apt install nodejs npm
 sudo npm install -g typescript
+sudo npm install -g http-server
 ```
+Then, watch and build with `tsc -w` (which uses `tsconfig.json`).
 
-Then, to build to watch and transpile using `tsconfig.json`:
-```
-tsc -w
-```
+Or call directly `npm start` to build and serve with `http-server`.
 
 ## Test locally
 Install package dependencies (`jest`...):
@@ -79,8 +76,10 @@ Run tests with coverage (optional):
 ```
 npm test -- --coverage
 ```
-
-
+Open coverage report with, for instance,
+```
+http-server ./coverage
+```
 ## Build in Codespace
 
-Codespace setup is defined by `.devcontainer/devcontainer.json`.
+Codespace setup is defined in `.devcontainer/devcontainer.json`.

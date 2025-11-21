@@ -1,4 +1,4 @@
-import { CoefficientPair, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types";
+import { CoefficientPair, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types.js";
 
 export const BUEHLMANN: Array<CoefficientPair> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
