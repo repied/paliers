@@ -18,7 +18,7 @@
 		35729
 	],
 	// Uncomment the next line to run commands after the container is created.
-	"postCreateCommand": "jekyll --version && npm install -g typescript http-server || true && mkdir -p /home/vscode/bin && for f in /usr/local/share/nvm/versions/node/*/bin/*; do [ -f \"$f\" ] && ln -sf \"$f\" /home/vscode/bin/$(basename \"$f\"); done",
+	"postCreateCommand": "npm install -g typescript http-server || true && mkdir -p /home/vscode/bin && for f in /usr/local/share/nvm/versions/node/*/bin/*; do [ -f \"$f\" ] && ln -sf \"$f\" /home/vscode/bin/$(basename \"$f\"); done",
 	"customizations": {
 		"vscode": {
 			"extensions": [
