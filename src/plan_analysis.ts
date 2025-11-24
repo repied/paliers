@@ -234,6 +234,7 @@ export function plotPlan(plan: Plan): void {
     const A0 = BUEHLMANN[0].A;
     const B0 = BUEHLMANN[0].B;
     const gf_shift = 0.1;
+    const gf_legend_group = 'gf_visualization';
 
     // GF High at surface
     const y_modM_surf = getModifiedMValue(A0, B0, SURFACE_PRESSURE_BAR, gfHigh);
@@ -242,11 +243,11 @@ export function plotPlan(plan: Plan): void {
         x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
         y: [depthToPressure(0), y_modM_surf],
         mode: 'lines',
-        name: `GF High (${Math.round(gfHigh * 100)}%)`,
+        name: `GF Candlestick`, // New name for the legend
         line: { color: 'cyan', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
-        legendgroup: `compartment0`,
+        legendgroup: gf_legend_group,
         hoverinfo: 'name'
     };
     data_ply.push(traceGFHighMain);
@@ -258,7 +259,7 @@ export function plotPlan(plan: Plan): void {
         yaxis: 'y2',
         xaxis: 'x2',
         showlegend: false,
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
         hoverinfo: 'none'
     };
     data_ply.push(traceGFHighRemaining);
@@ -270,11 +271,12 @@ export function plotPlan(plan: Plan): void {
         x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
         y: [depthToPressure(maxDepth), y_modM_max],
         mode: 'lines',
-        name: `GF Low (${Math.round(gfLow * 100)}%)`,
+        name: `GF Low (${Math.round(gfLow * 100)}%)`, // This will not be displayed, but good for context
         line: { color: 'magenta', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
+        showlegend: false, // Hide this from the legend
         hoverinfo: 'name'
     };
     data_ply.push(traceGFLowMain);
@@ -286,7 +288,7 @@ export function plotPlan(plan: Plan): void {
         yaxis: 'y2',
         xaxis: 'x2',
         showlegend: false,
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
         hoverinfo: 'none'
     };
     data_ply.push(traceGFLowRemaining);
@@ -397,7 +399,8 @@ export function plotPlan(plan: Plan): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
-        if (eventData.data[eventData.curveNumber].legendgroup === 'compartment0') {
+        const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
+        if (legendGroup === 'gf_visualization') {
             // Determine the new visibility state for the annotation.
             // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
             // If the trace was hidden (false or 'legendonly'), it will become visible. So annotation should be visible.
