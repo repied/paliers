@@ -10,6 +10,9 @@
 
 The tool implements the **Bühlmann ZHL-16C model** with Gradient Factors (GF) to calculate a safe decompression profile. It simulates the absorption and release of gaz across 16 tissue compartments during a dive, ensuring that the partial pressure of the gas in each compartment stays within a safe limit. This safety limit is defined by 2 parameters: the low and high Gradient Factor. Resulting dive plans are plotted with Plotly. 
 
+The tool is available at [https://repied.github.io/paliers/](https://repied.github.io/paliers/).
+It can be downloaded locally from this [zip package](./dist/paliers.zip) and opened in the browser.
+
 For a more detailed explanation, see the [full algorithm description](./docs/algorithm_en.md).
 
 ## Usage
