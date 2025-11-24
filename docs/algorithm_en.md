@@ -28,7 +28,7 @@ All 16 compartments start with tensions equal to the surface PN2 (0.79 bar). `bo
 
 ## c. Bottom Phase
 
-*   After reaching `maxDepth`, the diver remains at this depth for the `bottomTime` (minus the descent time).
+*   After reaching `maxDepth`, the diver remains at this depth for the `bottomTime`.
 *   Compartment tensions continue to load (increase) based on the PN2 at `maxDepth`.
 
 <div style="text-align: center;">

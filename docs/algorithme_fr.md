@@ -29,7 +29,7 @@ Les 16 compartiments commencent avec des tensions égales à la PN2 de surface (
 
 ## c. Phase de Fond
 
-*   Après avoir atteint `maxDepth`, le plongeur reste à cette profondeur pendant le `bottomTime` (moins le temps de descente).
+*   Après avoir atteint `maxDepth`, le plongeur reste à cette profondeur pendant le `bottomTime`.
 *   Les tensions des compartiments continuent de se charger (augmenter) en fonction de la PN2 à `maxDepth`.
 
 <div style="text-align: center;">

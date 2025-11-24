@@ -148,8 +148,7 @@ export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: Gradien
 
 
     // 2. Bottom phase (Bottom Time)
-    // bottomTime is interpreted as the total time spent at maxDepth, including descent.
-    const t_at_bottom = Math.max(0, bottomTime - t_descent);
+    const t_at_bottom = bottomTime;
     let t_bottom = TIME_STEP;
     while (t_bottom < t_at_bottom) { // Wait at bottom depth during TIME_STEP_MIN
         tensions = updateAllTensions(tensions, depthToPN2(maxDepth), TIME_STEP);
