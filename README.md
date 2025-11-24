@@ -9,7 +9,7 @@ It's a client-side html + css + javascript webpage. No database, no server requi
 # Usage
 
 The tool is available at [https://repied.github.io/paliers/](https://repied.github.io/paliers/).
-It can also be downloaded locally and opened in the browser.
+The files can be downloaded locally from this [zip package](./dist/paliers.zip) and opened in the browser.
 
 # Contribute
 
