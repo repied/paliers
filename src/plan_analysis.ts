@@ -230,9 +230,18 @@ export function plotPlan(plan: Plan): void {
         data_ply.push(traceModifiedMValues);
     }
 
-    // Add GF Low/High visualization segments for the **first compartment only**
-    const A0 = BUEHLMANN[0].A;
-    const B0 = BUEHLMANN[0].B;
+    // Find the fastest compartment that is initially visible to associate the GF candlestick with.
+    let fastestVisibleCompartmentIdx = 0;
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
+        if (!hideTrace(i, plan)) {
+            fastestVisibleCompartmentIdx = i;
+            break; // Stop at the first visible compartment.
+        }
+    }
+
+    // Add GF Low/High visualization segments, associated with the fastest visible compartment.
+    const A0 = BUEHLMANN[fastestVisibleCompartmentIdx].A;
+    const B0 = BUEHLMANN[fastestVisibleCompartmentIdx].B;
     const gf_shift = 0.1;
     const gf_legend_group = 'gf_visualization';
 
@@ -243,7 +252,7 @@ export function plotPlan(plan: Plan): void {
         x: [depthToPN2(0) - gf_shift, depthToPN2(0) - gf_shift],
         y: [depthToPressure(0), y_modM_surf],
         mode: 'lines',
-        name: `GF Candlestick`, // New name for the legend
+        name: `GF High (${Math.round(gfHigh * 100)}%)`,
         line: { color: 'cyan', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
@@ -271,12 +280,11 @@ export function plotPlan(plan: Plan): void {
         x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
         y: [depthToPressure(maxDepth), y_modM_max],
         mode: 'lines',
-        name: `GF Low (${Math.round(gfLow * 100)}%)`, // This will not be displayed, but good for context
+        name: `GF Low (${Math.round(gfLow * 100)}%)`,
         line: { color: 'magenta', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
         legendgroup: gf_legend_group,
-        showlegend: false, // Hide this from the legend
         hoverinfo: 'name'
     };
     data_ply.push(traceGFLowMain);

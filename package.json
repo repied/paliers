@@ -9,7 +9,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "serve": "http-server -p 8080 ./",
+    "serve": "http-server ./",
     "start": "npm run build && npm run serve",
     "main": "node js/main.js"
   },
