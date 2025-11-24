@@ -474,8 +474,14 @@ window.addEventListener('keydown', (e) => {
         if (newPlan && !isNaN(newPlan.dtr)) {
             detailsContainer.style.display = 'flex';
             analysePlan(newPlan);
+            // also update the small profile plot
+            tooltip.active = true;
+            tooltip.data = newPlan;
+            tooltip.x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
+            tooltip.y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
         } else {
             detailsContainer.style.display = 'none';
+            tooltip.active = false;
         }
         drawCanvas();
     }
