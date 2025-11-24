@@ -72,10 +72,19 @@ function calculatePlanForAllCells(): void {
         }
         calculatedPlans.push(row);
     }
-    // redraw and hide details
+    // redraw and update details if a cell is selected
     drawCanvas();
-    detailsContainer.style.display = 'none';
-    selectedCell = null;
+    if (selectedCell) {
+        const newPlan = calculatedPlans[selectedCell.i][selectedCell.j];
+        if (newPlan && !isNaN(newPlan.dtr)) {
+            detailsContainer.style.display = 'flex';
+            analysePlan(newPlan);
+        } else {
+            detailsContainer.style.display = 'none';
+        }
+    } else {
+        detailsContainer.style.display = 'none';
+    }
 }
 
 function getColorForValue(value: number): Color {
