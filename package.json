@@ -10,9 +10,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "serve": "http-server ./",
-    "start": "npm run build && npm run serve",
-    "main": "node js/main.js",
-    "dev": "nodemon --watch src --exec ts-node "
+    "start": "npm run build && npm run serve"
   },
   "repository": {
     "type": "git",
