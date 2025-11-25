@@ -46,16 +46,16 @@ export interface Trace {
     hovertemplate?: string;
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
-    visible?: 'legendonly';
+    visible?: boolean | 'legendonly';
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-export interface Axis { title: string; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+export interface Axis { title: object; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
 export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
 export interface Font { color: Color; size?: number; }
 export interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
 export interface Layout {
-    title: string;
+    title: object; // xaxis: { title: { text: 'Xxx' } },
     grid: Grid;
     xaxis: Axis;
     yaxis: Axis;
@@ -88,7 +88,7 @@ declare global {
     };
 }
 
-export interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
+export interface EventData { curveNumber: number; data: Trace[]; fullData: Trace[]; }
 
 // script.ts
 export type SelectedCell = { i: number; j: number; data?: Plan; } | null;

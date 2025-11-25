@@ -30,6 +30,7 @@ exclude:
   - .github
   - .venv
   - .python-version
+  - node_modules
   - uv.clock 
   - pyproject.toml
   - Gemfile

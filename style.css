@@ -240,8 +240,8 @@ input[type="range"]::-moz-range-thumb {
     width: 100%;
     height: auto;
     aspect-ratio: 1 / 1;
-    max-width: 800px;
-    max-height: 800px;
+    max-width: 600px;
+    max-height: 600px;
     margin: 0 auto 24px auto;
     display: block;
     border: 1px solid #ced4da;

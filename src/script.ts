@@ -34,7 +34,7 @@ let selectedCell: SelectedCell = null;
 // --- Language functions ---
 export function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
-    intro1.textContent = t('intro1');
+    intro1.innerHTML = t('intro1');
     canvastitle.textContent = t('canvastitle');
     readmeLink.textContent = t('readme');
     algoLink.textContent = t('algo');
@@ -107,7 +107,7 @@ function drawCanvas(): void {
 
     // 1. Draw Labels
     ctx.fillStyle = '#343a40';
-    ctx.font = 'bold 14px Inter';
+    ctx.font = `bold ${Math.max(10, CELL_SIZE / 3)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -183,13 +183,13 @@ function drawCanvas(): void {
 
             if (isNaN(dtr) || dtr === Infinity) {
                 ctx.fillStyle = '#fff';
-                ctx.font = '11px Inter';
+                ctx.font = `${Math.max(8, CELL_SIZE / 3.5)}px Inter`;
                 ctx.fillText('X', x + CELL_SIZE / 2, y + CELL_SIZE / 2);
             } else if (stops.length === 0) {
-                ctx.font = '10px Inter'; // Smaller font
+                ctx.font = `${Math.max(7, CELL_SIZE / 4)}px Inter`; // Smaller font
                 ctx.fillText('', x + CELL_SIZE / 2, y + CELL_SIZE / 2);
             } else {
-                ctx.font = 'bold 12px Inter';
+                ctx.font = `bold ${Math.max(9, CELL_SIZE / 3)}px Inter`;
                 ctx.fillText(Math.ceil(dtr).toString(), x + CELL_SIZE / 2, y + CELL_SIZE / 2);
             }
         }
@@ -474,8 +474,14 @@ window.addEventListener('keydown', (e) => {
         if (newPlan && !isNaN(newPlan.dtr)) {
             detailsContainer.style.display = 'flex';
             analysePlan(newPlan);
+            // also update the small profile plot
+            tooltip.active = true;
+            tooltip.data = newPlan;
+            tooltip.x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
+            tooltip.y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
         } else {
             detailsContainer.style.display = 'none';
+            tooltip.active = false;
         }
         drawCanvas();
     }
