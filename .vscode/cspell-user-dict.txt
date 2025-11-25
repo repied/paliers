@@ -1,3 +1,6 @@
 BUEHLMANN
 Bühlmann
+hoverinfo
 jekyll
+xaxis
+yaxis

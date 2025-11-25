@@ -294,7 +294,7 @@ export function plotPlan(plan: Plan): void {
     const isDarkMode = document.body.classList.contains('dark-mode');
 
     const layout: Layout = {
-        title: t('tensionsTSTitle'),
+        title: { text: t('tensionsTSTitle') },
         grid: {
             rows: 2,
             columns: 1,
@@ -303,25 +303,25 @@ export function plotPlan(plan: Plan): void {
             ygap: 0.15
         },
         xaxis: {
-            title: t('timeLabel') + ' (min)',
+            title: { text: t('timeLabel') + ' (min)' },
             autorange: true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
             range: [0, 200],
         },
         yaxis: {
-            title: t('compartmentTensionLabel') + ' (bar)',
+            title: { text: t('compartmentTensionLabel') + ' (bar)' },
             autorange: localStorage.getItem('upsideDown') === 'true' ? 'reversed' : true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
         },
         xaxis2: {
-            title: t('pn2ambiantLabel') + ' (bar)',
+            title: { text: t('pn2ambiantLabel') + ' (bar)' },
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
         },
         yaxis2: {
-            title: t('compartmentTensionLabel') + ' (bar)',
+            title: { text: t('compartmentTensionLabel') + ' (bar)' },
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
         },

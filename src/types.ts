@@ -50,12 +50,12 @@ export interface Trace {
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-export interface Axis { title: string; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+export interface Axis { title: object; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
 export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
 export interface Font { color: Color; size?: number; }
 export interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
 export interface Layout {
-    title: string;
+    title: object; // xaxis: { title: { text: 'Xxx' } },
     grid: Grid;
     xaxis: Axis;
     yaxis: Axis;
