@@ -9,17 +9,17 @@ export type HalfTime = Time;
 export type Coefficient = number;
 export type CoefficientA = Coefficient;
 export type CoefficientB = Coefficient;
-export interface CoefficientPair { t12: HalfTime; A: CoefficientA; B: CoefficientB; }
+export interface CompartmentCoefs { t12: HalfTime; A: CoefficientA; B: CoefficientB; }
 export type MValue = number;
 export type GradientFactor = number;
 export type GradientFactorLo = GradientFactor;
 export type GradientFactorHi = GradientFactor;
 export type CompartmentIdx = number;
-export interface Safe { isSafe: boolean, satComp: CompartmentIdx } // index of the first compartment that is not safe
+export interface Safe { isSafe: boolean, satComp: CompartmentIdx }
 
 
 export interface Stop { time: Time, depth: Depth, saturatedCompartments: Array<CompartmentIdx>, }
-export interface Entry { time: Time, depth: Depth, tensions: Array<Tension>, }
+export interface TensionsState { time: Time, depth: Depth, tensions: Array<Tension>, }
 export interface DiveParams { bottomTime: Time, maxDepth: Depth, gfLow: GradientFactorLo, gfHigh: GradientFactorHi, }
 export interface Plan {
     dtr: Time;
@@ -27,7 +27,7 @@ export interface Plan {
     t_descent: Time;
     t_dive_total: Time;
     t_stops: Time;
-    history: Array<Entry>;
+    history: Array<TensionsState>;
     diveParams?: DiveParams;
 }
 
@@ -55,7 +55,7 @@ export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number;
 export interface Font { color: Color; size?: number; }
 export interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
 export interface Layout {
-    title: object; // xaxis: { title: { text: 'Xxx' } },
+    title: object;
     grid: Grid;
     xaxis: Axis;
     yaxis: Axis;

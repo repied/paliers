@@ -1,6 +1,14 @@
+bgcolor
 BUEHLMANN
 Bühlmann
+customdata
+displaylogo
 hoverinfo
+hovertemplate
 jekyll
+legendgroup
+Plotly
+relayout
+showlegend
 xaxis
 yaxis

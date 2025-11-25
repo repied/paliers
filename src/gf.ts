@@ -1,6 +1,6 @@
-import { CoefficientPair, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types.js";
+import { CompartmentCoefs, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types.js";
 
-export const BUEHLMANN: Array<CoefficientPair> = [
+export const BUEHLMANN: Array<CompartmentCoefs> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
     { t12: 12.5, A: 0.8618, B: 0.7222 },
