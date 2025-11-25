@@ -42,6 +42,8 @@ export function formatCellDataShort(plan: Plan): string {
 const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
 const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
 
+let traceVisibility: (boolean | undefined)[] = Array(N_COMPARTMENTS).fill(undefined);
+
 export async function analysePlan(plan: Plan): Promise<void> {
     planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
@@ -143,7 +145,7 @@ export function plotPlan(plan: Plan): void {
             hovertemplate:
                 `${t('tensionLabel')}: %{y:.2f} bar<br>`
         };
-        if (hideTrace(i, plan)) { traceComp.visible = 'legendonly'; }
+        applyTraceVisibility(traceComp, i, plan);
         data_ply.push(traceComp);
     }
 
@@ -194,7 +196,7 @@ export function plotPlan(plan: Plan): void {
                 `${t('pn2ambiantLabel')}: %{x:.2f} bar<br>` +
                 `${t('tensionLabel')}: %{y:.2f} bar`
         };
-        if (hideTrace(i, plan)) { traceTensionsVsPN2.visible = 'legendonly'; }
+        applyTraceVisibility(traceTensionsVsPN2, i, plan);
         data_ply.push(traceTensionsVsPN2);
 
         // plot the M-Value line for this compartment
@@ -211,7 +213,7 @@ export function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceMValues.showlegend = false; }
-        if (hideTrace(i, plan)) { traceMValues.visible = 'legendonly'; }
+        applyTraceVisibility(traceMValues, i, plan);
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
@@ -226,7 +228,7 @@ export function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceModifiedMValues.showlegend = false; }
-        if (hideTrace(i, plan)) { traceModifiedMValues.visible = 'legendonly'; }
+        applyTraceVisibility(traceModifiedMValues, i, plan);
         data_ply.push(traceModifiedMValues);
     }
 
@@ -397,6 +399,8 @@ export function plotPlan(plan: Plan): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
+        updateTraceVisibility(eventData);
+
         if (eventData.data[eventData.curveNumber].legendgroup === 'compartment0') {
             // Determine the new visibility state for the annotation.
             // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
@@ -412,4 +416,22 @@ export function plotPlan(plan: Plan): void {
             Plotly.relayout(plotDiv, update);
         }
     });
+}
+function updateTraceVisibility(eventData: EventData): void {
+    const trace = eventData.data[eventData.curveNumber];
+    if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
+        const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
+        const currentVisibility = trace.visible === true || trace.visible === undefined;
+        traceVisibility[compartmentIndex] = !currentVisibility;
+    }
+}
+function applyTraceVisibility(trace: Trace, compartmentIndex: CompartmentIdx, plan: Plan): void {
+    const visibility = traceVisibility[compartmentIndex];
+    if (visibility === undefined) {
+        const isVisible = !hideTrace(compartmentIndex, plan);
+        traceVisibility[compartmentIndex] = isVisible;
+        trace.visible = isVisible ? true : 'legendonly';
+    } else {
+        trace.visible = visibility ? true : 'legendonly';
+    }
 }

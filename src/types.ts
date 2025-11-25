@@ -46,7 +46,7 @@ export interface Trace {
     hovertemplate?: string;
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
-    visible?: 'legendonly';
+    visible?: boolean | 'legendonly';
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
@@ -88,7 +88,7 @@ declare global {
     };
 }
 
-export interface EventData { curveNumber: number; data: Record<number, { legendgroup: 'compartment0'; }>; fullData: Record<number, { visible?: boolean; }>; }
+export interface EventData { curveNumber: number; data: Trace[]; fullData: Trace[]; }
 
 // script.ts
 export type SelectedCell = { i: number; j: number; data?: Plan; } | null;
