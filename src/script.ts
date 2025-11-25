@@ -34,7 +34,7 @@ let selectedCell: SelectedCell = null;
 // --- Language functions ---
 export function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
-    intro1.textContent = t('intro1');
+    intro1.innerHTML = t('intro1');
     canvastitle.textContent = t('canvastitle');
     readmeLink.textContent = t('readme');
     algoLink.textContent = t('algo');
