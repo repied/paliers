@@ -232,10 +232,20 @@ export function plotPlan(plan: Plan): void {
         data_ply.push(traceModifiedMValues);
     }
 
-    // Add GF Low/High visualization segments for the **first compartment only**
-    const A0 = BUEHLMANN[0].A;
-    const B0 = BUEHLMANN[0].B;
+    // Find the fastest compartment that is initially visible to associate the GF candlestick with.
+    let fastestVisibleCompartmentIdx = 0;
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
+        if (!hideTrace(i, plan)) {
+            fastestVisibleCompartmentIdx = i;
+            break; // Stop at the first visible compartment.
+        }
+    }
+
+    // Add GF Low/High visualization segments, associated with the fastest visible compartment.
+    const A0 = BUEHLMANN[fastestVisibleCompartmentIdx].A;
+    const B0 = BUEHLMANN[fastestVisibleCompartmentIdx].B;
     const gf_shift = 0.1;
+    const gf_legend_group = 'gf_visualization';
 
     // GF High at surface
     const y_modM_surf = getModifiedMValue(A0, B0, SURFACE_PRESSURE_BAR, gfHigh);
@@ -248,7 +258,7 @@ export function plotPlan(plan: Plan): void {
         line: { color: 'cyan', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
-        legendgroup: `compartment0`,
+        legendgroup: gf_legend_group,
         hoverinfo: 'name'
     };
     data_ply.push(traceGFHighMain);
@@ -260,7 +270,7 @@ export function plotPlan(plan: Plan): void {
         yaxis: 'y2',
         xaxis: 'x2',
         showlegend: false,
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
         hoverinfo: 'none'
     };
     data_ply.push(traceGFHighRemaining);
@@ -276,7 +286,7 @@ export function plotPlan(plan: Plan): void {
         line: { color: 'magenta', width: 5 },
         yaxis: 'y2',
         xaxis: 'x2',
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
         hoverinfo: 'name'
     };
     data_ply.push(traceGFLowMain);
@@ -288,7 +298,7 @@ export function plotPlan(plan: Plan): void {
         yaxis: 'y2',
         xaxis: 'x2',
         showlegend: false,
-        legendgroup: 'compartment0',
+        legendgroup: gf_legend_group,
         hoverinfo: 'none'
     };
     data_ply.push(traceGFLowRemaining);
@@ -401,7 +411,8 @@ export function plotPlan(plan: Plan): void {
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
         updateTraceVisibility(eventData);
 
-        if (eventData.data[eventData.curveNumber].legendgroup === 'compartment0') {
+        const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
+        if (legendGroup === 'gf_visualization') {
             // Determine the new visibility state for the annotation.
             // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
             // If the trace was hidden (false or 'legendonly'), it will become visible. So annotation should be visible.
