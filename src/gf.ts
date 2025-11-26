@@ -32,7 +32,8 @@ export const HALF_LIFES: ReadonlyArray<HalfLife> = BUEHLMANN.map(c => c.t12);
 export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 24; // minutes
 
 // --- Simulation constants ---
-export const SURFACE_PRESSURE_BAR: Pressure = 1.0; // bar
+export const SURFACE_PRESSURE: Pressure = 1.0; // bar
+export const SURFACE_DEPTH: Depth = 0;
 export const FN2 = 0.79; // Nitrogen Fraction in air
 export const ASCENT_RATE: SpeedMmin = 10; // (m/min)
 export const DESCENT_RATE: SpeedMmin = 20; // (m/min)
@@ -45,7 +46,7 @@ export const TIME_STEP: Minutes = 1; // time step between 2 updates of tensions
 // --- Algorithm functions ---
 export const GFS_GRID_SIZE = Math.floor(100 / GF_INCREMENT);
 export function depthToPressure(depth: Depth): Pressure {
-    return SURFACE_PRESSURE_BAR + depth / 10;
+    return SURFACE_PRESSURE + depth / 10;
 }
 export function depthToPN2(depth: Depth): PN2 {
     return depthToPressure(depth) * FN2;
