@@ -99,3 +99,10 @@ export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | 
 type LangTranslation = { [key: string]: string; }
 export type Lang = 'fr' | 'en';
 export type Translations = { [key in Lang]: LangTranslation; }
+
+// small tools
+export function assert(condition: boolean, message: string): asserts condition {
+    if (!condition) {
+        throw new Error(message);
+    }
+}

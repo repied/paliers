@@ -32,8 +32,12 @@ let calculatedPlans: PlansGrid = [];
 let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell: SelectedCell = null;
 
+// default selected cell
+const middleIdx = Math.floor(GFS_GRID_SIZE / 2);
+selectedCell = { i: middleIdx, j: middleIdx };
+
 // --- Language functions ---
-let currentLang: Lang = (localStorage && localStorage.getItem && localStorage.getItem('paliers_lang') as Lang) || 'fr';
+let currentLang: Lang = (localStorage.getItem('paliers_lang') as Lang) || 'fr';
 
 export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
     const dict = TRANSLATIONS[currentLang];
@@ -67,13 +71,11 @@ export function applyLanguageToDOM(): void {
     // set selector value and active btn
     const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
     btns.forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
-    drawCanvas();
-    detailsContainer.style.display = 'none';
-    selectedCell = null;
+    drawCanvasAndAnalysePlan();
 }
 
 // --- Canvas drawing functions ---
-function calculatePlanForAllCells(): void {
+function calculatePlans(): void {
     const bottomTime = parseInt(bottomTimeInput.value);
     const maxDepth = parseInt(maxDepthInput.value);
 
@@ -90,10 +92,23 @@ function calculatePlanForAllCells(): void {
         }
         calculatedPlans.push(row);
     }
-    // redraw and hide details
+}
+
+function drawCanvasAndAnalysePlan(): void {
     drawCanvas();
+    if (selectedCell) {
+        const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+        detailsContainer.style.display = 'flex';
+        analysePlan(plan).catch();
+    } else {
+        detailsContainer.style.display = 'none';
+    }
+}
+
+function calculatePlansAndDraw(): void {
     detailsContainer.style.display = 'none';
-    selectedCell = null;
+    calculatePlans();
+    drawCanvasAndAnalysePlan();
 }
 
 function getColorForValue(value: number): Color {
@@ -379,16 +394,16 @@ function debounce(func: Function, wait: number): Function {
         timeout = window.setTimeout(() => func.apply(context, args), wait);
     };
 }
-const debouncedRunCalculation = debounce(calculatePlanForAllCells, 250);
-const debouncedDrawCanvas = debounce(drawCanvas, 250);
-const debouncedAnalysePlan = debounce(analysePlan, 250);
+const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
+// const debouncedDrawCanvas = debounce(drawCanvas, 250);
+// const debouncedAnalysePlan = debounce(analysePlan, 250);
 
 
 // --- Inputs listeners (depth and time) ---
 [bottomTimeInput, maxDepthInput].forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            calculatePlanForAllCells();
+            calculatePlansAndDraw();
         }
     });
     // Synchronize to sliders
@@ -405,7 +420,7 @@ const debouncedAnalysePlan = debounce(analysePlan, 250);
         if (slider.id === 'bottomTimeSlider') bottomTimeInput.value = slider.value;
         if (slider.id === 'maxDepthSlider') maxDepthInput.value = slider.value;
         // Run calculation (with debounce)
-        debouncedRunCalculation();
+        debouncedCalculatePlansAndDraw();
     });
 });
 
@@ -464,6 +479,7 @@ canvas.addEventListener('click', (e) => {
     }
 });
 
+// update selected cell with arrow keys and plot details
 window.addEventListener('keydown', (e) => {
     if (!selectedCell) { return; }
 
@@ -560,17 +576,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initial launch
 document.addEventListener('DOMContentLoaded', () => {
-    calculatePlanForAllCells();
+    calculatePlansAndDraw();
     applyLanguageToDOM();
-
-    // Select the first cell by default
-    if (calculatedPlans.length > 0 && calculatedPlans[0].length > 0) {
-        selectedCell = { i: 0, j: 0 };
-        const initialPlan = calculatedPlans[selectedCell.i][selectedCell.j];
-        if (initialPlan && !isNaN(initialPlan.dtr)) {
-            detailsContainer.style.display = 'flex';
-            analysePlan(initialPlan).catch();
-        }
-        drawCanvas(); // Redraw to show selection
-    }
 });

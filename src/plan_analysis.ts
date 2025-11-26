@@ -2,10 +2,17 @@ import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotCon
 import { t } from "./script.js";
 import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE, SURFACE_DEPTH } from "./gf.js";
 
+// Maintain trace visibility state across re-plots
+let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);
+let traceVisibilityBackup: boolean[] = Array(N_COMPARTMENTS).fill(false);
+traceVisibility[0] = true; // start with C0 visible
+localStorage.setItem('upsideDown', 'false');
+localStorage.setItem('showAllSatComps', 'false');
+
+
 export function formatGFstrings(gfLow: GFLow, gfHigh: GFHigh): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
-
 function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
@@ -39,12 +46,10 @@ function formatCellDataShort(plan: Plan): string {
     return `${bottomTime}min @ ${maxDepth}m with ${formatGFstrings(gfLow, gfHigh)}`;
 }
 
-const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
-const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
-
-let traceVisibility: (boolean | undefined)[] = Array(N_COMPARTMENTS).fill(undefined);
 
 export async function analysePlan(plan: Plan): Promise<void> {
+    const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
+    const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
     planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
@@ -117,7 +122,7 @@ function plotPlan(plan: Plan): void {
             hovertemplate:
                 `${t('tensionLabel')}: %{y:.2f} bar<br>`
         };
-        applyTraceVisibility(traceComp, i, plan);
+        applyTraceVisibility(traceComp, i);
         data_ply.push(traceComp);
     }
 
@@ -168,7 +173,7 @@ function plotPlan(plan: Plan): void {
                 `${t('pn2ambiantLabel')}: %{x:.2f} bar<br>` +
                 `${t('tensionLabel')}: %{y:.2f} bar`
         };
-        applyTraceVisibility(traceTensionsVsPN2, i, plan);
+        applyTraceVisibility(traceTensionsVsPN2, i);
         data_ply.push(traceTensionsVsPN2);
 
         // plot the M-Value line for this compartment
@@ -185,7 +190,7 @@ function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceMValues.showlegend = false; }
-        applyTraceVisibility(traceMValues, i, plan);
+        applyTraceVisibility(traceMValues, i);
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
@@ -200,23 +205,22 @@ function plotPlan(plan: Plan): void {
             hoverinfo: 'none'
         };
         if (i > 0) { traceModifiedMValues.showlegend = false; }
-        applyTraceVisibility(traceModifiedMValues, i, plan);
+        applyTraceVisibility(traceModifiedMValues, i);
         data_ply.push(traceModifiedMValues);
     }
 
-    // Find the fastest compartment that is initially visible to associate the GF candlestick with.
-    let fastestVisibleCompartmentIdx = 0;
+    // Find the fastest compartment that is visible to associate the GF candlestick with.
+    let fastestVisibleComIdxOr0 = 0;
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const isVisible = !hideTrace(i, plan);
-        if (isVisible) {
-            fastestVisibleCompartmentIdx = i;
+        if (traceVisibility[i]) {
+            fastestVisibleComIdxOr0 = i;
             break; // Stop at the first visible compartment.
         }
     } // if no compartment is visible, this will remain 0
 
     // Add GF Low/High visualization segments for the fastest visible compartment.
-    const Afast = BUEHLMANN[fastestVisibleCompartmentIdx].A;
-    const Bfast = BUEHLMANN[fastestVisibleCompartmentIdx].B;
+    const Afast = BUEHLMANN[fastestVisibleComIdxOr0].A;
+    const Bfast = BUEHLMANN[fastestVisibleComIdxOr0].B;
     const gf_shift = 0.1;
 
     // GF High at surface
@@ -368,7 +372,22 @@ function plotPlan(plan: Plan): void {
             },
             {
                 name: 'showAllSatComps', title: 'Show All Saturated Compartments', icon: Plotly.Icons.drawline, click: () => {
-                    localStorage.setItem('showAllSatComps', String(localStorage.getItem('showAllSatComps') === 'false'));
+                    const currShowAll = localStorage.getItem('showAllSatComps');
+                    if (currShowAll === 'false') {
+                        // we go from false to true
+                        traceVisibilityBackup = [...traceVisibility]; // backup current visibility
+                        localStorage.setItem('showAllSatComps', 'true');
+                        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
+                        // Set traceVisibility to true only for saturated compartments
+                        traceVisibility.fill(false);
+                        satComps.forEach((idx) => {
+                            traceVisibility[idx] = true;
+                        });
+                    } else { // we go from true to false
+                        // we go from true to false
+                        traceVisibility = [...traceVisibilityBackup]; //  restore visibility
+                        localStorage.setItem('showAllSatComps', 'false');
+                    }
                     plotPlan(plan);
                 }
             }
@@ -381,17 +400,15 @@ function plotPlan(plan: Plan): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
-        updateTraceVisibility(eventData);
+        toggleTraceVisibilityOnClick(eventData);
 
         const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
-        if (legendGroup === 'gf_visualization') {
-            // Determine the new visibility state for the annotation.
+        if (legendGroup === 'gf') {
+            // Determine the new visibility state for the GF annotation.
             // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
             // If the trace was hidden (false or 'legendonly'), it will become visible. So annotation should be visible.
             const traceWasVisible = (eventData.fullData[eventData.curveNumber].visible === true || eventData.fullData[eventData.curveNumber].visible === undefined);
             const newAnnotationVisibleState = !traceWasVisible;
-
-            // Update the 'GF High' annotation's visibility (it's the first annotation, index 0)
             const update = {
                 [`annotations[0].visible`]: newAnnotationVisibleState,
                 [`annotations[1].visible`]: newAnnotationVisibleState
@@ -401,17 +418,8 @@ function plotPlan(plan: Plan): void {
     });
 }
 
-function hideTrace(i: CompIdx, plan: Plan): boolean {
-    let displayTrace = (i === 0);
-    // FIXME: should improve efficiency
-    if (localStorage.getItem('showAllSatComps') === 'true') {
-        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
-        displayTrace ||= satComps.has(i);
-    }
-    return !displayTrace;
-}
 
-function updateTraceVisibility(eventData: EventData): void {
+function toggleTraceVisibilityOnClick(eventData: EventData): void {
     const trace = eventData.data[eventData.curveNumber];
     if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
         const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
@@ -419,13 +427,7 @@ function updateTraceVisibility(eventData: EventData): void {
         traceVisibility[compartmentIndex] = !currentVisibility;
     }
 }
-function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx, plan: Plan): void {
+function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx): void {
     const visibility = traceVisibility[compartmentIndex];
-    if (visibility === undefined) {
-        const isVisible = !hideTrace(compartmentIndex, plan);
-        traceVisibility[compartmentIndex] = isVisible;
-        trace.visible = isVisible ? true : 'legendonly';
-    } else {
-        trace.visible = visibility ? true : 'legendonly';
-    }
+    trace.visible = visibility ? true : 'legendonly';
 }

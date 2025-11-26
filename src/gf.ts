@@ -1,5 +1,4 @@
-import assert from "node:assert";
-import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams } from "./types.js";
+import { assert, Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams } from "./types.js";
 
 export const BUEHLMANN: ReadonlyArray<CompartmentCoefs> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
