@@ -1,7 +1,7 @@
-import { GF_N_VALUES, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf.js";
+import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf.js";
 import { TRANSLATIONS } from "./translations.js";
 import { analysePlan, formatGFstrings } from "./plan_analysis.js";
-import { Lang, Plan, PlansArray, Color, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types.js";
+import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
 
 
 // --- DOM References ---
@@ -27,8 +27,8 @@ let W_all = canvas.width;
 let H = canvas.height;
 let LABEL_MARGIN = W_all * 0.1;
 let W = W_all - LABEL_MARGIN / 2;
-let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_VALUES); // N+1 cells for 0-100%
-let calculatedPlans: PlansArray = [];
+let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GFS_GRID_SIZE); // N+1 cells for 0-100%
+let calculatedPlans: PlansGrid = [];
 let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell: SelectedCell = null;
 
@@ -78,10 +78,10 @@ function calculatePlanForAllCells(): void {
     const maxDepth = parseInt(maxDepthInput.value);
 
     calculatedPlans = [];
-    for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
+    for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
         const gfLow = (i * GF_INCREMENT) / 100;
         let row: Array<Plan> = [];
-        for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
+        for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh };
             const plan = calculatePlan(diveParams);
@@ -131,7 +131,7 @@ function drawCanvas(): void {
 
     // GF High Labels (X Axis)
     ctx.fillText(t('gfHigh'), (LABEL_MARGIN + W) / 2, LABEL_MARGIN / 2);
-    for (let j = 0; j <= GF_N_VALUES; j++) {
+    for (let j = 0; j <= GFS_GRID_SIZE; j++) {
         const x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
         ctx.fillText((j * GF_INCREMENT).toString(), x, LABEL_MARGIN - 20);
     }
@@ -142,7 +142,7 @@ function drawCanvas(): void {
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(t('gfLow'), 0, 0);
     ctx.restore();
-    for (let i = 0; i <= GF_N_VALUES; i++) {
+    for (let i = 0; i <= GFS_GRID_SIZE; i++) {
         const y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
         ctx.fillText((i * GF_INCREMENT).toString(), LABEL_MARGIN - 25, y);
     }
@@ -150,8 +150,8 @@ function drawCanvas(): void {
     // 2. Draw Grid
     let minDTR = Infinity;
     let maxDTR = 0;
-    for (let i = 0; i <= GF_N_VALUES; i++) { // GF Low (0 to 100)
-        for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
+    for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
+        for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
             const plan = calculatedPlans[i][j];
             // Color normalization (only for dives WITH stops)
             if (plan.dtr > 0 && plan.dtr !== Infinity && plan.stops.length > 0) {
@@ -276,23 +276,24 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     // Y scale: 0m (top) to maxDepth (bottom)
     const scaleY = (depth: Depth) => (depth / maxDepth) * graphH;
     // X scale: 0 (left) to maxTime (right)
-    const scaleX = (time: Time) => (time / maxTime) * graphW;
+    const scaleX = (time: Minutes) => (time / maxTime) * graphW;
 
     ctx.strokeStyle = '#007bff'; // Profile color
     ctx.lineWidth = 2;
     ctx.beginPath();
 
     let currentTime = 0;
+    const depth0 = 0;
 
     // 1. Start (0, 0)
-    ctx.moveTo(graphX + scaleX(currentTime), graphY + scaleY(0));
+    ctx.moveTo(graphX + scaleX(currentTime), graphY + scaleY(depth0));
 
     // 2. Descent
-    currentTime += t_descent;
+    currentTime = currentTime + t_descent;
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 3. Bottom
-    currentTime += bottomTime;
+    currentTime = currentTime + bottomTime;
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 4. Stops (or direct ascent if no stops)
@@ -474,13 +475,13 @@ window.addEventListener('keydown', (e) => {
             if (i > 0) { i--; moved = true; }
             break;
         case 'ArrowDown':
-            if (i < GF_N_VALUES) { i++; moved = true; }
+            if (i < GFS_GRID_SIZE) { i++; moved = true; }
             break;
         case 'ArrowLeft':
             if (j > 0) { j--; moved = true; }
             break;
         case 'ArrowRight':
-            if (j < GF_N_VALUES) { j++; moved = true; }
+            if (j < GFS_GRID_SIZE) { j++; moved = true; }
             break;
         default:
             return;

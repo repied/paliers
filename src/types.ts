@@ -1,36 +1,36 @@
 // gf.ts
-export type Depth = number;
-export type Tension = number;
-export type Pressure = number;
+export type Depth = number; // in meters
+export type Pressure = number; // in bars
 export type PartPressure = Pressure;
-export type PN2 = PartPressure;
-export type Time = number;
-export type HalfTime = Time;
-export type Coefficient = number;
-export type CoefficientA = Coefficient;
-export type CoefficientB = Coefficient;
-export interface CompartmentCoefs { t12: HalfTime; A: CoefficientA; B: CoefficientB; }
-export type MValue = number;
-export type GradientFactor = number;
-export type GradientFactorLo = GradientFactor;
-export type GradientFactorHi = GradientFactor;
-export type CompartmentIdx = number;
-export interface Safe { isSafe: boolean, satComp: CompartmentIdx }
+export type PN2 = PartPressure; // in bars
+export type TensionBar = number; // in bars
+export type Minutes = number;
+export type HalfLife = Minutes;
+export type SpeedMmin = number; // in meters per minute
+export type CoefA = TensionBar; // in bars, positive
+export type CoefB = number; // Pressure/Tension = dimensionless but positive
+export interface CompartmentCoefs { t12: HalfLife; A: CoefA; B: CoefB; };
+export type GF = number;
+export type GFLow = GF; // low = deep = max depth
+export type GFHigh = GF; // high = shallow =surface
+export type CompIdx = number;
+export interface Simulation { isSafe: boolean, firstSatCompIdx: CompIdx }
+export type Tensions = Array<TensionBar>;
 
-
-export interface Stop { time: Time, depth: Depth, saturatedCompartments: Array<CompartmentIdx>, }
-export interface TensionsState { time: Time, depth: Depth, tensions: Array<Tension>, }
-export interface DiveParams { bottomTime: Time, maxDepth: Depth, gfLow: GradientFactorLo, gfHigh: GradientFactorHi, }
+export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
+export interface TensionsState { time: Minutes, depth: Depth, tensions: Tensions }
+export type TensionsStateHistory = Array<TensionsState>;
+export interface DiveParams { bottomTime: Minutes, maxDepth: Depth, gfLow: GFLow, gfHigh: GFHigh, }
 export interface Plan {
-    dtr: Time;
+    dtr: Minutes;
     stops: Array<Stop>;
-    t_descent: Time;
-    t_dive_total: Time;
-    t_stops: Time;
-    history: Array<TensionsState>;
+    t_descent: Minutes;
+    t_dive_total: Minutes;
+    t_stops: Minutes;
+    history: TensionsStateHistory;
     diveParams?: DiveParams;
 }
-export type PlansArray = Array<Array<Plan>>;
+export type PlansGrid = Array<Array<Plan>>;
 
 // plan_analysis.ts
 export type Color = string;

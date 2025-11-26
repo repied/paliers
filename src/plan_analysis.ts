@@ -1,12 +1,12 @@
-import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types.js";
+import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types.js";
 import { t } from "./script.js";
 import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE_BAR } from "./gf.js";
 
-export function formatGFstrings(gfLow: GradientFactorLo, gfHigh: GradientFactorHi): string {
+export function formatGFstrings(gfLow: GFLow, gfHigh: GFHigh): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
 
-export function formatCellDataForDetails(plan: Plan): string {
+function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
@@ -33,7 +33,7 @@ export function formatCellDataForDetails(plan: Plan): string {
         `- ${t('requiredStopsLabel')} ${stopsStr}\n` +
         `- ${t('compartmentstopsLabel')} ${comptStr}\n`;
 }
-export function formatCellDataShort(plan: Plan): string {
+function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
     return `${bottomTime}min @ ${maxDepth}m with ${formatGFstrings(gfLow, gfHigh)}`;
@@ -49,43 +49,15 @@ export async function analysePlan(plan: Plan): Promise<void> {
     planDetailsTxt.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
 }
-export function hideTrace(i: CompartmentIdx, plan: Plan): boolean {
-    // || i === Math.floor(N_COMPARTMENTS / 2)
-    let displayTrace = (i === 0); //|| i === N_COMPARTMENTS - 1)
-    // FIXME: should improve efficiency
-    if (localStorage.getItem('showAllSatComps') === 'true') {
-        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
-        displayTrace ||= satComps.has(i);
-    }
-    return !displayTrace;
-}
 
-// Define a color palette for the compartment traces
-const colorPalette: Array<Color> = [
-    '#1f77b4',
-    '#ff7f0e',
-    '#2ca02c',
-    '#d62728',
-    '#9467bd',
-    '#8c564b',
-    '#e377c2',
-    '#7f7f7f',
-    '#bcbd22',
-    '#17becf',
-    '#aec7e8',
-    '#ffbb78',
-    '#98df8a',
-    '#ff9896',
-    '#c5b0d5',
-    '#c49c94'
-];
-export function getCompartmentColor(i: CompartmentIdx): Color {
+function getCompartmentColor(i: CompIdx): Color {
+    const colorPalette: Array<Color> = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5', '#c49c94'];
     return colorPalette[i % colorPalette.length];
 }
 
 function plotPlan(plan: Plan): void {
-    const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
+    const { history, diveParams } = plan as Plan;
+    const { maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
@@ -93,7 +65,7 @@ function plotPlan(plan: Plan): void {
     const P_Points = depthPoints.map(depthToPressure);
 
     // transpose to get a time series for each compartment
-    const tensions_transp: Array<Array<Tension>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
+    const tensions_transp: Array<Array<TensionBar>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
     history.forEach(entry => {
         entry.tensions.forEach((tension, i) => {
             tensions_transp[i].push(tension);
@@ -428,6 +400,17 @@ function plotPlan(plan: Plan): void {
         }
     });
 }
+
+function hideTrace(i: CompIdx, plan: Plan): boolean {
+    let displayTrace = (i === 0);
+    // FIXME: should improve efficiency
+    if (localStorage.getItem('showAllSatComps') === 'true') {
+        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
+        displayTrace ||= satComps.has(i);
+    }
+    return !displayTrace;
+}
+
 function updateTraceVisibility(eventData: EventData): void {
     const trace = eventData.data[eventData.curveNumber];
     if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
@@ -436,7 +419,7 @@ function updateTraceVisibility(eventData: EventData): void {
         traceVisibility[compartmentIndex] = !currentVisibility;
     }
 }
-function applyTraceVisibility(trace: Trace, compartmentIndex: CompartmentIdx, plan: Plan): void {
+function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx, plan: Plan): void {
     const visibility = traceVisibility[compartmentIndex];
     if (visibility === undefined) {
         const isVisible = !hideTrace(compartmentIndex, plan);

@@ -1,6 +1,7 @@
-import { CompartmentCoefs, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2, DiveParams } from "./types.js";
+import assert from "node:assert";
+import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams } from "./types.js";
 
-export const BUEHLMANN: Array<CompartmentCoefs> = [
+export const BUEHLMANN: ReadonlyArray<CompartmentCoefs> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
     { t12: 12.5, A: 0.8618, B: 0.7222 },
@@ -19,27 +20,34 @@ export const BUEHLMANN: Array<CompartmentCoefs> = [
     { t12: 635.0, A: 0.2327, B: 0.9653 },
 ]; // half-times in minutes, A and B coefficients
 
+// Assert all BUEHLMANN values are positive
+for (const c of BUEHLMANN) {
+    assert(c.t12 > 0, 'Half-life (t12) must be positive');
+    assert(c.A >= 0, 'Coef A must be non-negative');
+    assert(c.B > 0, 'Coef B must be positive');
+}
+
 export const N_COMPARTMENTS = BUEHLMANN.length;
-export const HALF_LIFES = BUEHLMANN.map(c => c.t12);
-export const MAX_STOP_TIME_BEFORE_INFTY = 60 * 24; // minutes
+export const HALF_LIFES: ReadonlyArray<HalfLife> = BUEHLMANN.map(c => c.t12);
+export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 24; // minutes
 
 // --- Simulation constants ---
-export const SURFACE_PRESSURE_BAR = 1.0; // bar
+export const SURFACE_PRESSURE_BAR: Pressure = 1.0; // bar
 export const FN2 = 0.79; // Nitrogen Fraction in air
-export const ASCENT_RATE = 10; // (m/min)
-export const DESCENT_RATE = 20; // (m/min)
-export const GF_INCREMENT = 5;
-export const STOP_INTERVAL = 3; // Stops every 3m
-export const LAST_STOP_DEPTH = 3;
-export const SURFACE_WAIT_MIN = 20;
-export const TIME_STEP = 1; // time step between 2 updates of tensions
+export const ASCENT_RATE: SpeedMmin = 10; // (m/min)
+export const DESCENT_RATE: SpeedMmin = 20; // (m/min)
+export const GF_INCREMENT: GF = 5;
+export const STOP_INTERVAL: Depth = 3; // Stops every 3m
+export const LAST_STOP_DEPTH: Depth = 3;
+export const SURFACE_WAIT_MIN: Minutes = 20;
+export const TIME_STEP: Minutes = 1; // time step between 2 updates of tensions
 
 // --- Algorithm functions ---
-export const GF_N_VALUES = Math.floor(100 / GF_INCREMENT);
-export function depthToPressure(depth: number) {
+export const GFS_GRID_SIZE = Math.floor(100 / GF_INCREMENT);
+export function depthToPressure(depth: Depth): Pressure {
     return SURFACE_PRESSURE_BAR + depth / 10;
 }
-export function depthToPN2(depth: Depth) {
+export function depthToPN2(depth: Depth): PN2 {
     return depthToPressure(depth) * FN2;
 }
 
@@ -47,7 +55,7 @@ export function depthToPN2(depth: Depth) {
  * Returns a single tension after time t at partial pressure P, if starting from tension T0
  * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-export function updateTension(t0: Tension, pn2: PN2, t: Time, compartment_t12: HalfTime): Tension {
+export function updateTension(t0: TensionBar, pn2: PN2, t: Minutes, compartment_t12: HalfLife): TensionBar {
     const k = Math.log(2) / compartment_t12;
     const T1 = pn2 + (t0 - pn2) * Math.exp(-k * t);
     return T1;
@@ -56,54 +64,63 @@ export function updateTension(t0: Tension, pn2: PN2, t: Time, compartment_t12: H
 /**
  * Computes new tensions for all compartments after time t at PN2
  */
-export function updateAllTensions(tensions: Array<Tension>, PN2: PN2, t: Time): Array<Tension> {
+export function updateAllTensions(tensions: Tensions, PN2: PN2, t: Minutes): Tensions {
     return HALF_LIFES.map((t12, i) => updateTension(tensions[i], PN2, t, t12));
 }
 
-
 /**
  * Original M_Value (according to constants A and B)
+ * M_Value is the maximum tolerated tension in a compartment at given ambient pressure
  * pressure is a real pressure, not a partial pressure for N2
  */
-export function getMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure): MValue {
-    return A + pressure / B;
+export function getMValue(A: CoefA, B: CoefB, pressure: Pressure): TensionBar {
+    const M_orig: TensionBar = A + pressure / B;
+    assert(M_orig >= pressure, `M Value should be > pressure`);
+    return M_orig
 }
 /**
- * Modified M-Value using gradient factor at current depth (ambient pressure)
- * P_amb is a real pressure, not a partial pressure for N2
- * M_val = pressure + (M_orig - pressure) * GF
- */
-export function getModifiedMValue(A: CoefficientA, B: CoefficientB, pressure: Pressure, GF: GradientFactor): MValue {
+ * Modified M-Value using gradient factor at current pressure
+ * Modified M_value is a lower limit for tension in a compartment
+ * pressure is a real pressure, not a partial pressure for N2
+*/
+export function getModifiedMValue(A: CoefA, B: CoefB, pressure: Pressure, GF: GF): TensionBar {
     const M_orig = getMValue(A, B, pressure);
-    const M_mod = pressure + (M_orig - pressure) * GF;
+    const M_mod = M_orig * GF + pressure * (1 - GF); // same as pressure + (M_orig - pressure) * GF;
+    assert(M_mod <= M_orig, `We should have M_mod <= M_orig`);
+    assert(M_mod >= pressure, `we should have M_mod >= pressure`);
     return M_mod;
 }
 /**
  * Get the interpolated gradient factor (GF) for a given depth
+ * gfLow = GF at max depth
+ * gfHigh = GF at surface
  */
-export function getInterpolatedGF(depth: Depth, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): GradientFactor {
-    if (depth >= maxDepth) { return GF_low; }
-    if (depth <= 0) { return GF_high; }
-    return GF_high + (GF_low - GF_high) * (depth / maxDepth);
+export function getInterpolatedGF(depth: Depth, maxDepth: Depth, gfLow: GFLow, gfHigh: GFHigh): GF {
+    if (depth >= maxDepth) { return gfLow; }
+    if (depth <= 0) { return gfHigh; }
+    const deepRatio = depth / maxDepth; // from 0 == at surface to 1 == at deepest point
+    const gf: GF = gfLow * deepRatio + gfHigh * (1 - deepRatio);
+    return gf;
+
 }
 
 /**
  * Checks if all compartments are within their modified M-Values at given depth
  */
-export function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Safe {
-    const GF = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
-    const P = depthToPressure(depth);
+export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, GF_low: GFLow, GF_high: GFHigh): Simulation {
+    const gf = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
+    const p = depthToPressure(depth);
     let isSafe = true;
-    let satComp = -1; // index of the first compartment that is not safe
+    let firstSatCompIdx = -1; // index of the first compartment that is not safe
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P, GF);
+        const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, p, gf);
         if (tensions[i] > M_mod) {
             isSafe = false;
-            satComp = i;
+            firstSatCompIdx = i;
             break;
         }
     }
-    return { isSafe, satComp };
+    return { isSafe, firstSatCompIdx };
 }
 
 /**
@@ -182,7 +199,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
         const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-        let { isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
+        let { isSafe, firstSatCompIdx: satComp } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
@@ -198,7 +215,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-                ({ isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
+                ({ isSafe, firstSatCompIdx: satComp } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
                 if (!isSafe && !satCompartments.includes(satComp)) {
                     satCompartments.push(satComp);
                 }
