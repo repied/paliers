@@ -1,4 +1,4 @@
-import { CompartmentCoefs, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2 } from "./types.js";
+import { CompartmentCoefs, Depth, Tension, Time, HalfTime, CoefficientA, CoefficientB, Pressure, MValue, GradientFactor, GradientFactorLo, GradientFactorHi, Safe, Plan, PN2, DiveParams } from "./types.js";
 
 export const BUEHLMANN: Array<CompartmentCoefs> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
@@ -110,8 +110,9 @@ export function isSafeAtDepth(depth: Depth, tensions: Array<Tension>, maxDepth: 
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
-export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: GradientFactorLo, GF_high: GradientFactorHi): Plan {
-    if (bottomTime <= 0 || maxDepth <= 0) { // || GF_low > GF_high
+export function calculatePlan(diveParams: DiveParams): Plan {
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
 
@@ -181,7 +182,7 @@ export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: Gradien
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
         const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-        let { isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high);
+        let { isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
@@ -197,7 +198,7 @@ export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: Gradien
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-                ({ isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, GF_low, GF_high));
+                ({ isSafe, satComp } = isSafeAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
                 if (!isSafe && !satCompartments.includes(satComp)) {
                     satCompartments.push(satComp);
                 }
@@ -228,5 +229,6 @@ export function calculatePlan(bottomTime: Time, maxDepth: Depth, GF_low: Gradien
         tensions = updateAllTensions(tensions, depthToPN2(0), TIME_STEP);
         history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions] });
     }
+
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };
 }

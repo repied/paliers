@@ -1,13 +1,6 @@
+import { Translations } from "./types";
 
-import { applyLanguageToDOM } from "./script.js";
-
-declare global {
-  interface Window { CURRENT_LANG: Lang; }
-}
-
-export type Lang = keyof typeof TRANSLATIONS;
-
-export const TRANSLATIONS = {
+export const TRANSLATIONS: Translations = {
   "en": {
     "title": "Bühlmann Gradient Factors visualizer",
     "canvastitle": "Time To Surface (TTS)",
@@ -87,17 +80,4 @@ export const TRANSLATIONS = {
     "calculatedAscentTimeLabel": "Durée de la remontée :",
     "tensionLabel": "Tension",
   }
-}
-
-window.CURRENT_LANG = window.CURRENT_LANG || (localStorage && localStorage.getItem && localStorage.getItem('paliers_lang')) || 'fr';
-
-export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
-  const dict = TRANSLATIONS[window.CURRENT_LANG];
-  return (dict && dict[key]) || `Missing ${window.CURRENT_LANG} translation for ${key}`;
-}
-
-export function setLanguage(lang: Lang) {
-  window.CURRENT_LANG = lang;
-  localStorage.setItem('paliers_lang', lang);
-  applyLanguageToDOM();
 }

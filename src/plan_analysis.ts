@@ -1,6 +1,6 @@
-import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE_BAR } from "./gf.js";
-import { t } from "./translations.js";
 import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types.js";
+import { t } from "./script.js";
+import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE_BAR } from "./gf.js";
 
 export function formatGFstrings(gfLow: GradientFactorLo, gfHigh: GradientFactorHi): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
@@ -83,7 +83,7 @@ export function getCompartmentColor(i: CompartmentIdx): Color {
     return colorPalette[i % colorPalette.length];
 }
 
-export function plotPlan(plan: Plan): void {
+function plotPlan(plan: Plan): void {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 

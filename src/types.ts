@@ -30,6 +30,7 @@ export interface Plan {
     history: Array<TensionsState>;
     diveParams?: DiveParams;
 }
+export type PlansArray = Array<Array<Plan>>;
 
 // plan_analysis.ts
 export type Color = string;
@@ -95,3 +96,6 @@ export type SelectedCell = { i: number; j: number; data?: Plan; } | null;
 export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
 
 // translations.ts
+type LangTranslation = { [key: string]: string; }
+export type Lang = 'fr' | 'en';
+export type Translations = { [key in Lang]: LangTranslation; }

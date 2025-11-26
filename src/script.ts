@@ -1,7 +1,8 @@
-import { BUEHLMANN, depthToPN2, depthToPressure, getMValue, getModifiedMValue, GF_N_VALUES, GF_INCREMENT, N_COMPARTMENTS, SURFACE_PRESSURE_BAR, HALF_LIFES, calculatePlan, ASCENT_RATE } from "./gf.js";
-import { t, setLanguage, Lang } from "./translations.js";
-import { analysePlan, formatGFstrings, plotPlan } from "./plan_analysis.js";
-import { Plan, GradientFactorLo, GradientFactorHi, CompartmentIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types.js";
+import { GF_N_VALUES, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf.js";
+import { TRANSLATIONS } from "./translations.js";
+import { analysePlan, formatGFstrings } from "./plan_analysis.js";
+import { Lang, Plan, PlansArray, Color, DiveParams, SelectedCell, Tooltip, Depth, Time } from "./types.js";
+
 
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
@@ -27,11 +28,27 @@ let H = canvas.height;
 let LABEL_MARGIN = W_all * 0.1;
 let W = W_all - LABEL_MARGIN / 2;
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GF_N_VALUES); // N+1 cells for 0-100%
-let calculatedPlans: Array<Array<Plan>> = [];
+let calculatedPlans: PlansArray = [];
 let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
 let selectedCell: SelectedCell = null;
 
 // --- Language functions ---
+let currentLang: Lang = (localStorage && localStorage.getItem && localStorage.getItem('paliers_lang') as Lang) || 'fr';
+
+export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
+    const dict = TRANSLATIONS[currentLang];
+    return (dict && dict[key]) || `Missing ${currentLang} translation for ${key}`;
+}
+
+export function setLanguage(lang: Lang) {
+    currentLang = lang;
+    localStorage.setItem('paliers_lang', lang);
+    applyLanguageToDOM();
+}
+document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
+    b.addEventListener('click', () => setLanguage(b.dataset.lang as Lang));
+});
+
 export function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
     intro1.innerHTML = t('intro1');
@@ -42,14 +59,14 @@ export function applyLanguageToDOM(): void {
     labelBottomTime.textContent = t('bottomTime');
     // update readme href from data attributes
     if (readmeLink) {
-        const href = readmeLink.getAttribute(`data-href-${window.CURRENT_LANG}`) as string;
+        const href = readmeLink.getAttribute(`data-href-${currentLang}`) as string;
         readmeLink.setAttribute('href', href);
-        const algoHref = algoLink.getAttribute(`data-href-${window.CURRENT_LANG}`) as string;
+        const algoHref = algoLink.getAttribute(`data-href-${currentLang}`) as string;
         algoLink.setAttribute('href', algoHref);
     }
     // set selector value and active btn
     const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
-    btns.forEach(b => b.classList.toggle('active', b.dataset.lang === window.CURRENT_LANG));
+    btns.forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
     drawCanvas();
     detailsContainer.style.display = 'none';
     selectedCell = null;
@@ -66,8 +83,9 @@ function calculatePlanForAllCells(): void {
         let row: Array<Plan> = [];
         for (let j = 0; j <= GF_N_VALUES; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const plan = calculatePlan(bottomTime, maxDepth, gfLow, gfHigh);
-            plan.diveParams = { bottomTime, maxDepth, gfLow, gfHigh };
+            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh };
+            const plan = calculatePlan(diveParams);
+            plan.diveParams = diveParams;
             row.push(plan);
         }
         calculatedPlans.push(row);
@@ -361,6 +379,8 @@ function debounce(func: Function, wait: number): Function {
     };
 }
 const debouncedRunCalculation = debounce(calculatePlanForAllCells, 250);
+const debouncedDrawCanvas = debounce(drawCanvas, 250);
+const debouncedAnalysePlan = debounce(analysePlan, 250);
 
 
 // --- Inputs listeners (depth and time) ---
@@ -487,11 +507,6 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- language listeners ---
-document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
-    b.addEventListener('click', () => setLanguage(b.dataset.lang as Lang));
-});
-
 // Theme toggle logic
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement;
@@ -511,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load theme preference from localStorage
-    function loadThemePreference(): void {
+    function setThemePreference(): void {
         const savedTheme = localStorage.getItem('theme');
         // Check for system preference if no saved theme
         if (savedTheme === null) {
@@ -539,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Apply theme on page load
-    loadThemePreference();
+    setThemePreference();
 });
 
 // Initial launch
