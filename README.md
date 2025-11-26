@@ -77,5 +77,13 @@ Open coverage report with, for instance,
 ```
 http-server ./coverage
 ```
+
+### Debug in vscode
+- `npm build`
+- place breakpoints in a `js\*.js` file
+- `npm serve`
+- use vscode `Launch Edge`
+- then you can debug in vscode
+
 ## Codespace development
 Code can be build and tested from a github codespace. As it is setup in `.devcontainer/devcontainer.json`, it should work out of the box.
