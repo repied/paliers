@@ -11,5 +11,6 @@ legendgroup
 Plotly
 relayout
 showlegend
+Simul
 xaxis
 yaxis

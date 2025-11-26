@@ -7,7 +7,7 @@ import {
     getMValue,
     getModifiedMValue,
     getInterpolatedGF,
-    isSafeAtDepth,
+    SimulAtDepth,
     calculatePlan
 } from '../src/gf';
 
@@ -211,40 +211,40 @@ describe('getInterpolatedGF', () => {
     });
 });
 
-describe('isSafeAtDepth', () => {
+describe('SimulAtDepth', () => {
     test('should be safe at surface with surface tensions', () => {
         const tensions = Array(N_COMPARTMENTS_TEST).fill(depthToPN2(0));
-        const result = isSafeAtDepth(0, tensions, 30, 0.3, 0.85);
+        const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(true);
-        expect(result.satComp).toBe(-1);
+        expect(result.firstSatCompIdx).toBe(-1);
     });
 
     test('should be unsafe if any compartment exceeds modified M-Value', () => {
         const tensions = Array(N_COMPARTMENTS_TEST).fill(10.0); // Very high tensions
-        const result = isSafeAtDepth(0, tensions, 30, 0.3, 0.85);
+        const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(false);
-        expect(result.satComp).toBeGreaterThanOrEqual(0);
+        expect(result.firstSatCompIdx).toBeGreaterThanOrEqual(0);
     });
 });
 
 describe('calculatePlan', () => {
     test('should return NaN for invalid inputs (zero bottom time)', () => {
-        const plan = calculatePlan(0, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
         expect(plan.dtr).toBeNaN();
         expect(plan.stops).toEqual([]);
     });
 
     test('should return NaN for invalid inputs (zero max depth)', () => {
-        const plan = calculatePlan(20, 0, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 0, gfLow: 0.3, gfHigh: 0.85 });
         expect(plan.dtr).toBeNaN();
         expect(plan.stops).toEqual([]);
     });
 
     test('should calculate a plan for a simple no-decompression dive', () => {
         // Short, shallow dive - should not require stops
-        const plan = calculatePlan(10, 10, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 10, maxDepth: 10, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -256,7 +256,7 @@ describe('calculatePlan', () => {
 
     test('should calculate a plan requiring decompression stops', () => {
         // Longer, deeper dive - should require stops
-        const plan = calculatePlan(30, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -267,13 +267,13 @@ describe('calculatePlan', () => {
 
     test('should have descent time less than or equal to bottom time', () => {
         const bottomTime = 20;
-        const plan = calculatePlan(bottomTime, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.t_descent).toBeLessThanOrEqual(bottomTime);
     });
 
     test('should have history entries', () => {
-        const plan = calculatePlan(20, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.history.length).toBeGreaterThan(0);
         expect(plan.history[0].depth).toBe(0);
@@ -281,7 +281,7 @@ describe('calculatePlan', () => {
     });
 
     test('should have all stops at valid depths', () => {
-        const plan = calculatePlan(30, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         plan.stops.forEach((stop: Stop) => {
             expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH_TEST);
@@ -291,7 +291,7 @@ describe('calculatePlan', () => {
     });
 
     test('should have monotonically increasing time in history', () => {
-        const plan = calculatePlan(20, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         for (let i = 1; i < plan.history.length; i++) {
             expect(plan.history[i].time).toBeGreaterThanOrEqual(plan.history[i - 1].time);

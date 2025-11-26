@@ -26,3 +26,4 @@ _site/
 *.js
 node_modules/
 coverage/
+dist/

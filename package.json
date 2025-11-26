@@ -6,11 +6,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
+    "tsc": "tsc",
+    "watch": "webpack --watch",
+    "build": "webpack",
+    "zip": "zip -r dist/paliers.zip index.html style.css dist/bundle.js favicon.ico favicon.png",
     "test": "jest",
-    "serve": "http-server ./",
-    "start": "npm run build && npm run serve"
+    "serve": "http-server ./"
   },
   "repository": {
     "type": "git",
@@ -49,6 +50,9 @@
     "@types/jest": "^30.0.0",
     "http-server": "^14.1.1",
     "jest": "^30.2.0",
-    "ts-jest": "^29.4.5"
+    "ts-jest": "^29.4.5",
+    "ts-loader": "^9.5.4",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^6.0.1"
   }
 }

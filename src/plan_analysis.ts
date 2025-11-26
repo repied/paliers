@@ -1,6 +1,6 @@
-import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types.js";
-import { t } from "./script.js";
-import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE, SURFACE_DEPTH } from "./gf.js";
+import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types";
+import { t } from "./script";
+import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE, SURFACE_DEPTH } from "./gf";
 
 // Maintain trace visibility state across re-plots
 let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);

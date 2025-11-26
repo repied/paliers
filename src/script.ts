@@ -1,7 +1,7 @@
-import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf.js";
-import { TRANSLATIONS } from "./translations.js";
-import { analysePlan, formatGFstrings } from "./plan_analysis.js";
-import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
+import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf";
+import { TRANSLATIONS } from "./translations";
+import { analysePlan, formatGFstrings } from "./plan_analysis";
+import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types";
 
 
 // --- DOM References ---

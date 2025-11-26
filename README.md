@@ -8,18 +8,10 @@
 
 ## How it Works
 
-The tool implements the **Bühlmann ZHL-16C model** with Gradient Factors (GF) to calculate a safe decompression profile. It simulates the absorption and release of gaz across 16 tissue compartments during a dive, ensuring that the partial pressure of the gas in each compartment stays within a safe limit. This safety limit is defined by 2 parameters: the low and high Gradient Factor. Resulting dive plans are plotted with Plotly. 
+The tool implements the **Bühlmann ZHL-16C model** with Gradient Factors (GF) to calculate a safe decompression profile. It simulates the absorption and release of gaz across 16 tissue compartments during a dive, ensuring that the partial pressure of the gas in each compartment stays within a safe limit. This safety limit is defined by 2 parameters: the low (deep) and high (shallow) Gradient Factor. Resulting dive plans are plotted with Plotly. 
 
 The tool is available at [https://repied.github.io/paliers/](https://repied.github.io/paliers/).
-It can also be downloaded locally from this [zip package](./dist/paliers.zip) and opened in the browser.
-
-For a more detailed explanation, see the [full algorithm description](./docs/algorithm_en.md).
-
-## Usage
-
-The tool is available online at [https://repied.github.io/paliers/](https://repied.github.io/paliers/).
-
-It can also be downloaded and run locally by opening the `index.html` file in your web browser.
+To run it locally, download and unzip the [zip package](./dist/paliers.zip), then open the `index.html` file in your web browser.
 
 # Contribution
 
@@ -27,7 +19,7 @@ The tool is automatically tested, built (`.ts` and `.md`) and deployed to Github
 
 ## Local Development Setup
 
-To contribute to `paliers`, you'll need to set up the development environment for both TypeScript and Jekyll (for the documentation).
+To contribute to `paliers`, you'll need to set up the development environment for both TypeScript and Jekyll.
 
 ### Prerequisites
 
@@ -49,41 +41,35 @@ bundle install
 - [Node.js and npm](https://nodejs.org/en/download/)
 ```
 sudo apt install nodejs npm
-sudo npm install -g typescript http-server
 ```
+
 ### Build
 Install the package and its dependencies
 ```
 npm install
 ```
+Typescript: `npm run watch` to build and `npm run serve`.
 
 Jekyll: to build and serve locally:
 ```
 bundle exec jekyll serve --incremental --watch --livereload
 ```
 
-Typescript: `npm run watch` to build and `npm run serve`.
 
 ### Test
 Run all tests:
 ```
 npm test
 ```
-Run tests with coverage (optional):
-```
-npm test --coverage
-```
-Open coverage report with, for instance,
-```
-http-server ./coverage
-```
+
+Run tests with coverage (optional): `npm test --coverage`. Open coverage report with, for instance, `http-server ./coverage`
 
 ### Debug in vscode
-- `npm build`
-- place breakpoints in a `js\*.js` file
-- `npm serve`
+- `npm run build`
+- place breakpoints in a `js\*.js` file (or maybe `*.ts`)
+- `npm run serve`
 - use vscode `Launch Edge`
 - then you can debug in vscode
 
 ## Codespace development
-Code can be build and tested from a github codespace. As it is setup in `.devcontainer/devcontainer.json`, it should work out of the box.
+Code can be build and tested from a github Codespace. As it is setup in `.devcontainer/devcontainer.json`, it should work out of the box.

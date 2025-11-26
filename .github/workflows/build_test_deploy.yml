@@ -56,11 +56,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
-        run: npm run build
+      - name: Build webpack
+        run: npm run webpack
 
-      - name: Create zip package for download
-        run: zip -r dist/paliers.zip index.html style.css js docs
+      - name: Create zip package
+        run: npm run zip
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
