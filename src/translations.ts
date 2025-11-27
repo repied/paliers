@@ -4,7 +4,7 @@ export const TRANSLATIONS: Translations = {
   "en": {
     "title": "Bühlmann Gradient Factors visualizer",
     "canvastitle": "Time To Surface (TTS)",
-    "intro1": "This tool implements a simplified Bühlmann ZHL-16C algorithm (for air only). Total time to surface (TTS) is computed for different gradient factor values. Resulting TTS in minutes are shown in a color coded grid. Decompression profiles appear as small plots on hover and details on click. Use UP DOWN LEFT RIGHT arrow keys to change GFs and update plots. The tool can be <a href=\"./dist/paliers.zip\">downloaded</a> and used offline.",
+    "intro1": "This tool implements a simplified Bühlmann ZHL-16C algorithm (for air only). Total time to surface (TTS) is computed for different gradient factor values. Resulting TTS in minutes are shown in a color coded grid. Decompression profiles appear as small plots on hover and details on click. Use UP DOWN LEFT RIGHT arrow keys to change GFs and update plots.",
     "readme": "GF definition and choice",
     "algo": "Algorithm details",
     "maxDepth": "Maximum depth (m):",
@@ -44,7 +44,7 @@ export const TRANSLATIONS: Translations = {
   "fr": {
     "title": "Visualisation des facteurs de gradient",
     "canvastitle": "Durée Totale de Remontée (DTR)",
-    "intro1": "Cet outil implémente un algorithme Bühlmann ZHL-16C simplifié (plongée a l'air). La durée totale de remontée (DTR) est calculée pour de différentes valeurs des facteurs de gradient. Les DTR résultantes en minutes sont rapportés sous forme de tableau codé par couleur. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris. Les saturation des tissus sont tracées lors d'un clic. Il est possible d'utiliser les touches directionnelles UP DOWN LEFT RIGHT. L'outil peut être <a href=\"./dist/paliers.zip\">téléchargé</a> et utilisé hors ligne.",
+    "intro1": "Cet outil implémente un algorithme Bühlmann ZHL-16C simplifié (plongée a l'air). La durée totale de remontée (DTR) est calculée pour de différentes valeurs des facteurs de gradient. Les DTR résultantes en minutes sont rapportés sous forme de tableau codé par couleur. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris. Les saturation des tissus sont tracées lors d'un clic. Il est possible d'utiliser les touches directionnelles UP DOWN LEFT RIGHT.",
     "readme": "Definition et choix des FGs",
     "algo": "Détails de l'algorithme",
     "maxDepth": "Profondeur maximale (m) :",
