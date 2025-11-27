@@ -7,36 +7,16 @@ import {
     getMValue,
     getModifiedMValue,
     getInterpolatedGF,
-    isSafeAtDepth,
-    calculatePlan
+    SimulAtDepth,
+    calculatePlan,
+    BUEHLMANN,
+    N_COMPARTMENTS,
+    LAST_STOP_DEPTH,
+    STOP_INTERVAL
 } from '../src/gf';
 
 import { Stop } from '../src/types';
 
-
-// Constants from gf.ts (re-declared for test readability)
-const BUEHLMANN_TEST = [
-    { t12: 5.0, A: 1.1696, B: 0.5578 },
-    { t12: 8.0, A: 1.0, B: 0.6514 },
-    { t12: 12.5, A: 0.8618, B: 0.7222 },
-    { t12: 18.5, A: 0.7562, B: 0.7825 },
-    { t12: 27.0, A: 0.62, B: 0.8126 },
-    { t12: 38.3, A: 0.5043, B: 0.8434 },
-    { t12: 54.3, A: 0.441, B: 0.8693 },
-    { t12: 77.0, A: 0.4, B: 0.891 },
-    { t12: 109.0, A: 0.375, B: 0.9092 },
-    { t12: 146.0, A: 0.35, B: 0.9222 },
-    { t12: 187.0, A: 0.3295, B: 0.9319 },
-    { t12: 239.0, A: 0.3065, B: 0.9403 },
-    { t12: 305.0, A: 0.2835, B: 0.9477 },
-    { t12: 390.0, A: 0.261, B: 0.9544 },
-    { t12: 498.0, A: 0.248, B: 0.9602 },
-    { t12: 635.0, A: 0.2327, B: 0.9653 },
-];
-
-const N_COMPARTMENTS_TEST = BUEHLMANN_TEST.length;
-const LAST_STOP_DEPTH_TEST = 3;
-const STOP_INTERVAL_TEST = 3;
 
 // ===== TESTS =====
 
@@ -107,12 +87,12 @@ describe('updateTension', () => {
 
 describe('updateAllTensions', () => {
     test('should update all compartments', () => {
-        const tensions = Array(N_COMPARTMENTS_TEST).fill(0.79);
+        const tensions = Array(N_COMPARTMENTS).fill(0.79);
         const PN2 = 1.58;
         const t = 5;
 
         const newTensions = updateAllTensions(tensions, PN2, t);
-        expect(newTensions).toHaveLength(N_COMPARTMENTS_TEST);
+        expect(newTensions).toHaveLength(N_COMPARTMENTS);
 
         // All tensions should increase
         newTensions.forEach((tension, i) => {
@@ -122,7 +102,7 @@ describe('updateAllTensions', () => {
     });
 
     test('should not mutate original tensions array', () => {
-        const tensions = Array(N_COMPARTMENTS_TEST).fill(0.79);
+        const tensions = Array(N_COMPARTMENTS).fill(0.79);
         const originalTensions = [...tensions];
 
         updateAllTensions(tensions, 1.58, 5);
@@ -132,8 +112,8 @@ describe('updateAllTensions', () => {
 
 describe('getMValue', () => {
     test('should calculate M-Value at surface', () => {
-        const A = BUEHLMANN_TEST[0].A;
-        const B = BUEHLMANN_TEST[0].B;
+        const A = BUEHLMANN[0].A;
+        const B = BUEHLMANN[0].B;
         const P = 1.0; // surface pressure
 
         const M = getMValue(A, B, P);
@@ -141,8 +121,8 @@ describe('getMValue', () => {
     });
 
     test('should increase with depth', () => {
-        const A = BUEHLMANN_TEST[0].A;
-        const B = BUEHLMANN_TEST[0].B;
+        const A = BUEHLMANN[0].A;
+        const B = BUEHLMANN[0].B;
 
         const M_surface = getMValue(A, B, depthToPressure(0));
         const M_10m = getMValue(A, B, depthToPressure(10));
@@ -155,8 +135,8 @@ describe('getMValue', () => {
 
 describe('getModifiedMValue', () => {
     test('should equal M-Value when GF = 1', () => {
-        const A = BUEHLMANN_TEST[0].A;
-        const B = BUEHLMANN_TEST[0].B;
+        const A = BUEHLMANN[0].A;
+        const B = BUEHLMANN[0].B;
         const P = depthToPressure(10);
 
         const M_orig = getMValue(A, B, P);
@@ -166,8 +146,8 @@ describe('getModifiedMValue', () => {
     });
 
     test('should equal pressure when GF = 0', () => {
-        const A = BUEHLMANN_TEST[0].A;
-        const B = BUEHLMANN_TEST[0].B;
+        const A = BUEHLMANN[0].A;
+        const B = BUEHLMANN[0].B;
         const P = depthToPressure(10);
 
         const M_mod = getModifiedMValue(A, B, P, 0.0);
@@ -175,8 +155,8 @@ describe('getModifiedMValue', () => {
     });
 
     test('should be between pressure and M-Value for 0 < GF < 1', () => {
-        const A = BUEHLMANN_TEST[0].A;
-        const B = BUEHLMANN_TEST[0].B;
+        const A = BUEHLMANN[0].A;
+        const B = BUEHLMANN[0].B;
         const P = depthToPressure(10);
         const GF = 0.85;
 
@@ -211,40 +191,40 @@ describe('getInterpolatedGF', () => {
     });
 });
 
-describe('isSafeAtDepth', () => {
+describe('SimulAtDepth', () => {
     test('should be safe at surface with surface tensions', () => {
-        const tensions = Array(N_COMPARTMENTS_TEST).fill(depthToPN2(0));
-        const result = isSafeAtDepth(0, tensions, 30, 0.3, 0.85);
+        const tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0));
+        const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(true);
-        expect(result.satComp).toBe(-1);
+        expect(result.firstSatCompIdx).toBe(-1);
     });
 
     test('should be unsafe if any compartment exceeds modified M-Value', () => {
-        const tensions = Array(N_COMPARTMENTS_TEST).fill(10.0); // Very high tensions
-        const result = isSafeAtDepth(0, tensions, 30, 0.3, 0.85);
+        const tensions = Array(N_COMPARTMENTS).fill(10.0); // Very high tensions
+        const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(false);
-        expect(result.satComp).toBeGreaterThanOrEqual(0);
+        expect(result.firstSatCompIdx).toBeGreaterThanOrEqual(0);
     });
 });
 
 describe('calculatePlan', () => {
     test('should return NaN for invalid inputs (zero bottom time)', () => {
-        const plan = calculatePlan(0, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
         expect(plan.dtr).toBeNaN();
         expect(plan.stops).toEqual([]);
     });
 
     test('should return NaN for invalid inputs (zero max depth)', () => {
-        const plan = calculatePlan(20, 0, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 0, gfLow: 0.3, gfHigh: 0.85 });
         expect(plan.dtr).toBeNaN();
         expect(plan.stops).toEqual([]);
     });
 
     test('should calculate a plan for a simple no-decompression dive', () => {
         // Short, shallow dive - should not require stops
-        const plan = calculatePlan(10, 10, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 10, maxDepth: 10, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -256,7 +236,7 @@ describe('calculatePlan', () => {
 
     test('should calculate a plan requiring decompression stops', () => {
         // Longer, deeper dive - should require stops
-        const plan = calculatePlan(30, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -267,13 +247,13 @@ describe('calculatePlan', () => {
 
     test('should have descent time less than or equal to bottom time', () => {
         const bottomTime = 20;
-        const plan = calculatePlan(bottomTime, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.t_descent).toBeLessThanOrEqual(bottomTime);
     });
 
     test('should have history entries', () => {
-        const plan = calculatePlan(20, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         expect(plan.history.length).toBeGreaterThan(0);
         expect(plan.history[0].depth).toBe(0);
@@ -281,17 +261,17 @@ describe('calculatePlan', () => {
     });
 
     test('should have all stops at valid depths', () => {
-        const plan = calculatePlan(30, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         plan.stops.forEach((stop: Stop) => {
-            expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH_TEST);
-            expect(stop.depth % STOP_INTERVAL_TEST).toBe(0);
+            expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH);
+            expect(stop.depth % STOP_INTERVAL).toBe(0);
             expect(stop.time).toBeGreaterThan(0);
         });
     });
 
     test('should have monotonically increasing time in history', () => {
-        const plan = calculatePlan(20, 30, 0.3, 0.85);
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85 });
 
         for (let i = 1; i < plan.history.length; i++) {
             expect(plan.history[i].time).toBeGreaterThanOrEqual(plan.history[i - 1].time);
