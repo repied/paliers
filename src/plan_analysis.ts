@@ -406,7 +406,7 @@ function plotPlan(plan: Plan): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
-        toggleTraceVisibilityOnClick(eventData);
+        toggleTraceVisibilityOnClick(eventData, plan);
 
         const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
         if (legendGroup === 'gf') {
@@ -425,12 +425,13 @@ function plotPlan(plan: Plan): void {
 }
 
 
-function toggleTraceVisibilityOnClick(eventData: EventData): void {
+function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan): void {
     const trace = eventData.data[eventData.curveNumber];
     if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
         const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
         const currentVisibility = trace.visible === true || trace.visible === undefined;
         traceVisibility[compartmentIndex] = !currentVisibility;
+        plotPlan(plan);
     }
 }
 function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx): void {
