@@ -38,7 +38,7 @@ export const TRANSLATIONS: Translations = {
     "calculatedTotalBottomTimeLabel": "Actual bottom time:",
     "calculatedAscentTimeLabel": "Ascent time:",
     "tensionLabel": "Tension",
-
+    "relativeTensionLabel": "Relative Tension to PN2",
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -77,5 +77,6 @@ export const TRANSLATIONS: Translations = {
     "calculatedTotalBottomTimeLabel": "Durée réelle au fond :",
     "calculatedAscentTimeLabel": "Durée de la remontée :",
     "tensionLabel": "Tension",
+    "relativeTensionLabel": "Tension relative à P_N2",
   }
 }

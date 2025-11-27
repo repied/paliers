@@ -35,33 +35,44 @@ export type PlansGrid = Array<Array<Plan>>;
 // plan_analysis.ts
 export type Color = string;
 export interface Trace {
-    x: Array<number>;
-    y: Array<number>;
-    mode: 'lines' | 'lines+markers' | 'tozero';
+    x: Array<number | string>;
+    y: Array<number | string>;
+    z?: Array<Array<number>>;
+    type?: 'scatter' | 'heatmap';
+    mode?: 'lines' | 'lines+markers' | 'tozero';
     name?: string;
-    line: { color: Color; width: number; dash?: 'dash' | 'dot'; };
-    yaxis: 'y1' | 'y2';
-    xaxis: 'x1' | 'x2';
-    legendgroup: string;
+    line?: { color: Color; width: number; dash?: 'dash' | 'dot'; };
+    yaxis: string;
+    xaxis: string;
+    legendgroup?: string;
     customdata?: Array<number | Array<number>>;
     hovertemplate?: string;
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
     visible?: boolean | 'legendonly';
+    colorscale?: string;
+    reversescale?: boolean;
+    zmid?: number;
+    colorbar?: { title: string };
+    zsmooth?: 'fast' | 'best' | false;
+    connectgaps?: boolean;
+    showscale?: boolean;
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-export interface Axis { title: object; autorange?: true | 'reversed'; rangemode: 'tozero'; gridcolor: Color; range?: [number, number]; }
+export interface Axis { title?: object; autorange?: true | 'reversed'; rangemode?: 'tozero'; gridcolor: Color; range?: [number, number]; type?: 'category' | 'linear' | 'log' | 'date'; tickvals?: Array<number>; ticktext?: Array<string>; matches?: string; domain?: [number, number]; }
 export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
 export interface Font { color: Color; size?: number; }
-export interface Annotation { text: string; xref: 'x2'; yref: 'y2'; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
+export interface Annotation { text: string; xref: string; yref: string; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
 export interface Layout {
     title: object;
-    grid: Grid;
+    grid?: Grid;
     xaxis: Axis;
     yaxis: Axis;
     xaxis2: Axis;
     yaxis2: Axis;
+    xaxis3?: Axis;
+    yaxis3?: Axis;
     legend: Legend;
     annotations: Array<Annotation>;
     paper_bgcolor: Color;

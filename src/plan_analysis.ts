@@ -127,21 +127,49 @@ function plotPlan(plan: Plan): void {
             xaxis: 'x1',
             legendgroup: `compartment${i}`,
             hovertemplate:
+                `${t('timeLabel')}: %{x:.2f} min<br>` +
                 `${t('tensionLabel')}: %{y:.2f} bar<br>`
         };
         applyTraceVisibility(traceComp, i);
         data_ply.push(traceComp);
     }
 
-    // --- Second Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
+    // --- Second Subplot: Heatmap (Middle Plot) ss---
+    // Prepare zData for heatmap: Calculate saturation relative to ambient PN2: Tension - PN2
+    const zData: number[][] = [];
+    for (let i = 0; i < N_COMPARTMENTS; i++) {
+        const row = history.map(h => h.tensions[i] - depthToPN2(h.depth));
+        zData.push(row);
+    }
+
+    const traceHeatmap: Trace = {
+        x: timePoints,
+        y: Array.from({ length: N_COMPARTMENTS }, (_, i) => `C${i}`),
+        z: zData,
+        name: "",
+        type: 'heatmap',
+        colorscale: 'Jet',
+        zmid: 0,
+        xaxis: 'x2',
+        yaxis: 'y2',
+        showlegend: false,
+        showscale: false,
+        hovertemplate:
+            `%{y}<br>` +
+            `${t('timeLabel')}: %{x:.2f} min<br>` +
+            `${t('relativeTensionLabel')}: %{z:.2f} bar<br>`
+    };
+    data_ply.push(traceHeatmap);
+
+    // --- Third Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
     const traceMainDiagonalPN2: Trace = {
         x: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
         y: [depthToPN2(SURFACE_DEPTH), depthToPN2(maxDepth)],
         mode: 'lines',
         name: t('pn2ambiantLabel'),
         line: { color: 'black', width: 3 },
-        yaxis: 'y2',
-        xaxis: 'x2',
+        yaxis: 'y3',
+        xaxis: 'x3',
         legendgroup: `P_N2_ambiant`,
         showlegend: false,
         hoverinfo: 'none'
@@ -153,8 +181,8 @@ function plotPlan(plan: Plan): void {
         mode: 'lines',
         name: t('pressureLabel'),
         line: { color: 'black', width: 1 },
-        yaxis: 'y2',
-        xaxis: 'x2',
+        yaxis: 'y3',
+        xaxis: 'x3',
         legendgroup: `P_ambiant`,
         showlegend: false,
         hoverinfo: 'none'
@@ -169,8 +197,8 @@ function plotPlan(plan: Plan): void {
             mode: 'lines+markers',
             name: `${t('compartmentLabel')}${i} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
             line: { width: 1, color: getCompartmentColor(i) },
-            yaxis: 'y2',
-            xaxis: 'x2',
+            yaxis: 'y3',
+            xaxis: 'x3',
             showlegend: false,
             legendgroup: `compartment${i}`,
             customdata: timePoints.map((t, idx) => [t, depthPoints[idx]]),
@@ -192,8 +220,8 @@ function plotPlan(plan: Plan): void {
             name: `${t('mValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dot' },
             mode: 'lines',
-            yaxis: 'y2',
-            xaxis: 'x2', legendgroup: `compartment${i}`,
+            yaxis: 'y3',
+            xaxis: 'x3', legendgroup: `compartment${i}`,
             hoverinfo: 'none'
         };
         if (i > 0) { traceMValues.showlegend = false; }
@@ -207,8 +235,8 @@ function plotPlan(plan: Plan): void {
             name: `${t('modifiedMValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
             mode: 'lines',
-            yaxis: 'y2',
-            xaxis: 'x2', legendgroup: `compartment${i}`,
+            yaxis: 'y3',
+            xaxis: 'x3', legendgroup: `compartment${i}`,
             hoverinfo: 'none'
         };
         if (i > 0) { traceModifiedMValues.showlegend = false; }
@@ -241,8 +269,8 @@ function plotPlan(plan: Plan): void {
             mode: 'lines',
             name: `GF High (${Math.round(gfHigh * 100)}%)`,
             line: { color: 'cyan', width: 5 },
-            yaxis: 'y2',
-            xaxis: 'x2',
+            yaxis: 'y3',
+            xaxis: 'x3',
             legendgroup: 'gf',
             hoverinfo: 'name'
         };
@@ -252,8 +280,8 @@ function plotPlan(plan: Plan): void {
             y: [modM_surf, M_surf],
             mode: 'lines',
             line: { color: 'cyan', width: 1 },
-            yaxis: 'y2',
-            xaxis: 'x2',
+            yaxis: 'y3',
+            xaxis: 'x3',
             showlegend: false,
             legendgroup: 'gf',
             hoverinfo: 'none'
@@ -269,8 +297,8 @@ function plotPlan(plan: Plan): void {
             mode: 'lines',
             name: `GF Low (${Math.round(gfLow * 100)}%)`,
             line: { color: 'magenta', width: 5 },
-            yaxis: 'y2',
-            xaxis: 'x2',
+            yaxis: 'y3',
+            xaxis: 'x3',
             legendgroup: 'gf',
             hoverinfo: 'name'
         };
@@ -280,8 +308,8 @@ function plotPlan(plan: Plan): void {
             y: [y_modM_max, y_M_max],
             mode: 'lines',
             line: { color: 'magenta', width: 1 },
-            yaxis: 'y2',
-            xaxis: 'x2',
+            yaxis: 'y3',
+            xaxis: 'x3',
             showlegend: false,
             legendgroup: 'gf',
             hoverinfo: 'none'
@@ -290,8 +318,8 @@ function plotPlan(plan: Plan): void {
         annotations = [
             {
                 text: 'GF High',
-                xref: 'x2',
-                yref: 'y2',
+                xref: 'x3',
+                yref: 'y3',
                 x: depthToPressure(SURFACE_DEPTH) - gf_shift - 0.05,
                 y: (modM_surf + depthToPressure(SURFACE_DEPTH)) / 2,
                 showarrow: false,
@@ -303,8 +331,8 @@ function plotPlan(plan: Plan): void {
             },
             {
                 text: 'GF Low',
-                xref: 'x2',
-                yref: 'y2',
+                xref: 'x3',
+                yref: 'y3',
                 x: depthToPressure(maxDepth) + gf_shift + 0.05,
                 y: (y_modM_max + depthToPressure(maxDepth)) / 2,
                 showarrow: false,
@@ -324,14 +352,15 @@ function plotPlan(plan: Plan): void {
     const layout: Layout = {
         title: { text: t('tensionsTSTitle') },
         grid: {
-            rows: 2,
+            rows: 3,
             columns: 1,
             pattern: 'independent',
             roworder: 'top to bottom',
-            ygap: 0.15
+            ygap: 0.1
         },
         xaxis: {
-            title: { text: t('timeLabel') + ' (min)' },
+            tickvals: Array.from({ length: 10 }, (_, i) => Math.round((i / 9) * Math.max(...timePoints))),
+            ticktext: [],
             autorange: true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
@@ -342,16 +371,35 @@ function plotPlan(plan: Plan): void {
             autorange: localStorage.getItem('upsideDown') === 'true' ? 'reversed' : true,
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
+            domain: [0.64, 1]
         },
         xaxis2: {
+            title: { text: t('timeLabel') + ' (min)' },
+            gridcolor: isDarkMode ? '#444' : '#eee',
+            ticktext: [],
+            tickvals: Array.from({ length: 10 }, (_, i) => Math.round((i / 9) * Math.max(...timePoints))),
+            autorange: true,
+            rangemode: 'tozero',
+            // matches: 'x'
+        },
+        yaxis2: {
+            gridcolor: isDarkMode ? '#444' : '#eee',
+            tickvals: [],
+            // tickvals: Array.from({ length: N_COMPARTMENTS }, (_, i) => i),
+            // ticktext: Array.from({ length: N_COMPARTMENTS }, (_, i) => `C${i}`),
+            autorange: 'reversed',
+            domain: [0.5, 0.64]
+        },
+        xaxis3: {
             title: { text: t('pressureLabel') + ' (bar)' },
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
         },
-        yaxis2: {
+        yaxis3: {
             title: { text: t('compartmentTensionLabel') + ' (bar)' },
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
+            domain: [0.05, 0.4]
         },
         legend: {
             xanchor: "left",
