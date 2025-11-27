@@ -17,8 +17,8 @@ function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
-    let comptStr = stops.map(s => `[${s.saturatedCompartments.join(', ')}]`).join(', ');
+    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join('\n - ');
+    let comptStr = stops.map(s => `${s.saturatedCompartments.join(', ')}`).join('\n - ');
     if (stops.length === 0) { stopsStr = t('stopsNone'); }
 
     let t_at_bottom = bottomTime - t_descent;
@@ -27,18 +27,18 @@ function formatCellDataForDetails(plan: Plan): string {
     let t_ascent = dtr - t_stops;
     if (t_ascent < 0) { t_ascent = 0; }
 
-    return `${t('diveProfileTitle')} ${formatGFstrings(gfLow, gfHigh)}\n` +
+    return `${t('diveProfileTitle')} ${formatGFstrings(gfLow, gfHigh)}\n\n` +
         // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
-        // `- ${t('bottomTimeLabel')} ${bottomTime} minutes\n` +
+        // `- ${t('bottomTimeLabel')} ${bottomTime} min\n` +
         // `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
-        `- ${t('calculatedDTRLabel')} ${parseFloat(dtr.toFixed(2))} minutes\n` +
-        `- ${t('calculatedTotalDiveTimeLabel')} ${parseFloat(t_dive_total.toFixed(2))} minutes\n` +
-        `   - ${t('calculatedt_descentLabel')} ${parseFloat(t_descent.toFixed(2))} minutes\n` +
-        `   - ${t('calculatedTotalBottomTimeLabel')} ${parseFloat(t_at_bottom.toFixed(2))} minutes\n` +
-        `   - ${t('calculatedTotalStopTimeLabel')} ${parseFloat(t_stops.toFixed(2))} minutes\n` +
-        `   - ${t('calculatedAscentTimeLabel')} ${parseFloat(t_ascent.toFixed(2))} minutes\n` +
-        `- ${t('requiredStopsLabel')} ${stopsStr}\n` +
-        `- ${t('compartmentstopsLabel')} ${comptStr}\n`;
+        `${t('calculatedDTRLabel')} ${Math.ceil(dtr).toString()} min\n\n` +
+        `${t('calculatedTotalDiveTimeLabel')} ${parseFloat(t_dive_total.toFixed(2))} min\n` +
+        ` - ${t('calculatedt_descentLabel')} ${parseFloat(t_descent.toFixed(2))} min\n` +
+        ` - ${t('calculatedTotalBottomTimeLabel')} ${parseFloat(t_at_bottom.toFixed(2))} min\n` +
+        ` - ${t('calculatedTotalStopTimeLabel')} ${parseFloat(t_stops.toFixed(2))} min\n` +
+        ` - ${t('calculatedAscentTimeLabel')} ${parseFloat(t_ascent.toFixed(2))} min\n` +
+        `${t('requiredStopsLabel')}\n - ${stopsStr}\n` +
+        `${t('compartmentstopsLabel')}\n - ${comptStr}\n`;
 }
 function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
@@ -410,9 +410,6 @@ function plotPlan(plan: Plan): void {
 
         const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
         if (legendGroup === 'gf') {
-            // Determine the new visibility state for the GF annotation.
-            // If the trace was visible (true or default), it will become hidden. So annotation should be hidden.
-            // If the trace was hidden (false or 'legendonly'), it will become visible. So annotation should be visible.
             const traceWasVisible = (eventData.fullData[eventData.curveNumber].visible === true || eventData.fullData[eventData.curveNumber].visible === undefined);
             const newAnnotationVisibleState = !traceWasVisible;
             const update = {
@@ -431,6 +428,7 @@ function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan): void {
         const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
         const currentVisibility = trace.visible === true || trace.visible === undefined;
         traceVisibility[compartmentIndex] = !currentVisibility;
+        localStorage.setItem('showAllSatComps', 'false');
         plotPlan(plan);
     }
 }
