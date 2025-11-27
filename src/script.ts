@@ -1,4 +1,4 @@
-import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan } from "./gf.js";
+import { GFS_GRID_SIZE, GF_INCREMENT, MAX_STOP_TIME_BEFORE_INFTY, calculatePlan } from "./gf.js";
 import { TRANSLATIONS } from "./translations.js";
 import { analysePlan, formatGFstrings } from "./plan_analysis.js";
 import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
@@ -26,7 +26,6 @@ const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElemen
 const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
 const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
 const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabelElement;
-const advancedLabel = document.getElementById('advanced-label') as HTMLLabelElement;
 const labelAscentRate = document.getElementById('label-ascent_rate') as HTMLLabelElement;
 const labelDescentRate = document.getElementById('label-descent_rate') as HTMLLabelElement;
 const labelSurfacePressure = document.getElementById('label-surface_pressure') as HTMLLabelElement;
@@ -72,7 +71,6 @@ export function applyLanguageToDOM(): void {
     readmeLink.textContent = t('readme');
     labelMaxDepth.textContent = t('maxDepth');
     labelBottomTime.textContent = t('bottomTime');
-    advancedLabel.textContent = t('advanced-label');
     labelAscentRate.textContent = t('label-ascent_rate');
     labelDescentRate.textContent = t('label-descent_rate');
     labelSurfacePressure.textContent = t('label-surface_pressure');
@@ -290,7 +288,7 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     if (isNaN(dtr) || dtr === Infinity) {
         ctx.fillStyle = '#333';
         ctx.font = '12px Inter';
-        ctx.fillText(t('profileNotApplicable'), ttX + ttPad, ttY + 40);
+        ctx.fillText(t('profileNotApplicable') + ` (>${MAX_STOP_TIME_BEFORE_INFTY} min)`, ttX + ttPad, ttY + 40);
         return;
     }
 
@@ -425,6 +423,11 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
         if (e.key === 'Enter') {
             calculatePlansAndDraw();
         }
+    });
+
+    // Trigger calculation when input value changes via up/down buttons
+    input.addEventListener('change', () => {
+        calculatePlansAndDraw();
     });
     // Synchronize to sliders
     input.addEventListener('input', () => {

@@ -14,7 +14,7 @@ export const TRANSLATIONS: Translations = {
     "profileNotApplicable": "Profile not applicable",
     "stopsNone": "No stop required",
     "stopsLabel": "Stops:",
-    "diveProfileTitle": "Dive profile:",
+    "diveProfileTitle": "Computed Dive profile with ",
     "maxDepthLabel": "Max depth:",
     "bottomTimeLabel": "Bottom time (with descent):",
     "gradientFactorsLabel": "Gradient Factors:",
@@ -45,7 +45,7 @@ export const TRANSLATIONS: Translations = {
     "label-surface_pressure": "Surface Pressure (bar):",
     "label-stop_interval": "Stop Interval (m):",
     "label-last_stop_depth": "Last Stop Depth (m):",
-    "label-time_step": "Time Step (min):",
+    "label-time_step": "Simulation Time Step (min):",
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -60,7 +60,7 @@ export const TRANSLATIONS: Translations = {
     "profileNotApplicable": "Plan non applicable",
     "stopsNone": "Pas de paliers requis",
     "stopsLabel": "Paliers:",
-    "diveProfileTitle": "Profil de plongée :",
+    "diveProfileTitle": "Profil de plongée calculé avec ",
     "maxDepthLabel": "Profondeur max :",
     "bottomTimeLabel": "Durée au fond (avec la descente) :",
     "gradientFactorsLabel": "Facteurs de gradient :",
@@ -91,6 +91,6 @@ export const TRANSLATIONS: Translations = {
     "label-surface_pressure": "Pression de surface (bar) :",
     "label-stop_interval": "Intervalle entre paliers (m) :",
     "label-last_stop_depth": "Profondeur dernier palier (m) :",
-    "label-time_step": "Pas de temps (min) :",
+    "label-time_step": "Pas de temps de simulation (min) :",
   }
 }

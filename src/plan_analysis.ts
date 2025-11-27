@@ -17,8 +17,8 @@ function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
 
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join('\n - ');
-    let comptStr = stops.map(s => `${s.saturatedCompartments.join(', ')}`).join('\n - ');
+    let stopsStr = stops.map(s => `${parseFloat(s.time.toFixed(2))} min @ ${s.depth}m`).join('\n - ');
+    let comptStr = stops.map(s => `C${s.saturatedCompartments.join(', C')}`).join('\n - ');
     if (stops.length === 0) { stopsStr = t('stopsNone'); }
 
     let t_at_bottom = bottomTime - t_descent;

@@ -38,40 +38,31 @@
                 <label for="maxDepth" id="label-maxDepth"></label>
                 <input type="number" id="maxDepth" value="30" min="0" max="60" step="1">
                 <input type="range" id="maxDepthSlider" min="0" max="60" value="30" step="1">
-            </div>
-            <div class="input-group">
+
                 <label for="bottomTime" id="label-bottomTime"></label>
                 <input type="number" id="bottomTime" value="20" min="0" max="60" step="1">
                 <input type="range" id="bottomTimeSlider" min="0" max="60" value="20" step="1">
             </div>
             <div class="input-group">
-                <label id="advanced-label"></label>
-                <div class="advanced-input">
-                    <label for="ascent_rate" id="label-ascent_rate"></label>
-                    <input type="number" id="ascent_rate" value="10" min="0" max="60" step="1">
-                </div>
-                <div class="advanced-input">
-                    <label for="descent_rate" id="label-descent_rate"></label>
-                    <input type="number" id="descent_rate" value="20" min="0" max="60" step="1">
-                </div>
-                <div class="advanced-input">
-                    <label for="surface_pressure" id="label-surface_pressure"></label>
-                    <input type="number" id="surface_pressure" value="1.0" min="0.1" max="2.0" step="0.1">
-                </div>
-                <div class="advanced-input">
-                    <label for="stop_interval" id="label-stop_interval"></label>
-                    <input type="number" id="stop_interval" value="3" min="1" max="10" step="1">
-                </div>
-                <div class="advanced-input">
-                    <label for="last_stop_depth" id="label-last_stop_depth"></label>
-                    <input type="number" id="last_stop_depth" value="3" min="1" max="10" step="1">
-                </div>
-                <div class="advanced-input">
-                    <label for="time_step" id="label-time_step"></label>
-                    <input type="number" id="time_step" value="1" min="0.1" max="5" step="0.1">
-                </div>
-            </div>
+                <label for="ascent_rate" id="label-ascent_rate"></label>
+                <input type="number" id="ascent_rate" value="10" min="0" max="60" step="1">
 
+                <label for="descent_rate" id="label-descent_rate"></label>
+                <input type="number" id="descent_rate" value="20" min="0" max="60" step="1">
+
+                <label for="surface_pressure" id="label-surface_pressure"></label>
+                <input type="number" id="surface_pressure" value="1.0" min="0.1" max="2.0" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="stop_interval" id="label-stop_interval"></label>
+                <input type="number" id="stop_interval" value="3" min="0.5" max="10" step="0.5">
+
+                <label for="last_stop_depth" id="label-last_stop_depth"></label>
+                <input type="number" id="last_stop_depth" value="3" min="1" max="10" step="0.5">
+
+                <label for="time_step" id="label-time_step"></label>
+                <input type="number" id="time_step" value="1" min="0.1" max="5" step="0.25">
+            </div>
         </div>
 
         <h2 id="canvas-title"></h2>

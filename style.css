@@ -104,18 +104,19 @@ body {
     flex-direction: column;
 }
 
+/* 
 .advanced-input {
     display: flex;
-    flex-direction: row;
-}
-
+    flex-direction: column;
+} */
+/* 
 .advanced-input label {
     font-size: 1.2rem;
 }
 
 .advanced-input input {
     font-size: 0.9rem;
-}
+} */
 
 p {
     text-align: center;
