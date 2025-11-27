@@ -120,7 +120,7 @@ function plotPlan(plan: Plan): void {
         const traceComp: Trace = {
             x: timePoints,
             y: compsTensions[i],
-            mode: 'lines+markers',
+            mode: 'lines',
             name: `${t('compartmentLabel')}${i} (${BUEHLMANN.map(c => c.t12)[i]} min)`,
             line: { width: 1, color: getCompartmentColor(i) },
             yaxis: 'y1',
