@@ -540,7 +540,13 @@ document.addEventListener('DOMContentLoaded', () => {
             themeToggleBtn.textContent = '🌙';
             themeToggleBtn.title = 'Switch to dark mode';
         }
-        detailsContainer.style.display = 'none'; // hide details on theme change to force the user to redraw a plottly
+        if (selectedCell) {
+            const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+            detailsContainer.style.display = 'flex';
+            analysePlan(plan).catch();
+        } else {
+            detailsContainer.style.display = 'none';
+        }
     }
 
     // Load theme preference from localStorage
