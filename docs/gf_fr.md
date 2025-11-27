@@ -14,8 +14,6 @@ Publié en 2025. [English version](./gf_en.md)
 
 Cet outil implémente un algorithme simplifié [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) en Javascript.
 
-Vous pouvez en trouver [ici une description](./algorithme_fr.md).  
-
 La durée totale de remontée (DTR) est calculée pour de nombreuses valeurs des facteurs de gradient. Les DTR résultants sont rapportés sous forme de tableau. Les plans de décompression sont affichés sous forme de petits graphiques au survol de la souris, et les détails sont fournis en cliquant.
 
 Pour simplifier nous supposons :

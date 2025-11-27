@@ -14,7 +14,6 @@ Published in 2025. [French version](./gf_fr.md)
 
 This tool implements a simplified [Bühlmann ZHL-16C](https://en.wikipedia.org/wiki/B%C3%BChlmann_decompression_algorithm) algorithm in Javascript. 
 
-You can find [here a description](./algorithme_fr.md) of this algorithm.  
 
 Time-to-surface (TTS) is computed for many gradient factors values. Resulting TTS are reported as a color-coded table. Decompression plans are shown as tiny plots on mouseover, and details are repoted below the table on mouse click.
 

@@ -12,7 +12,6 @@ The tool implements the **Bühlmann ZHL-16C model** with Gradient Factors (GF) t
 
 The tool is available at [https://repied.github.io/paliers/](https://repied.github.io/paliers/).
 
-For a more detailed explanation, see the [full algorithm description](./docs/algorithm_en.md).
 
 ## Usage
 
