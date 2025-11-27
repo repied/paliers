@@ -1,4 +1,4 @@
-import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams } from "./types.js";
+import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation } from "./types.js";
 import { t } from "./script.js";
 import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE, SURFACE_DEPTH } from "./gf.js";
 
@@ -217,74 +217,107 @@ function plotPlan(plan: Plan): void {
     }
 
     // Find the fastest compartment that is visible to associate the GF candlestick with.
-    let fastestVisibleComIdxOr0 = 0;
+    let fastestVisibleComIdxOr0 = null;
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         if (traceVisibility[i]) {
             fastestVisibleComIdxOr0 = i;
             break; // Stop at the first visible compartment.
         }
-    } // if no compartment is visible, this will remain 0
+    } // if no compartment is visible, this will remain null
 
-    // Add GF Low/High visualization segments for the fastest visible compartment.
-    const Afast = BUEHLMANN[fastestVisibleComIdxOr0].A;
-    const Bfast = BUEHLMANN[fastestVisibleComIdxOr0].B;
-    const gf_shift = 0.1;
+    let annotations: Array<Annotation> = [];
+    if (fastestVisibleComIdxOr0 !== null) {
+        // Add GF Low/High visualization segments for the fastest visible compartment.
+        const Afast = BUEHLMANN[fastestVisibleComIdxOr0].A;
+        const Bfast = BUEHLMANN[fastestVisibleComIdxOr0].B;
+        const gf_shift = 0.1;
 
-    // GF High at surface
-    const M_surf = getMValue(Afast, Bfast, SURFACE_PRESSURE);
-    const modM_surf = getModifiedMValue(Afast, Bfast, SURFACE_PRESSURE, gfHigh);
-    const traceGFHighMain: Trace = {
-        x: [depthToPN2(SURFACE_DEPTH) - gf_shift, depthToPN2(SURFACE_DEPTH) - gf_shift],
-        y: [depthToPressure(SURFACE_DEPTH), modM_surf],
-        mode: 'lines',
-        name: `GF High (${Math.round(gfHigh * 100)}%)`,
-        line: { color: 'cyan', width: 5 },
-        yaxis: 'y2',
-        xaxis: 'x2',
-        legendgroup: 'gf',
-        hoverinfo: 'name'
-    };
-    data_ply.push(traceGFHighMain);
-    const traceGFHighRemaining: Trace = {
-        x: [depthToPN2(SURFACE_DEPTH) - gf_shift, depthToPN2(SURFACE_DEPTH) - gf_shift],
-        y: [modM_surf, M_surf],
-        mode: 'lines',
-        line: { color: 'cyan', width: 1 },
-        yaxis: 'y2',
-        xaxis: 'x2',
-        showlegend: false,
-        legendgroup: 'gf',
-        hoverinfo: 'none'
-    };
-    data_ply.push(traceGFHighRemaining);
+        // GF High at surface
+        const M_surf = getMValue(Afast, Bfast, SURFACE_PRESSURE);
+        const modM_surf = getModifiedMValue(Afast, Bfast, SURFACE_PRESSURE, gfHigh);
+        const traceGFHighMain: Trace = {
+            x: [depthToPN2(SURFACE_DEPTH) - gf_shift, depthToPN2(SURFACE_DEPTH) - gf_shift],
+            y: [depthToPressure(SURFACE_DEPTH), modM_surf],
+            mode: 'lines',
+            name: `GF High (${Math.round(gfHigh * 100)}%)`,
+            line: { color: 'cyan', width: 5 },
+            yaxis: 'y2',
+            xaxis: 'x2',
+            legendgroup: 'gf',
+            hoverinfo: 'name'
+        };
+        data_ply.push(traceGFHighMain);
+        const traceGFHighRemaining: Trace = {
+            x: [depthToPN2(SURFACE_DEPTH) - gf_shift, depthToPN2(SURFACE_DEPTH) - gf_shift],
+            y: [modM_surf, M_surf],
+            mode: 'lines',
+            line: { color: 'cyan', width: 1 },
+            yaxis: 'y2',
+            xaxis: 'x2',
+            showlegend: false,
+            legendgroup: 'gf',
+            hoverinfo: 'none'
+        };
+        data_ply.push(traceGFHighRemaining);
 
-    // GF Low at max depth
-    const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(maxDepth), gfLow);
-    const y_M_max = getMValue(Afast, Bfast, depthToPressure(maxDepth));
-    const traceGFLowMain: Trace = {
-        x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
-        y: [depthToPressure(maxDepth), y_modM_max],
-        mode: 'lines',
-        name: `GF Low (${Math.round(gfLow * 100)}%)`,
-        line: { color: 'magenta', width: 5 },
-        yaxis: 'y2',
-        xaxis: 'x2',
-        legendgroup: 'gf',
-        hoverinfo: 'name'
-    };
-    data_ply.push(traceGFLowMain);
-    const traceGFLowRemaining: Trace = {
-        x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
-        y: [y_modM_max, y_M_max],
-        mode: 'lines',
-        line: { color: 'magenta', width: 1 },
-        yaxis: 'y2',
-        xaxis: 'x2',
-        showlegend: false,
-        legendgroup: 'gf',
-        hoverinfo: 'none'
-    };
-    data_ply.push(traceGFLowRemaining);
+        // GF Low at max depth
+        const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(maxDepth), gfLow);
+        const y_M_max = getMValue(Afast, Bfast, depthToPressure(maxDepth));
+        const traceGFLowMain: Trace = {
+            x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
+            y: [depthToPressure(maxDepth), y_modM_max],
+            mode: 'lines',
+            name: `GF Low (${Math.round(gfLow * 100)}%)`,
+            line: { color: 'magenta', width: 5 },
+            yaxis: 'y2',
+            xaxis: 'x2',
+            legendgroup: 'gf',
+            hoverinfo: 'name'
+        };
+        data_ply.push(traceGFLowMain);
+        const traceGFLowRemaining: Trace = {
+            x: [depthToPN2(maxDepth) + gf_shift, depthToPN2(maxDepth) + gf_shift],
+            y: [y_modM_max, y_M_max],
+            mode: 'lines',
+            line: { color: 'magenta', width: 1 },
+            yaxis: 'y2',
+            xaxis: 'x2',
+            showlegend: false,
+            legendgroup: 'gf',
+            hoverinfo: 'none'
+        };
+        data_ply.push(traceGFLowRemaining);
+        annotations = [
+            {
+                text: 'GF High',
+                xref: 'x2',
+                yref: 'y2',
+                x: depthToPN2(SURFACE_DEPTH) - gf_shift - 0.05,
+                y: (modM_surf + depthToPressure(SURFACE_DEPTH)) / 2,
+                showarrow: false,
+                xanchor: 'right',
+                font: {
+                    color: 'cyan',
+                    size: 12
+                }
+            },
+            {
+                text: 'GF Low',
+                xref: 'x2',
+                yref: 'y2',
+                x: depthToPN2(maxDepth) + gf_shift + 0.05,
+                y: (y_modM_max + depthToPressure(maxDepth)) / 2,
+                showarrow: false,
+                xanchor: 'left',
+                font: {
+                    color: 'magenta',
+                    size: 12
+                }
+            }
+        ];
+    } else {
+        annotations = []; // No compartment is visible, so we do not add GF annotations.
+    }
 
     const isDarkMode = document.body.classList.contains('dark-mode');
 
@@ -326,40 +359,14 @@ function plotPlan(plan: Plan): void {
             x: 1,
             y: 1,
         },
-        annotations: [
-            {
-                text: 'GF High',
-                xref: 'x2',
-                yref: 'y2',
-                x: depthToPN2(SURFACE_DEPTH) - gf_shift - 0.05,
-                y: (modM_surf + depthToPressure(SURFACE_DEPTH)) / 2,
-                showarrow: false,
-                xanchor: 'right',
-                font: {
-                    color: 'cyan',
-                    size: 12
-                }
-            },
-            {
-                text: 'GF Low',
-                xref: 'x2',
-                yref: 'y2',
-                x: depthToPN2(maxDepth) + gf_shift + 0.05,
-                y: (y_modM_max + depthToPressure(maxDepth)) / 2,
-                showarrow: false,
-                xanchor: 'left',
-                font: {
-                    color: 'magenta',
-                    size: 12
-                }
-            }
-        ],
         paper_bgcolor: isDarkMode ? '#343a40' : '#ffffff',
         plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
         font: {
             color: isDarkMode ? '#f8f9fa' : '#212529'
-        }
+        },
+        annotations: annotations
     };
+
 
     if (window.innerWidth < 700) { // mobile device
         layout.showlegend = false;
