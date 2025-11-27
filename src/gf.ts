@@ -1,5 +1,25 @@
 import { assert, Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams } from "./types.js";
 
+// Values from subsurface codebase are the same as mine
+// static const double buehlmann_N2_a[] = {
+//     1.1696, 1.0, 0.8618, 0.7562,
+//     0.62, 0.5043, 0.441, 0.4,
+//     0.375, 0.35, 0.3295, 0.3065,
+//     0.2835, 0.261, 0.248, 0.2327 };
+
+// static const double buehlmann_N2_b[] = {
+//     0.5578, 0.6514, 0.7222, 0.7825,
+//     0.8126, 0.8434, 0.8693, 0.8910,
+//     0.9092, 0.9222, 0.9319, 0.9403,
+//     0.9477, 0.9544, 0.9602, 0.9653 };
+
+// const double buehlmann_N2_t_halflife[] = {
+//     5.0, 8.0, 12.5, 18.5,
+//     27.0, 38.3, 54.3, 77.0,
+//     109.0, 146.0, 187.0, 239.0,
+//     305.0, 390.0, 498.0, 635.0 };
+
+
 export const BUEHLMANN: ReadonlyArray<CompartmentCoefs> = [
     { t12: 5.0, A: 1.1696, B: 0.5578 },
     { t12: 8.0, A: 1.0, B: 0.6514 },
@@ -17,7 +37,7 @@ export const BUEHLMANN: ReadonlyArray<CompartmentCoefs> = [
     { t12: 390.0, A: 0.261, B: 0.9544 },
     { t12: 498.0, A: 0.248, B: 0.9602 },
     { t12: 635.0, A: 0.2327, B: 0.9653 },
-]; // half-times in minutes, A and B coefficients
+];
 
 // Assert all BUEHLMANN values are positive
 for (const c of BUEHLMANN) {
