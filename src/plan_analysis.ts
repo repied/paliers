@@ -79,6 +79,13 @@ function plotPlan(plan: Plan): void {
 
     const data_ply: Array<Trace> = [];
 
+    // Make all saturated compartments visible if requested
+    if (localStorage.getItem('showAllSatComps') === 'true') {
+        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
+        traceVisibility.fill(false);
+        satComps.forEach((idx) => { traceVisibility[idx] = true; });
+    }
+
     // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
     const tracePN2: Trace = {
         x: timePoints,
@@ -373,19 +380,11 @@ function plotPlan(plan: Plan): void {
             {
                 name: 'showAllSatComps', title: 'Show All Saturated Compartments', icon: Plotly.Icons.drawline, click: () => {
                     const currShowAll = localStorage.getItem('showAllSatComps');
-                    if (currShowAll === 'false') {
-                        // we go from false to true
+                    if (currShowAll === 'false') { // we switch to saturated compartments visible
                         traceVisibilityBackup = [...traceVisibility]; // backup current visibility
                         localStorage.setItem('showAllSatComps', 'true');
-                        const satComps = new Set(plan.stops.map(({ saturatedCompartments: cs }) => cs).flat());
-                        // Set traceVisibility to true only for saturated compartments
-                        traceVisibility.fill(false);
-                        satComps.forEach((idx) => {
-                            traceVisibility[idx] = true;
-                        });
-                    } else { // we go from true to false
-                        // we go from true to false
-                        traceVisibility = [...traceVisibilityBackup]; //  restore visibility
+                    } else { // we revert to regular visbility
+                        traceVisibility = [...traceVisibilityBackup]; // restore visibility
                         localStorage.setItem('showAllSatComps', 'false');
                     }
                     plotPlan(plan);
