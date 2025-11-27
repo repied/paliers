@@ -359,7 +359,7 @@ function plotPlan(plan: Plan): void {
             x: 1,
             y: 1,
         },
-        paper_bgcolor: isDarkMode ? '#343a40' : '#ffffff',
+        paper_bgcolor: isDarkMode ? '#3a3a3a' : '#ffffff',
         plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
         font: {
             color: isDarkMode ? '#f8f9fa' : '#212529'

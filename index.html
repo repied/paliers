@@ -16,7 +16,7 @@
 
 <body>
 
-    <div class="container">
+    <div class="left_container">
         <div id="lang-theme-selector-container">
             <div id="lang-theme-buttons">
                 <button id="theme-toggle-btn" title="Toggle dark mode">🌙</button>
@@ -51,13 +51,15 @@
         </div>
 
         <h2 id="canvas-title"></h2>
-        <canvas title="deco-canvas" id="decoCanvas" width="600" height="600"></canvas>
+        <div class="column_container">
+            <canvas title="deco-canvas" id="decoCanvas" width="600" height="600"></canvas>
+            <div id="plan-as-string" style="width: 30%;"></div>
+        </div>
     </div>
 
-    <div id="details-analysis-container">
+    <div id="right-container">
         <h2 id="details-plan-h2"></h2>
         <div id="plotly-plot"></div>
-        <div id="plan-as-string"></div>
     </div>
 
 

@@ -12,7 +12,7 @@ const maxDepthInput = document.getElementById('maxDepth') as HTMLInputElement;
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
-const detailsContainer = document.getElementById('details-analysis-container') as HTMLDivElement;
+const detailsContainer = document.getElementById('right-container') as HTMLDivElement;
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const intro1 = document.getElementById('intro-1') as HTMLParagraphElement;
 const intro2 = document.getElementById('intro-2') as HTMLParagraphElement;
