@@ -308,7 +308,8 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 3. Bottom
-    currentTime = currentTime + bottomTime;
+    const t_at_bottom = bottomTime - t_descent;
+    currentTime = currentTime + t_at_bottom;
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(maxDepth));
 
     // 4. Stops (or direct ascent if no stops)
