@@ -197,15 +197,15 @@ describe('SimulAtDepth', () => {
         const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(true);
-        expect(result.firstSatCompIdx).toBe(-1);
+        expect(result.satsCompIdx).toEqual([]);
     });
 
     test('should be unsafe if any compartment exceeds modified M-Value', () => {
-        const tensions = Array(N_COMPARTMENTS).fill(10.0); // Very high tensions
+        const tensions = Array(N_COMPARTMENTS).fill(100.0); // Very high tensions
         const result = SimulAtDepth(0, tensions, 30, 0.3, 0.85);
 
         expect(result.isSafe).toBe(false);
-        expect(result.firstSatCompIdx).toBeGreaterThanOrEqual(0);
+        expect(result.satsCompIdx.length).toEqual(16); // All compartments unsaturated
     });
 });
 

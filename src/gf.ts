@@ -1,4 +1,4 @@
-import { assert, Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams } from "./types.js";
+import { assert, Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx } from "./types.js";
 
 // Values from subsurface codebase are the same as mine
 // static const double buehlmann_N2_a[] = {
@@ -126,21 +126,21 @@ export function getInterpolatedGF(depth: Depth, maxDepth: Depth, gfLow: GFLow, g
 
 /**
  * Checks if all compartments are within their modified M-Values at given depth
+ * and, if not, returns the list of sursaturated compartments indexes
  */
 export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, GF_low: GFLow, GF_high: GFHigh): Simulation {
     const gf = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
     const p = depthToPressure(depth);
     let isSafe = true;
-    let firstSatCompIdx = -1; // index of the first compartment that is not safe
+    let satsCompIdx = []; // index of all compartments that are not safe
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const M_mod = getModifiedMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, p, gf);
         if (tensions[i] > M_mod) {
             isSafe = false;
-            firstSatCompIdx = i;
-            break;
+            satsCompIdx.push(i);
         }
     }
-    return { isSafe, firstSatCompIdx };
+    return { isSafe, satsCompIdx };
 }
 
 /**
@@ -219,11 +219,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
         const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-        let { isSafe, firstSatCompIdx: satComp } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
+        let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
-            let satCompartments = [satComp];
+            let saturatedCompartments: Array<CompIdx> = [...satsCompIdx];
             const PN2_stop = depthToPN2(currentDepth);
             while (!isSafe) {
                 // make a single stop step
@@ -235,16 +235,20 @@ export function calculatePlan(diveParams: DiveParams): Plan {
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-                ({ isSafe, firstSatCompIdx: satComp } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
-                if (!isSafe && !satCompartments.includes(satComp)) {
-                    satCompartments.push(satComp);
+                ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
+                if (!isSafe) {
+                    for (const cidx of satsCompIdx) {
+                        if (!saturatedCompartments.includes(cidx)) {
+                            saturatedCompartments.push(cidx);
+                        }
+                    }
                 }
                 // Return an "impossible" plan
                 if (stopTime > MAX_STOP_TIME_BEFORE_INFTY) {
                     return { dtr: Infinity, stops: [], t_descent, t_dive_total, t_stops, history };
                 }
             }
-            stops.push({ depth: currentDepth, time: stopTime, saturatedCompartments: satCompartments });
+            stops.push({ depth: currentDepth, time: stopTime, saturatedCompartments });
         }
         // Perform the ascent
         currentDepth = nextDepth;
