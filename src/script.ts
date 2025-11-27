@@ -30,11 +30,10 @@ let W = W_all - LABEL_MARGIN / 2;
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GFS_GRID_SIZE); // N+1 cells for 0-100%
 let calculatedPlans: PlansGrid = [];
 let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
-let selectedCell: SelectedCell = null;
 
 // default selected cell
 const middleIdx = Math.floor(GFS_GRID_SIZE / 2);
-selectedCell = { i: middleIdx, j: middleIdx };
+let selectedCell: SelectedCell = { i: middleIdx, j: middleIdx };
 
 // --- Language functions ---
 let currentLang: Lang = (localStorage.getItem('paliers_lang') as Lang) || 'fr';
@@ -96,13 +95,10 @@ function calculatePlans(): void {
 
 function drawCanvasAndAnalysePlan(): void {
     drawCanvas();
-    if (selectedCell) {
-        const plan = calculatedPlans[selectedCell.i][selectedCell.j];
-        detailsContainer.style.display = 'flex';
-        analysePlan(plan).catch();
-    } else {
-        detailsContainer.style.display = 'none';
-    }
+    console.log('selectedCell', selectedCell);
+    const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+    detailsContainer.style.display = 'flex';
+    analysePlan(plan).catch();
 }
 
 function calculatePlansAndDraw(): void {
@@ -202,7 +198,7 @@ function drawCanvas(): void {
             ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
 
             // Highlight selected cell
-            if (selectedCell && selectedCell.i === i && selectedCell.j === j) {
+            if (selectedCell.i === i && selectedCell.j === j) {
                 ctx.strokeStyle = '#007bff';
                 ctx.lineWidth = 5;
                 ctx.strokeRect(x + 1.5, y + 1.5, CELL_SIZE - 3, CELL_SIZE - 3);
@@ -371,7 +367,7 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
 
 function getCellFromMousePos(mouseX: number, mouseY: number): SelectedCell {
     if (mouseX < LABEL_MARGIN || mouseY < LABEL_MARGIN) {
-        return null;
+        return selectedCell;
     }
     const j = Math.floor((mouseX - LABEL_MARGIN) / CELL_SIZE); // Column (GF High)
     const i = Math.floor((mouseY - LABEL_MARGIN) / CELL_SIZE); // Row (GF Low)
@@ -379,7 +375,7 @@ function getCellFromMousePos(mouseX: number, mouseY: number): SelectedCell {
     if (i >= 0 && i < calculatedPlans.length && j >= 0 && j < calculatedPlans[0].length) {
         return { i, j, data: calculatedPlans[i][j] };
     }
-    return null;
+    return selectedCell;
 }
 
 
@@ -475,15 +471,12 @@ canvas.addEventListener('click', (e) => {
         drawCanvas();
     } else {
         detailsContainer.style.display = 'none';
-        selectedCell = null;
         drawCanvas();
     }
 });
 
 // update selected cell with arrow keys and plot details
 window.addEventListener('keydown', (e) => {
-    if (!selectedCell) { return; }
-
     let { i, j } = selectedCell;
     let moved = false;
 
@@ -540,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             themeToggleBtn.textContent = '🌙';
             themeToggleBtn.title = 'Switch to dark mode';
         }
-        if (selectedCell) {
+        if (calculatedPlans.length > 0) {
             const plan = calculatedPlans[selectedCell.i][selectedCell.j];
             detailsContainer.style.display = 'flex';
             analysePlan(plan).catch();

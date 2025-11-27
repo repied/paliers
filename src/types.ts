@@ -14,7 +14,7 @@ export type GF = number;
 export type GFLow = GF; // low = deep = max depth
 export type GFHigh = GF; // high = shallow =surface
 export type CompIdx = number;
-export interface Simulation { isSafe: boolean, firstSatCompIdx: CompIdx }
+export interface Simulation { isSafe: boolean, satsCompIdx: Array<CompIdx>; }
 export type Tensions = Array<TensionBar>;
 
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
@@ -92,7 +92,7 @@ declare global {
 export interface EventData { curveNumber: number; data: Trace[]; fullData: Trace[]; }
 
 // script.ts
-export type SelectedCell = { i: number; j: number; data?: Plan; } | null;
+export type SelectedCell = { i: number; j: number; data?: Plan; };
 export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
 
 // translations.ts
