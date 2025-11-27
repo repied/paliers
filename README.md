@@ -3,7 +3,7 @@
 `paliers` is a client-side tool to compute and display scuba diving desaturation plans. It's built with HTML, CSS, and TypeScript, and requires no server-side components.
 
 <div style="text-align: center;">
-    <img src="./media/toool_screenshot.png" alt="Paliers tool screenshot" width="500" />
+    <img width="500" alt="image" src="https://github.com/user-attachments/assets/1fd2d1a3-67d4-46a8-8eae-8a6aed89692b" />
 </div>
 
 ## How it Works
