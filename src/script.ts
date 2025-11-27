@@ -11,6 +11,10 @@ const bottomTimeInput = document.getElementById('bottomTime') as HTMLInputElemen
 const maxDepthInput = document.getElementById('maxDepth') as HTMLInputElement;
 const ascentRateInput = document.getElementById('ascent_rate') as HTMLInputElement;
 const descentRateInput = document.getElementById('descent_rate') as HTMLInputElement;
+const surfacePressureInput = document.getElementById('surface_pressure') as HTMLInputElement;
+const stopIntervalInput = document.getElementById('stop_interval') as HTMLInputElement;
+const lastStopDepthInput = document.getElementById('last_stop_depth') as HTMLInputElement;
+const timeStepInput = document.getElementById('time_step') as HTMLInputElement;
 
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
@@ -25,6 +29,11 @@ const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabel
 const advancedLabel = document.getElementById('advanced-label') as HTMLLabelElement;
 const labelAscentRate = document.getElementById('label-ascent_rate') as HTMLLabelElement;
 const labelDescentRate = document.getElementById('label-descent_rate') as HTMLLabelElement;
+const labelSurfacePressure = document.getElementById('label-surface_pressure') as HTMLLabelElement;
+const labelStopInterval = document.getElementById('label-stop_interval') as HTMLLabelElement;
+const labelLastStopDepth = document.getElementById('label-last_stop_depth') as HTMLLabelElement;
+const labelTimeStep = document.getElementById('label-time_step') as HTMLLabelElement;
+
 
 // --- State variables ---
 let W_all = canvas.width;
@@ -66,6 +75,10 @@ export function applyLanguageToDOM(): void {
     advancedLabel.textContent = t('advanced-label');
     labelAscentRate.textContent = t('label-ascent_rate');
     labelDescentRate.textContent = t('label-descent_rate');
+    labelSurfacePressure.textContent = t('label-surface_pressure');
+    labelStopInterval.textContent = t('label-stop_interval');
+    labelLastStopDepth.textContent = t('label-last_stop_depth');
+    labelTimeStep.textContent = t('label-time_step');
     // update readme href from data attributes
     if (readmeLink) {
         const href = readmeLink.getAttribute(`data-href-${currentLang}`) as string;
@@ -83,6 +96,10 @@ function calculatePlans(): void {
     const maxDepth = parseInt(maxDepthInput.value);
     const ascentRate = parseInt(ascentRateInput.value);
     const descentRate = parseInt(descentRateInput.value);
+    const surfacePressure = parseFloat(surfacePressureInput.value);
+    const stopInterval = parseInt(stopIntervalInput.value);
+    const lastStopDepth = parseInt(lastStopDepthInput.value);
+    const timeStep = parseFloat(timeStepInput.value);
 
     calculatedPlans = [];
     for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
@@ -90,7 +107,7 @@ function calculatePlans(): void {
         let row: Array<Plan> = [];
         for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate };
+            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep };
             const plan = calculatePlan(diveParams);
             plan.diveParams = diveParams;
             row.push(plan);
@@ -403,7 +420,7 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
 
 
 // --- Inputs listeners (depth and time) ---
-[bottomTimeInput, maxDepthInput, ascentRateInput, descentRateInput].forEach(input => {
+[bottomTimeInput, maxDepthInput, ascentRateInput, descentRateInput, surfacePressureInput, stopIntervalInput, lastStopDepthInput, timeStepInput].forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             calculatePlansAndDraw();

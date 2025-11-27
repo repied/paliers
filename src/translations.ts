@@ -42,6 +42,10 @@ export const TRANSLATIONS: Translations = {
     "advanced-label": "Advanced settings:",
     "label-ascent_rate": "Ascent rate (m/min):",
     "label-descent_rate": "Descent rate (m/min):",
+    "label-surface_pressure": "Surface Pressure (bar):",
+    "label-stop_interval": "Stop Interval (m):",
+    "label-last_stop_depth": "Last Stop Depth (m):",
+    "label-time_step": "Time Step (min):",
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
@@ -84,5 +88,9 @@ export const TRANSLATIONS: Translations = {
     "advanced-label": "Paramètres avancés :",
     "label-ascent_rate": "Vitesse de remontée (m/min) :",
     "label-descent_rate": "Vitesse de descente (m/min) :",
+    "label-surface_pressure": "Pression de surface (bar) :",
+    "label-stop_interval": "Intervalle entre paliers (m) :",
+    "label-last_stop_depth": "Profondeur dernier palier (m) :",
+    "label-time_step": "Pas de temps (min) :",
   }
 }

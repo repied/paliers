@@ -1,6 +1,6 @@
 import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation } from "./types.js";
 import { t } from "./script.js";
-import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_PRESSURE, SURFACE_DEPTH } from "./gf.js";
+import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
 
 // Maintain trace visibility state across re-plots
 let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);
@@ -62,12 +62,22 @@ function getCompartmentColor(i: CompIdx): Color {
 
 function plotPlan(plan: Plan): void {
     const { history, diveParams } = plan as Plan;
-    const { maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
+    const { bottomTime,
+        maxDepth,
+        gfLow,
+        gfHigh,
+        ascentRate,
+        descentRate,
+        surfacePressure,
+        stopInterval,
+        lastStopDepth,
+        timeStep,
+    } = diveParams as DiveParams;
 
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
-    const PN2_Points = depthPoints.map(depthToPN2);
-    const P_Points = depthPoints.map(depthToPressure);
+    const PN2_Points = depthPoints.map(depth => depthToPN2(depth, surfacePressure));
+    const P_Points = depthPoints.map(depth => depthToPressure(depth, surfacePressure));
 
     // transpose to get a time series for each compartment
     const compsTensions: Array<Array<TensionBar>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
@@ -138,7 +148,7 @@ function plotPlan(plan: Plan): void {
     // Prepare zData for heatmap: Calculate saturation relative to ambient PN2: Tension - PN2
     const zData: number[][] = [];
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const row = history.map(h => h.tensions[i] - depthToPN2(h.depth));
+        const row = history.map(h => h.tensions[i] - depthToPN2(h.depth, surfacePressure));
         zData.push(row);
     }
 
@@ -163,8 +173,8 @@ function plotPlan(plan: Plan): void {
 
     // --- Third Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
     const traceMainDiagonalPN2: Trace = {
-        x: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
-        y: [depthToPN2(SURFACE_DEPTH), depthToPN2(maxDepth)],
+        x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
+        y: [depthToPN2(SURFACE_DEPTH, surfacePressure), depthToPN2(maxDepth, surfacePressure)],
         mode: 'lines',
         name: t('pn2ambiantLabel'),
         line: { color: 'black', width: 3 },
@@ -176,8 +186,8 @@ function plotPlan(plan: Plan): void {
     };
     data_ply.push(traceMainDiagonalPN2);
     const traceMainDiagonalP: Trace = {
-        x: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
-        y: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
+        x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
+        y: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
         mode: 'lines',
         name: t('pressureLabel'),
         line: { color: 'black', width: 1 },
@@ -215,8 +225,8 @@ function plotPlan(plan: Plan): void {
         const A = BUEHLMANN[i].A;
         const B = BUEHLMANN[i].B;
         const traceMValues: Trace = {
-            x: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
-            y: [getMValue(A, B, SURFACE_PRESSURE), getMValue(A, B, depthToPressure(maxDepth))],
+            x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
+            y: [getMValue(A, B, surfacePressure), getMValue(A, B, depthToPressure(maxDepth, surfacePressure))],
             name: `${t('mValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dot' },
             mode: 'lines',
@@ -230,8 +240,8 @@ function plotPlan(plan: Plan): void {
 
         // plot the modified M-Value line for this compartment
         const traceModifiedMValues: Trace = {
-            x: [depthToPressure(SURFACE_DEPTH), depthToPressure(maxDepth)],
-            y: [getModifiedMValue(A, B, SURFACE_PRESSURE, gfHigh), getModifiedMValue(A, B, depthToPressure(maxDepth), gfLow)],
+            x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
+            y: [getModifiedMValue(A, B, surfacePressure, gfHigh), getModifiedMValue(A, B, depthToPressure(maxDepth, surfacePressure), gfLow)],
             name: `${t('modifiedMValueLabel')}`,
             line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
             mode: 'lines',
@@ -261,11 +271,11 @@ function plotPlan(plan: Plan): void {
         const gf_shift = 0.1;
 
         // GF High at surface
-        const M_surf = getMValue(Afast, Bfast, SURFACE_PRESSURE);
-        const modM_surf = getModifiedMValue(Afast, Bfast, SURFACE_PRESSURE, gfHigh);
+        const M_surf = getMValue(Afast, Bfast, surfacePressure);
+        const modM_surf = getModifiedMValue(Afast, Bfast, surfacePressure, gfHigh);
         const traceGFHighMain: Trace = {
-            x: [depthToPressure(SURFACE_DEPTH) - gf_shift, depthToPressure(SURFACE_DEPTH) - gf_shift],
-            y: [depthToPressure(SURFACE_DEPTH), modM_surf],
+            x: [depthToPressure(SURFACE_DEPTH, surfacePressure) - gf_shift, depthToPressure(SURFACE_DEPTH, surfacePressure) - gf_shift],
+            y: [depthToPressure(SURFACE_DEPTH, surfacePressure), modM_surf],
             mode: 'lines',
             name: `GF High (${Math.round(gfHigh * 100)}%)`,
             line: { color: 'cyan', width: 5 },
@@ -276,7 +286,7 @@ function plotPlan(plan: Plan): void {
         };
         data_ply.push(traceGFHighMain);
         const traceGFHighRemaining: Trace = {
-            x: [depthToPressure(SURFACE_DEPTH) - gf_shift, depthToPressure(SURFACE_DEPTH) - gf_shift],
+            x: [depthToPressure(SURFACE_DEPTH, surfacePressure) - gf_shift, depthToPressure(SURFACE_DEPTH, surfacePressure) - gf_shift],
             y: [modM_surf, M_surf],
             mode: 'lines',
             line: { color: 'cyan', width: 1 },
@@ -289,11 +299,11 @@ function plotPlan(plan: Plan): void {
         data_ply.push(traceGFHighRemaining);
 
         // GF Low at max depth
-        const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(maxDepth), gfLow);
-        const y_M_max = getMValue(Afast, Bfast, depthToPressure(maxDepth));
+        const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(maxDepth, surfacePressure), gfLow);
+        const y_M_max = getMValue(Afast, Bfast, depthToPressure(maxDepth, surfacePressure));
         const traceGFLowMain: Trace = {
-            x: [depthToPressure(maxDepth) + gf_shift, depthToPressure(maxDepth) + gf_shift],
-            y: [depthToPressure(maxDepth), y_modM_max],
+            x: [depthToPressure(maxDepth, surfacePressure) + gf_shift, depthToPressure(maxDepth, surfacePressure) + gf_shift],
+            y: [depthToPressure(maxDepth, surfacePressure), y_modM_max],
             mode: 'lines',
             name: `GF Low (${Math.round(gfLow * 100)}%)`,
             line: { color: 'magenta', width: 5 },
@@ -304,7 +314,7 @@ function plotPlan(plan: Plan): void {
         };
         data_ply.push(traceGFLowMain);
         const traceGFLowRemaining: Trace = {
-            x: [depthToPressure(maxDepth) + gf_shift, depthToPressure(maxDepth) + gf_shift],
+            x: [depthToPressure(maxDepth, surfacePressure) + gf_shift, depthToPressure(maxDepth, surfacePressure) + gf_shift],
             y: [y_modM_max, y_M_max],
             mode: 'lines',
             line: { color: 'magenta', width: 1 },
@@ -320,8 +330,8 @@ function plotPlan(plan: Plan): void {
                 text: 'GF High',
                 xref: 'x3',
                 yref: 'y3',
-                x: depthToPressure(SURFACE_DEPTH) - gf_shift - 0.05,
-                y: (modM_surf + depthToPressure(SURFACE_DEPTH)) / 2,
+                x: depthToPressure(SURFACE_DEPTH, surfacePressure) - gf_shift - 0.05,
+                y: (modM_surf + depthToPressure(SURFACE_DEPTH, surfacePressure)) / 2,
                 showarrow: false,
                 xanchor: 'right',
                 font: {
@@ -333,8 +343,8 @@ function plotPlan(plan: Plan): void {
                 text: 'GF Low',
                 xref: 'x3',
                 yref: 'y3',
-                x: depthToPressure(maxDepth) + gf_shift + 0.05,
-                y: (y_modM_max + depthToPressure(maxDepth)) / 2,
+                x: depthToPressure(maxDepth, surfacePressure) + gf_shift + 0.05,
+                y: (y_modM_max + depthToPressure(maxDepth, surfacePressure)) / 2,
                 showarrow: false,
                 xanchor: 'left',
                 font: {

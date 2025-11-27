@@ -48,16 +48,10 @@ for (const c of BUEHLMANN) {
 
 export const N_COMPARTMENTS = BUEHLMANN.length;
 export const HALF_LIFES: ReadonlyArray<HalfLife> = BUEHLMANN.map(c => c.t12);
-export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 24; // minutes
+export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 12; // minutes
 
 // --- Dive ---
-// export const ascentRate: SpeedMmin = 10; // (m/min)
-// export const descentRate: SpeedMmin = 20; // (m/min)
-export const STOP_INTERVAL: Depth = 3; // Stops every 3m
-export const LAST_STOP_DEPTH: Depth = 3;
 export const FN2 = 0.79; // Nitrogen Fraction in air
-export const TIME_STEP: Minutes = 1; // time step between 2 updates of tensions
-export const SURFACE_PRESSURE: Pressure = 1.0; // in bars
 
 // --- Simulation constants ---
 export const GF_INCREMENT: GF = 5;
@@ -66,11 +60,11 @@ export const SURFACE_WAIT_MIN: Minutes = 20; // after the dive to see how tensio
 // --- Algorithm functions ---
 export const SURFACE_DEPTH: Depth = 0;
 export const GFS_GRID_SIZE = Math.floor(100 / GF_INCREMENT);
-export function depthToPressure(depth: Depth): Pressure {
-    return SURFACE_PRESSURE + depth / 10;
+export function depthToPressure(depth: Depth, surfacePressure: Pressure): Pressure {
+    return surfacePressure + depth / 10;
 }
-export function depthToPN2(depth: Depth): PN2 {
-    return depthToPressure(depth) * FN2;
+export function depthToPN2(depth: Depth, surfacePressure: Pressure): PN2 {
+    return depthToPressure(depth, surfacePressure) * FN2;
 }
 
 /**
@@ -130,9 +124,9 @@ export function getInterpolatedGF(depth: Depth, maxDepth: Depth, gfLow: GFLow, g
  * Checks if all compartments are within their modified M-Values at given depth
  * and, if not, returns the list of sursaturated compartments indexes
  */
-export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, GF_low: GFLow, GF_high: GFHigh): Simulation {
+export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, GF_low: GFLow, GF_high: GFHigh, surfacePressure: Pressure): Simulation {
     const gf = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
-    const p = depthToPressure(depth);
+    const p = depthToPressure(depth, surfacePressure);
     let isSafe = true;
     let satsCompIdx = []; // index of all compartments that are not safe
     for (let i = 0; i < N_COMPARTMENTS; i++) {
@@ -150,12 +144,12 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, 
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
 export function calculatePlan(diveParams: DiveParams): Plan {
-    const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
 
-    let tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0)); // surface tensions
+    let tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0, surfacePressure)); // surface tensions
     let stops = [];
     let t_stops = 0; // only stops time
     let dtr = 0; // ascent + stops time
@@ -168,21 +162,21 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     // 1. Descent phase
     let t_descent = 0;
     let currentDepth = 0;
-    let nextDepth = currentDepth + descentRate * TIME_STEP;
+    let nextDepth = currentDepth + descentRate * timeStep;
     while (nextDepth < maxDepth) { // Make descent during TIME_STEP_MIN to nextDepth
-        let PN2_descent = depthToPN2((currentDepth + nextDepth) / 2);
-        tensions = updateAllTensions(tensions, PN2_descent, TIME_STEP);
-        t_dive_total += TIME_STEP;
-        t_descent += TIME_STEP;
+        let PN2_descent = depthToPN2((currentDepth + nextDepth) / 2, surfacePressure);
+        tensions = updateAllTensions(tensions, PN2_descent, timeStep);
+        t_dive_total += timeStep;
+        t_descent += timeStep;
         history.push({ time: t_dive_total, depth: nextDepth, tensions: [...tensions] });
         currentDepth = nextDepth;
-        nextDepth = currentDepth + descentRate * TIME_STEP;
+        nextDepth = currentDepth + descentRate * timeStep;
     }
     // last bit of descent to maxDepth
     let t_last_bit = (maxDepth - currentDepth) / descentRate;
     t_dive_total += t_last_bit;
     t_descent += t_last_bit;
-    let PN2_descent = depthToPN2((currentDepth + maxDepth) / 2);
+    let PN2_descent = depthToPN2((currentDepth + maxDepth) / 2, surfacePressure);
     tensions = updateAllTensions(tensions, PN2_descent, t_last_bit);
     history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
 
@@ -190,54 +184,54 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     // 2. Bottom phase (Bottom Time)
     // bottomTime is interpreted as the total time spent at maxDepth, including descent.
     const t_at_bottom = Math.max(0, bottomTime - t_descent);
-    let t_bottom = TIME_STEP;
+    let t_bottom = timeStep;
     while (t_bottom < t_at_bottom) { // Wait at bottom depth during TIME_STEP_MIN
-        tensions = updateAllTensions(tensions, depthToPN2(maxDepth), TIME_STEP);
-        t_dive_total += TIME_STEP;
+        tensions = updateAllTensions(tensions, depthToPN2(maxDepth, surfacePressure), timeStep);
+        t_dive_total += timeStep;
         history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
-        t_bottom += TIME_STEP;
+        t_bottom += timeStep;
     } //t_bottom >= t_at_bottom
-    t_bottom -= TIME_STEP; // we overstepped the last bit
+    t_bottom -= timeStep; // we overstepped the last bit
     t_last_bit = t_at_bottom - t_bottom;
     t_dive_total += t_last_bit;
-    tensions = updateAllTensions(tensions, depthToPN2(maxDepth), t_last_bit);
+    tensions = updateAllTensions(tensions, depthToPN2(maxDepth, surfacePressure), t_last_bit);
     history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
 
     // 3. Ascent and stops phase
     currentDepth = maxDepth;
 
     // Ascent loop
-    while (currentDepth >= LAST_STOP_DEPTH) {
+    while (currentDepth >= lastStopDepth) {
         // Find the next stop depth:
-        const remaining_to_laststop = currentDepth - LAST_STOP_DEPTH;
-        const n_full_intervals = Math.floor((remaining_to_laststop + 0.00001) / STOP_INTERVAL);
-        let nextDepth = LAST_STOP_DEPTH + STOP_INTERVAL * n_full_intervals;
+        const remaining_to_laststop = currentDepth - lastStopDepth;
+        const n_full_intervals = Math.floor((remaining_to_laststop + 0.00001) / stopInterval);
+        let nextDepth = lastStopDepth + stopInterval * n_full_intervals;
         // Ensure nextDepth is less than currentDepth to avoid infinite loop
         if (nextDepth == currentDepth) {
-            nextDepth = currentDepth - STOP_INTERVAL;
+            nextDepth = currentDepth - stopInterval;
         }
 
         // Simulate ascent to nextDepth
         const t_climb = (currentDepth - nextDepth) / ascentRate;
-        const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
+        const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2, surfacePressure);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-        let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
+        let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
             let saturatedCompartments: Array<CompIdx> = [...satsCompIdx];
-            const PN2_stop = depthToPN2(currentDepth);
+            const PN2_stop = depthToPN2(currentDepth, surfacePressure);
             while (!isSafe) {
                 // make a single stop step
-                stopTime += TIME_STEP;
-                t_stops += TIME_STEP;
-                dtr += TIME_STEP;
-                t_dive_total += TIME_STEP;
-                tensions = updateAllTensions(tensions, PN2_stop, TIME_STEP);
+                stopTime += timeStep;
+                t_stops += timeStep;
+                dtr += timeStep;
+                t_dive_total += timeStep;
+                tensions = updateAllTensions(tensions, PN2_stop, timeStep);
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
-                ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh));
+                ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure));
                 if (!isSafe) {
                     for (const cidx of satsCompIdx) {
                         if (!saturatedCompartments.includes(cidx)) {
@@ -261,15 +255,15 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     }
     // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
     const t_final_ascent = currentDepth / ascentRate;
-    const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2);
+    const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2, surfacePressure);
     tensions = updateAllTensions(tensions, PN2_final_ascent, t_final_ascent);
     t_dive_total += t_final_ascent;
     dtr += t_final_ascent;
     history.push({ time: t_dive_total, depth: 0, tensions: [...tensions] });
 
     // 4 . End of dive at surface waiting 20 minutes
-    for (let t = TIME_STEP; t <= SURFACE_WAIT_MIN; t += TIME_STEP) {
-        tensions = updateAllTensions(tensions, depthToPN2(0), TIME_STEP);
+    for (let t = timeStep; t <= SURFACE_WAIT_MIN; t += timeStep) {
+        tensions = updateAllTensions(tensions, depthToPN2(0, surfacePressure), timeStep);
         history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions] });
     }
 

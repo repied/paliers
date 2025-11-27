@@ -27,6 +27,10 @@ export interface DiveParams {
     gfHigh: GFHigh
     ascentRate: SpeedMmin
     descentRate: SpeedMmin;
+    surfacePressure: Pressure;
+    stopInterval: Depth;
+    lastStopDepth: Depth;
+    timeStep: Minutes;
 }
 export interface Plan {
     dtr: Minutes;
