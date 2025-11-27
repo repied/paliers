@@ -27,7 +27,7 @@ function formatCellDataForDetails(plan: Plan): string {
     let t_ascent = dtr - t_stops;
     if (t_ascent < 0) { t_ascent = 0; }
 
-    return `${t('diveProfileTitle')}\n` +
+    return `${t('diveProfileTitle')} ${formatGFstrings(gfLow, gfHigh)}\n` +
         // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
         // `- ${t('bottomTimeLabel')} ${bottomTime} minutes\n` +
         // `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
