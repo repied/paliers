@@ -1,4 +1,4 @@
-import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan, ASCENT_RATE } from "./gf.js";
+import { GFS_GRID_SIZE, GF_INCREMENT, calculatePlan } from "./gf.js";
 import { TRANSLATIONS } from "./translations.js";
 import { analysePlan, formatGFstrings } from "./plan_analysis.js";
 import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
@@ -9,22 +9,27 @@ const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const bottomTimeInput = document.getElementById('bottomTime') as HTMLInputElement;
 const maxDepthInput = document.getElementById('maxDepth') as HTMLInputElement;
+const ascentRateInput = document.getElementById('ascent_rate') as HTMLInputElement;
+const descentRateInput = document.getElementById('descent_rate') as HTMLInputElement;
+
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
 const detailsContainer = document.getElementById('right-container') as HTMLDivElement;
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const intro1 = document.getElementById('intro-1') as HTMLParagraphElement;
-const intro2 = document.getElementById('intro-2') as HTMLParagraphElement;
 const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
 const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
 const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
 const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabelElement;
+const advancedLabel = document.getElementById('advanced-label') as HTMLLabelElement;
+const labelAscentRate = document.getElementById('label-ascent_rate') as HTMLLabelElement;
+const labelDescentRate = document.getElementById('label-descent_rate') as HTMLLabelElement;
 
 // --- State variables ---
 let W_all = canvas.width;
 let H = canvas.height;
-let LABEL_MARGIN = W_all * 0.1;
+let LABEL_MARGIN = W_all * 0.10;
 let W = W_all - LABEL_MARGIN / 2;
 let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GFS_GRID_SIZE); // N+1 cells for 0-100%
 let calculatedPlans: PlansGrid = [];
@@ -58,6 +63,9 @@ export function applyLanguageToDOM(): void {
     readmeLink.textContent = t('readme');
     labelMaxDepth.textContent = t('maxDepth');
     labelBottomTime.textContent = t('bottomTime');
+    advancedLabel.textContent = t('advanced-label');
+    labelAscentRate.textContent = t('label-ascent_rate');
+    labelDescentRate.textContent = t('label-descent_rate');
     // update readme href from data attributes
     if (readmeLink) {
         const href = readmeLink.getAttribute(`data-href-${currentLang}`) as string;
@@ -73,6 +81,8 @@ export function applyLanguageToDOM(): void {
 function calculatePlans(): void {
     const bottomTime = parseInt(bottomTimeInput.value);
     const maxDepth = parseInt(maxDepthInput.value);
+    const ascentRate = parseInt(ascentRateInput.value);
+    const descentRate = parseInt(descentRateInput.value);
 
     calculatedPlans = [];
     for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
@@ -80,7 +90,7 @@ function calculatePlans(): void {
         let row: Array<Plan> = [];
         for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh };
+            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate };
             const plan = calculatePlan(diveParams);
             plan.diveParams = diveParams;
             row.push(plan);
@@ -91,7 +101,6 @@ function calculatePlans(): void {
 
 function drawCanvasAndAnalysePlan(): void {
     drawCanvas();
-    console.log('selectedCell', selectedCell);
     const plan = calculatedPlans[selectedCell.i][selectedCell.j];
     detailsContainer.style.display = 'flex';
     analysePlan(plan).catch();
@@ -306,10 +315,11 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
 
     // 4. Stops (or direct ascent if no stops)
     let lastDepth = maxDepth;
+    const ascentRate = parseInt(ascentRateInput.value);
     if (stops.length > 0) {
         stops.forEach(stop => {
             // Ascent to stop
-            let t_climb = (lastDepth - stop.depth) / ASCENT_RATE;
+            let t_climb = (lastDepth - stop.depth) / ascentRate;
             currentTime += t_climb;
             ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(stop.depth));
 
@@ -322,7 +332,7 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     }
 
     // 5. Final ascent
-    let t_climb_final = lastDepth / ASCENT_RATE;
+    let t_climb_final = lastDepth / ascentRate;
     currentTime += t_climb_final;
     ctx.lineTo(graphX + scaleX(currentTime), graphY + scaleY(0));
 
@@ -393,7 +403,7 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
 
 
 // --- Inputs listeners (depth and time) ---
-[bottomTimeInput, maxDepthInput].forEach(input => {
+[bottomTimeInput, maxDepthInput, ascentRateInput, descentRateInput].forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             calculatePlansAndDraw();

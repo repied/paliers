@@ -93,7 +93,7 @@ body {
 
 .input-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 24px;
     margin-bottom: 24px;
     align-items: center;
@@ -102,6 +102,19 @@ body {
 .input-group {
     display: flex;
     flex-direction: column;
+}
+
+.advanced-input {
+    display: flex;
+    flex-direction: row;
+}
+
+.advanced-input label {
+    font-size: 1.2rem;
+}
+
+.advanced-input input {
+    font-size: 0.9rem;
 }
 
 p {

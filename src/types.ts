@@ -20,7 +20,14 @@ export type Tensions = Array<TensionBar>;
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
 export interface TensionsState { time: Minutes, depth: Depth, tensions: Tensions }
 export type TensionsStateHistory = Array<TensionsState>;
-export interface DiveParams { bottomTime: Minutes, maxDepth: Depth, gfLow: GFLow, gfHigh: GFHigh, }
+export interface DiveParams {
+    bottomTime: Minutes,
+    maxDepth: Depth
+    gfLow: GFLow
+    gfHigh: GFHigh
+    ascentRate: SpeedMmin
+    descentRate: SpeedMmin;
+}
 export interface Plan {
     dtr: Minutes;
     stops: Array<Stop>;

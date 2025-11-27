@@ -4,7 +4,7 @@ export const TRANSLATIONS: Translations = {
   "en": {
     "title": "Bühlmann planner visualizer",
     "canvastitle": "Time To Surface (TTS)",
-    "intro1": "ZHL-16C on air at sea level. Click or arrow keys to change GFs. Compartments can be hidden by clicking on legend. Topright icon to select saturated compartments.",
+    "intro1": "ZHL-16C on air. Click or arrow keys to change GFs. Compartments can be hidden by clicking on legend. Topright icon to show saturated compartments.",
     "readme": "How to choose GFs?",
     "maxDepth": "Maximum depth (m):",
     "bottomTime": "Bottom time (with descent, min):",
@@ -39,11 +39,14 @@ export const TRANSLATIONS: Translations = {
     "calculatedAscentTimeLabel": "Ascent time:",
     "tensionLabel": "Tension",
     "relativeTensionLabel": "Relative Tension to PN2",
+    "advanced-label": "Advanced settings:",
+    "label-ascent_rate": "Ascent rate (m/min):",
+    "label-descent_rate": "Descent rate (m/min):",
   },
   "fr": {
     "title": "Visualisation des facteurs de gradient",
     "canvastitle": "Durée Totale de Remontée (DTR)",
-    "intro1": "ZHL-16C a l'air au niveau de la mer. Cliquez ou utilisez les flèches pour changer les FGs. Les compartiments peuvent être masqués en cliquant sur la légende. Icône en haut à droite pour sélectionner les compartiments saturés.",
+    "intro1": "ZHL-16C a l'air. Cliquez ou utilisez les flèches pour changer les FGs. Les compartiments peuvent être masqués en cliquant sur la légende. Icône en haut à droite pour afficher les compartiments saturés.",
     "readme": "Comment choisir ses FGs ?",
     "maxDepth": "Profondeur maximale (m) :",
     "bottomTime": "Durée au fond (avec la descente, minutes) :",
@@ -78,5 +81,8 @@ export const TRANSLATIONS: Translations = {
     "calculatedAscentTimeLabel": "Durée de la remontée :",
     "tensionLabel": "Tension",
     "relativeTensionLabel": "Tension relative à P_N2",
+    "advanced-label": "Paramètres avancés :",
+    "label-ascent_rate": "Vitesse de remontée (m/min) :",
+    "label-descent_rate": "Vitesse de descente (m/min) :",
   }
 }

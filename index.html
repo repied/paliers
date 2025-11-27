@@ -26,11 +26,10 @@
         </div>
         <h1 id="main-title"></h1>
         <p id="intro-1"></p>
-        <p id="intro-2">
-            <a id="readme-link" href="./docs/gf_fr.md" data-href-fr="./docs/gf_fr.html"
-                data-href-en="./docs/gf_en.html"></a>
-            &nbsp;&nbsp;&nbsp;
-            <a id="source-link" href="https://github.com/repied/paliers">Source Code</a>
+        <a id="readme-link" href="./docs/gf_fr.md" data-href-fr="./docs/gf_fr.html"
+            data-href-en="./docs/gf_en.html"></a>
+        &nbsp;&nbsp;&nbsp;
+        <a id="source-link" href="https://github.com/repied/paliers">Source Code</a>
 
         </p>
 
@@ -45,6 +44,18 @@
                 <input type="number" id="bottomTime" value="20" min="0" max="60" step="1">
                 <input type="range" id="bottomTimeSlider" min="0" max="60" value="20" step="1">
             </div>
+            <div class="input-group">
+                <label id="advanced-label"></label>
+                <div class="advanced-input">
+                    <label for="ascent_rate" id="label-ascent_rate"></label>
+                    <input type="number" id="ascent_rate" value="10" min="0" max="60" step="1">
+                </div>
+                <div class="advanced-input">
+                    <label for="descent_rate" id="label-descent_rate"></label>
+                    <input type="number" id="descent_rate" value="20" min="0" max="60" step="1">
+                </div>
+            </div>
+
         </div>
 
         <h2 id="canvas-title"></h2>

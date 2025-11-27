@@ -50,19 +50,21 @@ export const N_COMPARTMENTS = BUEHLMANN.length;
 export const HALF_LIFES: ReadonlyArray<HalfLife> = BUEHLMANN.map(c => c.t12);
 export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 24; // minutes
 
-// --- Simulation constants ---
-export const SURFACE_PRESSURE: Pressure = 1.0; // bar
-export const SURFACE_DEPTH: Depth = 0;
-export const FN2 = 0.79; // Nitrogen Fraction in air
-export const ASCENT_RATE: SpeedMmin = 10; // (m/min)
-export const DESCENT_RATE: SpeedMmin = 20; // (m/min)
-export const GF_INCREMENT: GF = 5;
+// --- Dive ---
+// export const ascentRate: SpeedMmin = 10; // (m/min)
+// export const descentRate: SpeedMmin = 20; // (m/min)
 export const STOP_INTERVAL: Depth = 3; // Stops every 3m
 export const LAST_STOP_DEPTH: Depth = 3;
-export const SURFACE_WAIT_MIN: Minutes = 20;
+export const FN2 = 0.79; // Nitrogen Fraction in air
 export const TIME_STEP: Minutes = 1; // time step between 2 updates of tensions
+export const SURFACE_PRESSURE: Pressure = 1.0; // in bars
+
+// --- Simulation constants ---
+export const GF_INCREMENT: GF = 5;
+export const SURFACE_WAIT_MIN: Minutes = 20; // after the dive to see how tension move at surface
 
 // --- Algorithm functions ---
+export const SURFACE_DEPTH: Depth = 0;
 export const GFS_GRID_SIZE = Math.floor(100 / GF_INCREMENT);
 export function depthToPressure(depth: Depth): Pressure {
     return SURFACE_PRESSURE + depth / 10;
@@ -148,7 +150,7 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, 
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
 export function calculatePlan(diveParams: DiveParams): Plan {
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
@@ -166,7 +168,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     // 1. Descent phase
     let t_descent = 0;
     let currentDepth = 0;
-    let nextDepth = currentDepth + DESCENT_RATE * TIME_STEP;
+    let nextDepth = currentDepth + descentRate * TIME_STEP;
     while (nextDepth < maxDepth) { // Make descent during TIME_STEP_MIN to nextDepth
         let PN2_descent = depthToPN2((currentDepth + nextDepth) / 2);
         tensions = updateAllTensions(tensions, PN2_descent, TIME_STEP);
@@ -174,10 +176,10 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         t_descent += TIME_STEP;
         history.push({ time: t_dive_total, depth: nextDepth, tensions: [...tensions] });
         currentDepth = nextDepth;
-        nextDepth = currentDepth + DESCENT_RATE * TIME_STEP;
+        nextDepth = currentDepth + descentRate * TIME_STEP;
     }
     // last bit of descent to maxDepth
-    let t_last_bit = (maxDepth - currentDepth) / DESCENT_RATE;
+    let t_last_bit = (maxDepth - currentDepth) / descentRate;
     t_dive_total += t_last_bit;
     t_descent += t_last_bit;
     let PN2_descent = depthToPN2((currentDepth + maxDepth) / 2);
@@ -216,7 +218,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         }
 
         // Simulate ascent to nextDepth
-        const t_climb = (currentDepth - nextDepth) / ASCENT_RATE;
+        const t_climb = (currentDepth - nextDepth) / ascentRate;
         const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2);
         let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
         let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh);
@@ -258,7 +260,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
     }
     // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
-    const t_final_ascent = currentDepth / ASCENT_RATE;
+    const t_final_ascent = currentDepth / ascentRate;
     const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2);
     tensions = updateAllTensions(tensions, PN2_final_ascent, t_final_ascent);
     t_dive_total += t_final_ascent;
