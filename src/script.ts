@@ -66,7 +66,11 @@ document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
 
 export function applyLanguageToDOM(): void {
     mainTitle.textContent = t('title');
-    intro1.innerHTML = t('intro1');
+    if (window.innerWidth < 700) {
+        intro1.innerHTML = t('intro1_mobile');
+    } else {
+        intro1.innerHTML = t('intro1');
+    }
     canvastitle.textContent = t('canvastitle');
     readmeLink.textContent = t('readme');
     labelMaxDepth.textContent = t('maxDepth');

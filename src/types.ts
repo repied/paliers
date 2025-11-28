@@ -72,9 +72,10 @@ export interface Trace {
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
 export interface Axis { title?: object; autorange?: true | 'reversed'; rangemode?: 'tozero'; gridcolor: Color; range?: [number, number]; type?: 'category' | 'linear' | 'log' | 'date'; tickvals?: Array<number>; ticktext?: Array<string>; matches?: string; domain?: [number, number]; }
-export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
+export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; showlegend?: boolean; }
 export interface Font { color: Color; size?: number; }
 export interface Annotation { text: string; xref: string; yref: string; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
+export interface Margin { l: number; r: number; b: number; t: number; pad: number; }
 export interface Layout {
     title: object;
     grid?: Grid;
@@ -90,6 +91,7 @@ export interface Layout {
     plot_bgcolor: Color;
     font: Font;
     showlegend?: boolean;
+    margin?: Margin;
 }
 
 export interface PlotlyIcon { width: number; height: number; path: string; }
