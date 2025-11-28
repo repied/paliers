@@ -513,6 +513,14 @@ function plotPlan(plan: Plan): void {
             yanchor: "top",
             x: 1,
             y: 1,
+            showlegend: false
+        },
+        margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0,
+            pad: 0
         },
         paper_bgcolor: isDarkMode ? '#3a3a3a' : '#ffffff',
         plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',

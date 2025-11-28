@@ -388,3 +388,12 @@ body.dark-mode .equation {
         align-items: center;
     }
 }
+
+@media (max-width: 768px) {
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+    .column_container {
+        flex-direction: column;
+    }
+}
