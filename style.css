@@ -10,8 +10,7 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #f8f9fa;
     color: #212529;
-    line-height: 1.6;
-    padding: 20px;
+    padding: 10px;
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -19,6 +18,20 @@ body {
 }
 
 .left_container {
+    background: #ffffff;
+    padding: 10px 10px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    max-width: 1100px;
+    width: 100%;
+    position: relative;
+    border: 1px solid #e9ecef;
+}
+
+#right-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background: #ffffff;
     padding: 24px 32px;
     border-radius: 12px;
@@ -32,26 +45,36 @@ body {
 .column_container {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
-    width: 100%;
-    /* gap: 16px; */
-}
-
-#right-container {
-    /* hidden by default */
-    display: none;
-    flex-direction: column;
     align-items: center;
-    background: #ffffff;
-    padding: 24px 32px;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    max-width: 1100px;
+    justify-content: center;
     width: 100%;
-    position: relative;
-    border: 1px solid #e9ecef;
+    align-items: stretch;
+    gap: 16px;
 }
 
+#decoCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-width: 600px;
+    max-height: 600px;
+    /* margin: 0 auto 0 auto; */
+    display: block;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    cursor: crosshair;
+}
+
+#plan-as-string {
+    padding: 12px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    color: #333;
+    /* keep text formatting */
+    white-space: pre-wrap;
+}
 
 #lang-theme-selector-container {
     /* above all the text*/
@@ -99,24 +122,16 @@ body {
     align-items: center;
 }
 
+.links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
 .input-group {
     display: flex;
     flex-direction: column;
 }
-
-/* 
-.advanced-input {
-    display: flex;
-    flex-direction: column;
-} */
-/* 
-.advanced-input label {
-    font-size: 1.2rem;
-}
-
-.advanced-input input {
-    font-size: 0.9rem;
-} */
 
 p {
     text-align: center;
@@ -257,35 +272,6 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Canvas */
-#decoCanvas {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    max-width: 700px;
-    max-height: 700px;
-    margin: 0 auto 24px auto;
-    display: block;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    background-color: #fdfdfd;
-    cursor: crosshair;
-}
-
-/* Analysis details */
-#plan-as-string {
-    margin-top: 16px;
-    padding: 12px;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    min-height: 40px;
-    color: #333;
-    /* Préserve le formatage */
-    white-space: pre-wrap;
-}
-
-
 #plotly-plot {
     width: 100%;
     height: 100%;
@@ -381,10 +367,20 @@ body.dark-mode .equation {
     color: #e0e0e0;
 }
 
-/* Adjust body flex-direction for small screens :mobile */
 @media (max-width: 1200px) {
     body {
         flex-direction: column;
         align-items: center;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .column_container {
+        flex-direction: column;
     }
 }

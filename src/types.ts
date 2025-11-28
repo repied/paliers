@@ -71,25 +71,40 @@ export interface Trace {
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }
-export interface Axis { title?: object; autorange?: true | 'reversed'; rangemode?: 'tozero'; gridcolor: Color; range?: [number, number]; type?: 'category' | 'linear' | 'log' | 'date'; tickvals?: Array<number>; ticktext?: Array<string>; matches?: string; domain?: [number, number]; }
-export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; }
+export interface Axis {
+    title?: object;
+    autorange?: true | 'reversed';
+    rangemode?: 'tozero';
+    gridcolor?: Color;
+    range?: [number, number];
+    type?: 'category' | 'linear' | 'log' | 'date';
+    tickvals?: Array<number>;
+    ticktext?: Array<string>;
+    matches?: string;
+    domain?: [number, number];
+    visible?: boolean;
+    showgrid?: boolean;
+}
+export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; showlegend?: boolean; }
 export interface Font { color: Color; size?: number; }
 export interface Annotation { text: string; xref: string; yref: string; x: number; y: number; showarrow: boolean; xanchor: 'right' | 'left'; font: Font; }
+export interface Margin { l: number; r: number; b: number; t: number; pad: number; }
 export interface Layout {
-    title: object;
+    title?: object;
     grid?: Grid;
-    xaxis: Axis;
-    yaxis: Axis;
-    xaxis2: Axis;
-    yaxis2: Axis;
+    xaxis?: Axis;
+    yaxis?: Axis;
+    xaxis2?: Axis;
+    yaxis2?: Axis;
     xaxis3?: Axis;
     yaxis3?: Axis;
-    legend: Legend;
-    annotations: Array<Annotation>;
-    paper_bgcolor: Color;
-    plot_bgcolor: Color;
-    font: Font;
+    legend?: Legend;
+    annotations?: Array<Annotation>;
+    paper_bgcolor?: Color;
+    plot_bgcolor?: Color;
+    font?: Font;
     showlegend?: boolean;
+    margin?: Margin;
 }
 
 export interface PlotlyIcon { width: number; height: number; path: string; }
@@ -105,7 +120,7 @@ export interface PlotConfig {
 export type PlotDivElement = HTMLDivElement & { on: Function; };
 declare global {
     const Plotly: {
-        newPlot: (plot: string, traces: Array<Trace>, layout: Layout, config: PlotConfig) => void;
+        newPlot: (plot: string, traces?: Array<Trace>, layout?: Layout, config?: PlotConfig) => void;
         relayout: (plotDiv: PlotDivElement, update: Record<string, boolean>) => void;
         Icons: Record<string, PlotlyIcon>;
     };
@@ -114,7 +129,7 @@ declare global {
 export interface EventData { curveNumber: number; data: Trace[]; fullData: Trace[]; }
 
 // script.ts
-export type SelectedCell = { i: number; j: number; data?: Plan; };
+export type SelectedCell = { i: number; j: number; };
 export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | null; }
 
 // translations.ts

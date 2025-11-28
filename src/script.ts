@@ -3,6 +3,8 @@ import { TRANSLATIONS } from "./translations.js";
 import { analysePlan, formatGFstrings } from "./plan_analysis.js";
 import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
 
+// --- DOM References ---
+export const MOBILE_WIDTH_THRESHOLD = 600;
 
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
@@ -19,9 +21,8 @@ const timeStepInput = document.getElementById('time_step') as HTMLInputElement;
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
-const detailsContainer = document.getElementById('right-container') as HTMLDivElement;
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
-const intro1 = document.getElementById('intro-1') as HTMLParagraphElement;
+const into = document.getElementById('intro') as HTMLParagraphElement;
 const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
 const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
 const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
@@ -35,21 +36,20 @@ const labelTimeStep = document.getElementById('label-time_step') as HTMLLabelEle
 
 
 // --- State variables ---
-let W_all = canvas.width;
-let H = canvas.height;
-let LABEL_MARGIN = W_all * 0.10;
-let W = W_all - LABEL_MARGIN / 2;
-let CELL_SIZE = (W - LABEL_MARGIN) / (1 + GFS_GRID_SIZE); // N+1 cells for 0-100%
+
+// canvas is a square
+let margin = (canvas.width * 0.10) / 2; // 5% on each side : margin -- grid -- margin
+let grid_width = canvas.width - 2 * margin;
+let cell_number = GFS_GRID_SIZE + 1;
+let cell_width = grid_width / cell_number;
+
 let calculatedPlans: PlansGrid = [];
 let tooltip: Tooltip = { active: false, x: 0, y: 0, data: null };
-
-// default selected cell
-const middleIdx = Math.floor(GFS_GRID_SIZE / 2);
-let selectedCell: SelectedCell = { i: middleIdx, j: middleIdx };
-
-// --- Language functions ---
+const middleIdx = Math.floor(cell_number / 2);
+let selectedCell: SelectedCell = { i: middleIdx, j: middleIdx }; // default selected cell
 let currentLang: Lang = (localStorage.getItem('paliers_lang') as Lang) || 'fr';
 
+// --- Language functions ---
 export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): string {
     const dict = TRANSLATIONS[currentLang];
     return (dict && dict[key]) || `Missing ${currentLang} translation for ${key}`;
@@ -58,15 +58,19 @@ export function t(key: keyof typeof TRANSLATIONS[keyof typeof TRANSLATIONS]): st
 export function setLanguage(lang: Lang) {
     currentLang = lang;
     localStorage.setItem('paliers_lang', lang);
-    applyLanguageToDOM();
+    applyLanguageAndDraw();
 }
 document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
     b.addEventListener('click', () => setLanguage(b.dataset.lang as Lang));
 });
 
-export function applyLanguageToDOM(): void {
+export function applyLanguageAndDraw(): void {
     mainTitle.textContent = t('title');
-    intro1.innerHTML = t('intro1');
+    if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) {
+        into.innerHTML = t('into_mobile');
+    } else {
+        into.innerHTML = t('into');
+    }
     canvastitle.textContent = t('canvastitle');
     readmeLink.textContent = t('readme');
     labelMaxDepth.textContent = t('maxDepth');
@@ -85,7 +89,7 @@ export function applyLanguageToDOM(): void {
     // set selector value and active btn
     const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
     btns.forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
-    drawCanvasAndAnalysePlan();
+    drawCanvasAndPlan();
 }
 
 // --- Canvas drawing functions ---
@@ -100,10 +104,10 @@ function calculatePlans(): void {
     const timeStep = parseFloat(timeStepInput.value);
 
     calculatedPlans = [];
-    for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
+    for (let i = 0; i < cell_number; i++) { // GF Low (0 to 100)
         const gfLow = (i * GF_INCREMENT) / 100;
         let row: Array<Plan> = [];
-        for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
+        for (let j = 0; j < cell_number; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep };
             const plan = calculatePlan(diveParams);
@@ -114,18 +118,17 @@ function calculatePlans(): void {
     }
 }
 
-function drawCanvasAndAnalysePlan(): void {
-    drawCanvas();
-    const plan = calculatedPlans[selectedCell.i][selectedCell.j];
-    detailsContainer.style.display = 'flex';
-    analysePlan(plan).catch();
+function calculatePlansAndDraw(): void {
+    calculatePlans();
+    drawCanvasAndPlan();
 }
 
-function calculatePlansAndDraw(): void {
-    detailsContainer.style.display = 'none';
-    calculatePlans();
-    drawCanvasAndAnalysePlan();
+function drawCanvasAndPlan(): void {
+    drawCanvas();
+    const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+    analysePlan(plan);
 }
+
 
 function getColorForValue(value: number): Color {
     // Short/aggressive DTR (close to 0) -> Green
@@ -152,37 +155,37 @@ function getColorForValue(value: number): Color {
 }
 
 function drawCanvas(): void {
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 1. Draw Labels
     ctx.fillStyle = '#343a40';
-    ctx.font = `bold ${Math.max(10, CELL_SIZE / 3)}px Inter`;
+    ctx.font = `bold ${Math.max(10, cell_number / 3)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     // GF High Labels (X Axis)
-    ctx.fillText(t('gfHigh'), (LABEL_MARGIN + W) / 2, LABEL_MARGIN / 2);
-    for (let j = 0; j <= GFS_GRID_SIZE; j++) {
-        const x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
-        ctx.fillText((j * GF_INCREMENT).toString(), x, LABEL_MARGIN - 20);
+    ctx.fillText(t('gfHigh'), canvas.width / 2, margin / 4);
+    for (let j = 0; j < cell_number; j++) {
+        const x = margin + j * cell_width + cell_width / 2;
+        ctx.fillText((j * GF_INCREMENT).toString(), x, margin - margin / 4);
     }
 
     // GF Low Labels (Y Axis)
     ctx.save();
-    ctx.translate(LABEL_MARGIN / 2, (LABEL_MARGIN + H) / 2);
+    ctx.translate(margin / 4, canvas.height / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(t('gfLow'), 0, 0);
     ctx.restore();
-    for (let i = 0; i <= GFS_GRID_SIZE; i++) {
-        const y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
-        ctx.fillText((i * GF_INCREMENT).toString(), LABEL_MARGIN - 25, y);
+    for (let i = 0; i < cell_number; i++) {
+        const y = margin + i * cell_width + cell_width / 2;
+        ctx.fillText((i * GF_INCREMENT).toString(), margin - margin / 4, y);
     }
 
     // 2. Draw Grid
     let minDTR = Infinity;
     let maxDTR = 0;
-    for (let i = 0; i <= GFS_GRID_SIZE; i++) { // GF Low (0 to 100)
-        for (let j = 0; j <= GFS_GRID_SIZE; j++) { // GF High (0 to 100)
+    for (let i = 0; i < cell_number; i++) { // GF Low (0 to 100)
+        for (let j = 0; j < cell_number; j++) { // GF High (0 to 100)
             const plan = calculatedPlans[i][j];
             // Color normalization (only for dives WITH stops)
             if (plan.dtr > 0 && plan.dtr !== Infinity && plan.stops.length > 0) {
@@ -199,11 +202,11 @@ function drawCanvas(): void {
     for (let i = 0; i < calculatedPlans.length; i++) {
         for (let j = 0; j < calculatedPlans[i].length; j++) {
             const { dtr, stops } = calculatedPlans[i][j];
-            const x = LABEL_MARGIN + j * CELL_SIZE;
-            const y = LABEL_MARGIN + i * CELL_SIZE;
+            const x = margin + j * cell_width;
+            const y = margin + i * cell_width;
 
             // Cell background
-            if (isNaN(dtr) || dtr === Infinity) {
+            if (dtr === Infinity) {
                 ctx.fillStyle = '#adb5bd'; // N/A (GF Low > GF High) or Impossible -> Gray background
             } else if (stops.length === 0) {
                 ctx.fillStyle = '#ffffff'; // White if "No Stop"
@@ -211,17 +214,17 @@ function drawCanvas(): void {
                 const norm = (rangeDTR > 0) ? (dtr - minDTR) / rangeDTR : 0;
                 ctx.fillStyle = getColorForValue(Math.max(0, Math.min(1, norm)));
             }
-            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            ctx.fillRect(x, y, cell_width, cell_width);
 
             // Border
             ctx.strokeStyle = '#dee2e6';
-            ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+            ctx.strokeRect(x, y, cell_width, cell_width);
 
             // Highlight selected cell
             if (selectedCell.i === i && selectedCell.j === j) {
                 ctx.strokeStyle = '#007bff';
                 ctx.lineWidth = 5;
-                ctx.strokeRect(x + 1.5, y + 1.5, CELL_SIZE - 3, CELL_SIZE - 3);
+                ctx.strokeRect(x + 1.5, y + 1.5, cell_width - 3, cell_width - 3);
                 ctx.lineWidth = 1; // Reset
             }
 
@@ -230,16 +233,16 @@ function drawCanvas(): void {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            if (isNaN(dtr) || dtr === Infinity) {
+            if (dtr === Infinity) {
                 ctx.fillStyle = '#fff';
-                ctx.font = `${Math.max(8, CELL_SIZE / 3.5)}px Inter`;
-                ctx.fillText('X', x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+                ctx.font = `${Math.max(8, cell_width / 3.5)}px Inter`;
+                ctx.fillText('X', x + cell_width / 2, y + cell_width / 2);
             } else if (stops.length === 0) {
-                ctx.font = `${Math.max(7, CELL_SIZE / 4)}px Inter`; // Smaller font
-                ctx.fillText('', x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+                ctx.font = `${Math.max(7, cell_width / 4)}px Inter`; // Smaller font
+                ctx.fillText('', x + cell_width / 2, y + cell_width / 2);
             } else {
-                ctx.font = `bold ${Math.max(9, CELL_SIZE / 3)}px Inter`;
-                ctx.fillText(Math.ceil(dtr).toString(), x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+                ctx.font = `bold ${Math.max(9, cell_width / 3)}px Inter`;
+                ctx.fillText(Math.ceil(dtr).toString(), x + cell_width / 2, y + cell_width / 2);
             }
         }
     }
@@ -262,8 +265,8 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     // Positioning (avoid going off screen)
     let ttX = mouseX + 15;
     let ttY = mouseY + 15;
-    if (ttX + ttW > W) { ttX = mouseX - ttW - 15; }
-    if (ttY + ttH > H) { ttY = mouseY - ttH - 15; }
+    if (ttX + ttW > grid_width) { ttX = mouseX - ttW - 15; }
+    if (ttY + ttH > canvas.height) { ttY = mouseY - ttH - 15; }
 
     // Background
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
@@ -285,7 +288,7 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     ctx.fillText(`${formatGFstrings(gfLow, gfHigh)} | ${t('calculatedDTRLabel')} ${Math.ceil(dtr)} min`, ttX + ttPad, ttY + ttPad);
 
     // Handle "No Stop" or "N/A" cases
-    if (isNaN(dtr) || dtr === Infinity) {
+    if (dtr === Infinity) {
         ctx.fillStyle = '#333';
         ctx.font = '12px Inter';
         ctx.fillText(t('profileNotApplicable') + ` (>${MAX_STOP_TIME_BEFORE_INFTY} min)`, ttX + ttPad, ttY + 40);
@@ -386,17 +389,31 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     wrapText(`${t('stopsLabel')} ${stopsStr}`, legendX, legendY, graphW, 14);
 }
 
-function getCellFromMousePos(mouseX: number, mouseY: number): SelectedCell {
-    if (mouseX < LABEL_MARGIN || mouseY < LABEL_MARGIN) {
-        return selectedCell;
-    }
-    const j = Math.floor((mouseX - LABEL_MARGIN) / CELL_SIZE); // Column (GF High)
-    const i = Math.floor((mouseY - LABEL_MARGIN) / CELL_SIZE); // Row (GF Low)
 
-    if (i >= 0 && i < calculatedPlans.length && j >= 0 && j < calculatedPlans[0].length) {
-        return { i, j, data: calculatedPlans[i][j] };
+function mouseInCanvas(e: MouseEvent): { mouseXcanvas: number; mouseYcanvas: number; } {
+    const canvasRectangle = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / canvasRectangle.width;
+    const scaleY = canvas.height / canvasRectangle.height;
+    const mouseXcanvas = (e.clientX - canvasRectangle.left) * scaleX;
+    const mouseYcanvas = (e.clientY - canvasRectangle.top) * scaleY;
+    return { mouseXcanvas, mouseYcanvas };
+}
+
+function mouse2cell(mouseXcanvas: number, mouseYcanvas: number): SelectedCell | null {
+    const mouseXgrid = mouseXcanvas - margin;
+    const mouseYgrid = mouseYcanvas - margin;
+    const isOutsideGrid = (
+        mouseXgrid < 0 ||
+        mouseYgrid < 0 ||
+        mouseXgrid >= grid_width ||
+        mouseYgrid >= grid_width);
+    if (isOutsideGrid) {
+        return null;
     }
-    return selectedCell;
+    // mouseX changes the column, == the value of GFhigh
+    const j = Math.floor(mouseXgrid / cell_width);
+    const i = Math.floor(mouseYgrid / cell_width);
+    return { i, j }; // row = GFlow, col = GFhigh
 }
 
 
@@ -413,12 +430,17 @@ function debounce(func: Function, wait: number): Function {
     };
 }
 const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
-// const debouncedDrawCanvas = debounce(drawCanvas, 250);
-// const debouncedAnalysePlan = debounce(analysePlan, 250);
-
 
 // --- Inputs listeners (depth and time) ---
-[bottomTimeInput, maxDepthInput, ascentRateInput, descentRateInput, surfacePressureInput, stopIntervalInput, lastStopDepthInput, timeStepInput].forEach(input => {
+[bottomTimeInput,
+    maxDepthInput,
+    ascentRateInput,
+    descentRateInput,
+    surfacePressureInput,
+    stopIntervalInput,
+    lastStopDepthInput,
+    timeStepInput
+].forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             calculatePlansAndDraw();
@@ -450,20 +472,15 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
 // --- Canvas listeners (Tooltip and Click) ---
 
 // display tooltips on mouse over
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const mouseY = (e.clientY - rect.top) * scaleY;
+canvas.addEventListener('mousemove', (e: MouseEvent) => {
+    const { mouseXcanvas, mouseYcanvas } = mouseInCanvas(e);
+    const cellOrNull = mouse2cell(mouseXcanvas, mouseYcanvas);
 
-    const cell = getCellFromMousePos(mouseX, mouseY);
-
-    if (cell) {
+    if (cellOrNull) {
         tooltip.active = true;
-        tooltip.x = mouseX;
-        tooltip.y = mouseY;
-        tooltip.data = cell.data;
+        tooltip.x = mouseXcanvas;
+        tooltip.y = mouseYcanvas;
+        tooltip.data = calculatedPlans[cellOrNull.i][cellOrNull.j];
     } else {
         tooltip.active = false;
     }
@@ -477,27 +494,15 @@ canvas.addEventListener('mouseout', () => {
 
 // display details on click on a cell
 canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const mouseY = (e.clientY - rect.top) * scaleY;
-
-    const cell = getCellFromMousePos(mouseX, mouseY);
-
-    if (cell && cell.data) {
-        selectedCell = { i: cell.i, j: cell.j };
-        if (!isNaN(cell.data.dtr)) {
-            detailsContainer.style.display = 'flex';
-            analysePlan(cell.data);
-            // detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            detailsContainer.style.display = 'none';
-        }
+    const { mouseXcanvas, mouseYcanvas } = mouseInCanvas(e);
+    const cellOrNull = mouse2cell(mouseXcanvas, mouseYcanvas);
+    if (cellOrNull) {
+        selectedCell = { i: cellOrNull.i, j: cellOrNull.j };
         drawCanvas();
+        const newPlan = calculatedPlans[cellOrNull.i][cellOrNull.j]
+        analysePlan(newPlan);
     } else {
-        detailsContainer.style.display = 'none';
-        drawCanvas();
+        // clicked outside grid, do nothing
     }
 });
 
@@ -511,41 +516,39 @@ window.addEventListener('keydown', (e) => {
             if (i > 0) { i--; moved = true; }
             break;
         case 'ArrowDown':
-            if (i < GFS_GRID_SIZE) { i++; moved = true; }
+            if (i < cell_number - 1) { i++; moved = true; }
             break;
         case 'ArrowLeft':
             if (j > 0) { j--; moved = true; }
             break;
         case 'ArrowRight':
-            if (j < GFS_GRID_SIZE) { j++; moved = true; }
+            if (j < cell_number - 1) { j++; moved = true; }
             break;
         default:
             return;
     }
 
     if (moved) {
-        e.preventDefault();
+        // e.preventDefault();
         selectedCell = { i, j };
         const newPlan = calculatedPlans[i][j];
-
-        if (newPlan && !isNaN(newPlan.dtr)) {
-            detailsContainer.style.display = 'flex';
-            analysePlan(newPlan);
-            // also update the small profile plot
-            tooltip.active = true;
-            tooltip.data = newPlan;
-            tooltip.x = LABEL_MARGIN + j * CELL_SIZE + CELL_SIZE / 2;
-            tooltip.y = LABEL_MARGIN + i * CELL_SIZE + CELL_SIZE / 2;
-        } else {
-            detailsContainer.style.display = 'none';
-            tooltip.active = false;
-        }
+        tooltip.active = true;
+        tooltip.data = newPlan;
+        tooltip.x = margin + j * cell_width + cell_width / 2;
+        tooltip.y = margin + i * cell_width + cell_width / 2;
         drawCanvas();
+        analysePlan(newPlan);
     }
 });
 
-// Theme toggle logic
+// Initial launch
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Calculate plans for default values and default selected cell
+    calculatePlansAndDraw();
+    applyLanguageAndDraw();
+
+    // Theme logic 
     const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement;
     const body = document.body;
 
@@ -559,13 +562,10 @@ document.addEventListener('DOMContentLoaded', () => {
             themeToggleBtn.textContent = '🌙';
             themeToggleBtn.title = 'Switch to dark mode';
         }
-        if (calculatedPlans.length > 0) {
-            const plan = calculatedPlans[selectedCell.i][selectedCell.j];
-            detailsContainer.style.display = 'flex';
-            analysePlan(plan).catch();
-        } else {
-            detailsContainer.style.display = 'none';
-        }
+
+        const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+        analysePlan(plan); // replot plotly to get it to match theme
+
     }
 
     // Load theme preference from localStorage
@@ -595,13 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
         });
     }
-
     // Apply theme on page load
     setThemePreference();
-});
-
-// Initial launch
-document.addEventListener('DOMContentLoaded', () => {
-    calculatePlansAndDraw();
-    applyLanguageToDOM();
 });
