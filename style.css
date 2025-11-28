@@ -28,14 +28,6 @@ body {
     border: 1px solid #e9ecef;
 }
 
-.column_container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    width: 100%;
-    /* gap: 16px; */
-}
-
 #right-container {
     display: flex;
     flex-direction: column;
@@ -50,6 +42,39 @@ body {
     border: 1px solid #e9ecef;
 }
 
+.column_container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    align-items: stretch;
+    gap: 16px;
+}
+
+#decoCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-width: 600px;
+    max-height: 600px;
+    /* margin: 0 auto 0 auto; */
+    display: block;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    cursor: crosshair;
+}
+
+#plan-as-string {
+    padding: 12px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    color: #333;
+    /* keep text formatting */
+    white-space: pre-wrap;
+}
 
 #lang-theme-selector-container {
     /* above all the text*/
@@ -97,24 +122,16 @@ body {
     align-items: center;
 }
 
+.links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
 .input-group {
     display: flex;
     flex-direction: column;
 }
-
-/* 
-.advanced-input {
-    display: flex;
-    flex-direction: column;
-} */
-/* 
-.advanced-input label {
-    font-size: 1.2rem;
-}
-
-.advanced-input input {
-    font-size: 0.9rem;
-} */
 
 p {
     text-align: center;
@@ -254,35 +271,6 @@ input[type="range"]::-moz-range-thumb {
     border: 3px solid #fff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-/* Canvas */
-#decoCanvas {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    max-width: 700px;
-    max-height: 700px;
-    margin: 0 auto 24px auto;
-    display: block;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    background-color: #fdfdfd;
-    cursor: crosshair;
-}
-
-/* Analysis details */
-#plan-as-string {
-    margin-top: 16px;
-    padding: 12px;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    min-height: 40px;
-    color: #333;
-    /* Préserve le formatage */
-    white-space: pre-wrap;
-}
-
 
 #plotly-plot {
     width: 100%;

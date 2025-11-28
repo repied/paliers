@@ -543,6 +543,7 @@ function plotPlan(plan: Plan): void {
 
     if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) { // mobile device
         layout.showlegend = false;
+        data_ply.forEach((tr) => { tr.showlegend = false; });
         layout.margin = {
             l: 0,
             r: 0,
