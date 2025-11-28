@@ -1,4 +1,4 @@
-import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation } from "./types.js";
+import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation, Pressure } from "./types.js";
 import { t, MOBILE_WIDTH_THRESHOLD } from "./script.js";
 import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
 
@@ -210,6 +210,22 @@ function plotPlan(plan: Plan): void {
         hoverinfo: 'none'
     };
     data_ply.push(tracePressure);
+
+    const tankPressurePoints: Array<Pressure> = history.map(entry => entry.tankPressure);
+    const traceTankPressure: Trace = {
+        x: timePoints,
+        y: tankPressurePoints,
+        mode: 'lines',
+        name: t('tankPressureLabel'),
+        line: { color: 'green', width: 2 },
+        yaxis: 'y12',
+        xaxis: 'x1',
+        legendgroup: `TankPressure`,
+        hovertemplate:
+            `${t('timeLabel')}: %{x:.2f} min<br>` +
+            `${t('tankPressureLabel')}: %{y:.2f} bar`
+    };
+    data_ply.push(traceTankPressure);
 
     const traceCeiling: Trace = {
         x: timePoints,
@@ -497,6 +513,14 @@ function plotPlan(plan: Plan): void {
             rangemode: 'tozero',
             gridcolor: isDarkMode ? '#444' : '#eee',
             domain: [0.64, 1]
+        },
+        yaxis12: {
+            showgrid: false,
+            anchor: 'x1',
+            overlaying: 'y',
+            side: 'right',
+            domain: [0.64, 1],
+            visible: false
         },
         xaxis2: {
             title: { text: t('timeLabel') + ' (min)' },

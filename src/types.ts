@@ -1,5 +1,6 @@
 // gf.ts
 export type Depth = number; // in meters
+export type Volume = number; // in liters
 export type Pressure = number; // in bars
 export type PartPressure = Pressure;
 export type PN2 = PartPressure; // in bars
@@ -18,8 +19,8 @@ export interface Simulation { isSafe: boolean, satsCompIdx: Array<CompIdx>; }
 export type Tensions = Array<TensionBar>;
 
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
-export interface TensionsState { time: Minutes, depth: Depth, tensions: Tensions }
-export type TensionsStateHistory = Array<TensionsState>;
+export interface State { time: Minutes, depth: Depth, tensions: Tensions, tankPressure: Pressure }
+export type StateHistory = Array<State>;
 export interface DiveParams {
     bottomTime: Minutes,
     maxDepth: Depth
@@ -38,7 +39,7 @@ export interface Plan {
     t_descent: Minutes;
     t_dive_total: Minutes;
     t_stops: Minutes;
-    history: TensionsStateHistory;
+    history: StateHistory;
     diveParams?: DiveParams;
 }
 export type PlansGrid = Array<Array<Plan>>;
@@ -84,6 +85,10 @@ export interface Axis {
     domain?: [number, number];
     visible?: boolean;
     showgrid?: boolean;
+    anchor?: string;
+    overlaying?: string;
+    side?: 'left' | 'right' | 'top' | 'bottom';
+    position?: number;
 }
 export interface Legend { xanchor: 'left'; yanchor: 'top'; x: number; y: number; showlegend?: boolean; }
 export interface Font { color: Color; size?: number; }
@@ -98,6 +103,7 @@ export interface Layout {
     yaxis2?: Axis;
     xaxis3?: Axis;
     yaxis3?: Axis;
+    yaxis12?: Axis;
     legend?: Legend;
     annotations?: Array<Annotation>;
     paper_bgcolor?: Color;
@@ -136,10 +142,3 @@ export interface Tooltip { active: boolean; x: number; y: number; data?: Plan | 
 type LangTranslation = { [key: string]: string; }
 export type Lang = 'fr' | 'en';
 export type Translations = { [key in Lang]: LangTranslation; }
-
-// small tools
-export function assert(condition: boolean, message: string): asserts condition {
-    if (!condition) {
-        throw new Error(message);
-    }
-}

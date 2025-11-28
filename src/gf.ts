@@ -1,4 +1,4 @@
-import { assert, Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx } from "./types.js";
+import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx, Volume } from "./types.js";
 
 // Values from subsurface codebase are the same as mine
 // static const double buehlmann_N2_a[] = {
@@ -50,8 +50,22 @@ export const N_COMPARTMENTS = BUEHLMANN.length;
 export const HALF_LIFES: ReadonlyArray<HalfLife> = BUEHLMANN.map(c => c.t12);
 export const MAX_STOP_TIME_BEFORE_INFTY: Minutes = 60 * 12; // minutes
 
-// --- Dive ---
+// --- Dive parameters ---
 export const FN2 = 0.79; // Nitrogen Fraction in air
+export const TANK_VOLUME: Volume = 12; // 12 liters tank
+export const TANK_START_PRESSURE: Pressure = 200;
+export const VOLUME_CONSUMPTION_AT_1BAR: Volume = 20; // litres per each minute at sea level surface (from 15 to 25 depending on divers)
+
+function volumeConsumptionAtPressure(pressure: Pressure): Volume {
+    const pressureRatio = pressure / 1.0;
+    return VOLUME_CONSUMPTION_AT_1BAR * pressureRatio;
+}
+function updateTankPressure(tankPressure: Pressure, time: Minutes, pressure: Pressure): Pressure {
+    const volumeConsumed = volumeConsumptionAtPressure(pressure) * time;
+    const pressureConsumed = volumeConsumed / TANK_VOLUME;
+    const newTankPressure = tankPressure - pressureConsumed;
+    return newTankPressure >= 0 ? newTankPressure : 0;
+}
 
 // --- Simulation constants ---
 export const GF_INCREMENT: GF = 5;
@@ -65,6 +79,11 @@ export function depthToPressure(depth: Depth, surfacePressure: Pressure): Pressu
 }
 export function depthToPN2(depth: Depth, surfacePressure: Pressure): PN2 {
     return depthToPressure(depth, surfacePressure) * FN2;
+}
+function assert(condition: boolean, message: string): asserts condition {
+    if (!condition) {
+        throw new Error(message);
+    }
 }
 
 /**
@@ -155,20 +174,24 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     let dtr = 0; // ascent + stops time
     let t_dive_total = 0; // descent + ascent + stops time
     let history = []; // will store the N2 tensions for each compartment over time
+    let tankPressure = TANK_START_PRESSURE;
 
     // Initial state at surface
-    history.push({ time: 0, depth: 0, tensions: [...tensions] });
+    history.push({ time: 0, depth: 0, tensions: [...tensions], tankPressure });
 
     // 1. Descent phase
     let t_descent = 0;
     let currentDepth = 0;
     let nextDepth = currentDepth + descentRate * timeStep;
     while (nextDepth < maxDepth) { // Make descent during TIME_STEP_MIN to nextDepth
-        let PN2_descent = depthToPN2((currentDepth + nextDepth) / 2, surfacePressure);
-        tensions = updateAllTensions(tensions, PN2_descent, timeStep);
         t_dive_total += timeStep;
         t_descent += timeStep;
-        history.push({ time: t_dive_total, depth: nextDepth, tensions: [...tensions] });
+        const depthStep = (nextDepth - currentDepth) / 2; // avg depth during the step
+        const PN2Step = depthToPN2(depthStep, surfacePressure);
+        const pressureStep = depthToPressure(depthStep, surfacePressure);
+        tankPressure = updateTankPressure(tankPressure, timeStep, pressureStep);
+        tensions = updateAllTensions(tensions, PN2Step, timeStep);
+        history.push({ time: t_dive_total, depth: nextDepth, tensions: [...tensions], tankPressure });
         currentDepth = nextDepth;
         nextDepth = currentDepth + descentRate * timeStep;
     }
@@ -176,26 +199,33 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     let t_last_bit = (maxDepth - currentDepth) / descentRate;
     t_dive_total += t_last_bit;
     t_descent += t_last_bit;
-    let PN2_descent = depthToPN2((currentDepth + maxDepth) / 2, surfacePressure);
-    tensions = updateAllTensions(tensions, PN2_descent, t_last_bit);
-    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
+    const depth_last_bit = (currentDepth + maxDepth) / 2;
+    const PN2_last_bit = depthToPN2(depth_last_bit, surfacePressure);
+    const pressure_last_bit = depthToPressure(depth_last_bit, surfacePressure);
+    tankPressure = updateTankPressure(tankPressure, t_last_bit, pressure_last_bit);
+    tensions = updateAllTensions(tensions, PN2_last_bit, t_last_bit);
+    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
 
 
     // 2. Bottom phase (Bottom Time)
     // bottomTime is interpreted as the total time spent at maxDepth, including descent.
     const t_at_bottom = Math.max(0, bottomTime - t_descent);
-    let t_bottom = timeStep;
-    while (t_bottom < t_at_bottom) { // Wait at bottom depth during TIME_STEP_MIN
-        tensions = updateAllTensions(tensions, depthToPN2(maxDepth, surfacePressure), timeStep);
+    const maxPressure = depthToPressure(maxDepth, surfacePressure);
+    const maxPN2 = depthToPN2(maxDepth, surfacePressure);
+    let t_bottom_curr = timeStep;
+    while (t_bottom_curr < t_at_bottom) {
         t_dive_total += timeStep;
-        history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
-        t_bottom += timeStep;
+        tankPressure = updateTankPressure(tankPressure, timeStep, maxPressure);
+        tensions = updateAllTensions(tensions, maxPN2, timeStep);
+        history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
+        t_bottom_curr += timeStep;
     } //t_bottom >= t_at_bottom
-    t_bottom -= timeStep; // we overstepped the last bit
-    t_last_bit = t_at_bottom - t_bottom;
+    t_bottom_curr -= timeStep; // we overstepped the last bit
+    t_last_bit = t_at_bottom - t_bottom_curr;
     t_dive_total += t_last_bit;
-    tensions = updateAllTensions(tensions, depthToPN2(maxDepth, surfacePressure), t_last_bit);
-    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions] });
+    tankPressure = updateTankPressure(tankPressure, t_last_bit, maxPressure);
+    tensions = updateAllTensions(tensions, maxPN2, t_last_bit);
+    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
 
     // 3. Ascent and stops phase
     currentDepth = maxDepth;
@@ -211,26 +241,31 @@ export function calculatePlan(diveParams: DiveParams): Plan {
             nextDepth = currentDepth - stopInterval;
         }
 
-        // Simulate ascent to nextDepth
-        const t_climb = (currentDepth - nextDepth) / ascentRate;
-        const PN2_climb = depthToPN2((currentDepth + nextDepth) / 2, surfacePressure);
-        let tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
+        // Simulate ascent to nextDepth at ascentRate
+        const t_ascend = (currentDepth - nextDepth) / ascentRate;
+        const depth_ascend = (nextDepth + currentDepth) / 2; // avg depth during the climb
+        const PN2_ascend = depthToPN2(depth_ascend, surfacePressure);
+        const pressure_ascend = depthToPressure(depth_ascend, surfacePressure);
+
+        let tensions_next = updateAllTensions(tensions, PN2_ascend, t_ascend);
         let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
             let stopTime = 0;
             let saturatedCompartments: Array<CompIdx> = [...satsCompIdx];
             const PN2_stop = depthToPN2(currentDepth, surfacePressure);
+            const pressure_stop = depthToPressure(currentDepth, surfacePressure);
             while (!isSafe) {
                 // make a single stop step
                 stopTime += timeStep;
                 t_stops += timeStep;
                 dtr += timeStep;
                 t_dive_total += timeStep;
+                tankPressure = updateTankPressure(tankPressure, timeStep, pressure_stop);
                 tensions = updateAllTensions(tensions, PN2_stop, timeStep);
-                history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
+                history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
                 // Check if we can now ascend to nextDepth
-                tensions_next = updateAllTensions(tensions, PN2_climb, t_climb);
+                tensions_next = updateAllTensions(tensions, PN2_ascend, t_ascend);
                 ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure));
                 if (!isSafe) {
                     for (const cidx of satsCompIdx) {
@@ -246,25 +281,30 @@ export function calculatePlan(diveParams: DiveParams): Plan {
             }
             stops.push({ depth: currentDepth, time: stopTime, saturatedCompartments });
         }
-        // Perform the ascent
+
+        // Perform the ascent to next depth now that it's safe
+        tankPressure = updateTankPressure(tankPressure, t_ascend, pressure_ascend);
+        tensions = updateAllTensions(tensions, PN2_ascend, t_ascend);
+        dtr += t_ascend;
+        t_dive_total += t_ascend;
         currentDepth = nextDepth;
-        tensions = [...tensions_next];
-        t_dive_total += t_climb;
-        dtr += t_climb;
-        history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions] });
+        history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
     }
     // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
     const t_final_ascent = currentDepth / ascentRate;
     const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2, surfacePressure);
+    const pressure__final_ascend = depthToPressure((currentDepth + 0) / 2, surfacePressure);
+    tankPressure = updateTankPressure(tankPressure, t_final_ascent, pressure__final_ascend);
     tensions = updateAllTensions(tensions, PN2_final_ascent, t_final_ascent);
-    t_dive_total += t_final_ascent;
     dtr += t_final_ascent;
-    history.push({ time: t_dive_total, depth: 0, tensions: [...tensions] });
+    t_dive_total += t_final_ascent;
+    history.push({ time: t_dive_total, depth: 0, tensions: [...tensions], tankPressure });
 
     // 4 . End of dive at surface waiting 20 minutes
     for (let t = timeStep; t <= SURFACE_WAIT_MIN; t += timeStep) {
+        tankPressure = updateTankPressure(tankPressure, timeStep, surfacePressure);
         tensions = updateAllTensions(tensions, depthToPN2(0, surfacePressure), timeStep);
-        history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions] });
+        history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions], tankPressure });
     }
 
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };
