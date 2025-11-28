@@ -1,5 +1,5 @@
 import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation } from "./types.js";
-import { t } from "./script.js";
+import { t, MOBILE_WIDTH_THRESHOLD } from "./script.js";
 import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
 
 // Maintain trace visibility state across re-plots
@@ -13,19 +13,21 @@ localStorage.setItem('showAllSatComps', 'false');
 export function formatGFstrings(gfLow: GFLow, gfHigh: GFHigh): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
+
 function formatCellDataForDetails(plan: Plan): string {
     const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
+
+    if (dtr === Infinity) {
+        return t('diveProfileTitle') + ` ${formatGFstrings(gfLow, gfHigh)}\n\n` + t('dtrInfinity');
+    }
 
     let stopsStr = stops.map(s => `${parseFloat(s.time.toFixed(2))} min @ ${s.depth}m`).join('\n - ');
     let comptStr = stops.map(s => `C${s.saturatedCompartments.join(', C')}`).join('\n - ');
     if (stops.length === 0) { stopsStr = t('stopsNone'); }
 
     let t_at_bottom = bottomTime - t_descent;
-    if (t_at_bottom < 0) { t_at_bottom = 0; }
-
     let t_ascent = dtr - t_stops;
-    if (t_ascent < 0) { t_ascent = 0; }
 
     return `${t('diveProfileTitle')} ${formatGFstrings(gfLow, gfHigh)}\n\n` +
         // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
@@ -40,6 +42,7 @@ function formatCellDataForDetails(plan: Plan): string {
         `${t('requiredStopsLabel')}\n - ${stopsStr}\n` +
         `${t('compartmentstopsLabel')}\n - ${comptStr}\n`;
 }
+
 function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
@@ -47,11 +50,12 @@ function formatCellDataShort(plan: Plan): string {
 }
 
 
-export async function analysePlan(plan: Plan): Promise<void> {
-    const planDetailsTitle = document.getElementById('details-plan-h2') as HTMLHeadingElement;
-    const planDetailsTxt = document.getElementById('plan-as-string') as HTMLDivElement;
-    planDetailsTitle.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
-    planDetailsTxt.textContent = formatCellDataForDetails(plan)
+// export async function analysePlan(plan: Plan): Promise<void> {
+export function analysePlan(plan: Plan): void {
+    const rightH2 = document.getElementById('right-container-h2') as HTMLHeadingElement;
+    const planAsString = document.getElementById('plan-as-string') as HTMLDivElement;
+    rightH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
+    planAsString.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
 }
 
@@ -61,7 +65,7 @@ function getCompartmentColor(i: CompIdx): Color {
 }
 
 function plotPlan(plan: Plan): void {
-    const { history, diveParams } = plan as Plan;
+    const { dtr, history, diveParams } = plan as Plan;
     const { bottomTime,
         maxDepth,
         gfLow,
@@ -73,6 +77,20 @@ function plotPlan(plan: Plan): void {
         lastStopDepth,
         timeStep,
     } = diveParams as DiveParams;
+
+    if (dtr === Infinity) {
+        // Render an empty plot instead of leaving the previous plot visible
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const emptyLayout: Layout = {
+            paper_bgcolor: isDarkMode ? '#3a3a3a' : '#ffffff',
+            plot_bgcolor: isDarkMode ? '#212529' : '#f8f9fa',
+            xaxis: { visible: false, showgrid: false },
+            yaxis: { visible: false, showgrid: false }
+        };
+        Plotly.newPlot('plotly-plot', [], emptyLayout);
+        return;
+    }
+
 
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
@@ -523,7 +541,7 @@ function plotPlan(plan: Plan): void {
     };
 
 
-    if (window.innerWidth < 700) { // mobile device
+    if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) { // mobile device
         layout.showlegend = false;
         layout.margin = {
             l: 0,

@@ -224,15 +224,15 @@ describe('calculatePlan', () => {
         timeStep: TIME_STEP
     };
 
-    test('should return NaN for invalid inputs (zero bottom time)', () => {
+    test('should return Infinity for invalid inputs (zero bottom time)', () => {
         const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
-        expect(plan.dtr).toBeNaN();
+        expect(plan.dtr).toBe(Infinity);
         expect(plan.stops).toEqual([]);
     });
 
-    test('should return NaN for invalid inputs (zero max depth)', () => {
+    test('should return Infinity for invalid inputs (zero max depth)', () => {
         const plan = calculatePlan({ bottomTime: 20, maxDepth: 0, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
-        expect(plan.dtr).toBeNaN();
+        expect(plan.dtr).toBe(Infinity);
         expect(plan.stops).toEqual([]);
     });
 

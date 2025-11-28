@@ -146,7 +146,7 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, 
 export function calculatePlan(diveParams: DiveParams): Plan {
     const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
-        return { dtr: NaN, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
+        return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
 
     let tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0, surfacePressure)); // surface tensions
