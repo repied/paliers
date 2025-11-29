@@ -1,84 +1,120 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bühlmann Gradient Factors visualizer</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script type="module" src="js/gf.js"></script>
-    <script type="module" src="js/translations.js"></script>
-    <script type="module" src="js/script.js" defer></script>
-    <script type="module" src="js/plan_analysis.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="decompression_planner_title">Decompression Planner</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
 </head>
 
 <body>
-
+  <div class="container">
     <div class="left_container">
-        <div id="lang-theme-selector-container">
-            <div id="lang-theme-buttons">
-                <button id="theme-toggle-btn" title="Toggle dark mode">🌙</button>
-                <button class="lang-btn" data-lang="fr" title="Français">🇫🇷</button>
-                <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
+      <div class="language-selector">
+        <button id="lang-fr">Français</button>
+        <button id="lang-en">English</button>
+      </div>
+      <h1 data-i18n="decompression_planner_title">
+        Planification de décompression en plongée
+      </h1>
+      <p data-i18n="description">
+        Bühlmann ZHL-16C with Gradient Factors. Click or use arrows to change
+        GFs. Compartments can be hidden by clicking on the legend. Top right
+        icon for saturated compartments.
+      </p>
+      <a href="https://www.dive-hive.com/blog/how-to-choose-your-gradient-factors/" data-i18n="how_to_choose_gf"
+        target="_blank">Comment choisir ses FGs ?</a>
+      <a href="https://github.com/ghiselr/decomanager" target="_blank" data-i18n="source_code">Source Code</a>
+
+      <div class="column_container">
+        <div>
+          <div class="input-grid">
+            <div>
+              <label for="max_depth" data-i18n="max_depth">Profondeur maximale (m) :</label>
+              <input type="number" id="max_depth" value="30" />
+              <input type="range" id="max_depth_slider" min="10" max="100" value="30" />
             </div>
-        </div>
-
-        <h1 id="main-title"></h1>
-        <p id="intro"></p>
-
-        <div class="links-grid">
-            <p><a id="readme-link" href="./docs/gf_fr.md" data-href-fr="./docs/gf_fr.html"
-                    data-href-en="./docs/gf_en.html"></a></p>
-            <p><a id="source-link" href="https://github.com/repied/paliers">Source Code</a></p>
-        </div>
-
-        <div class="input-grid">
-            <div class="input-group">
-                <label for="maxDepth" id="label-maxDepth"></label>
-                <input type="number" id="maxDepth" value="30" min="0" max="300" step="1">
-                <input type="range" id="maxDepthSlider" min="0" max="300" value="30" step="1">
-
-                <label for="bottomTime" id="label-bottomTime"></label>
-                <input type="number" id="bottomTime" value="20" min="0" max="600" step="1">
-                <input type="range" id="bottomTimeSlider" min="0" max="600" value="20" step="1">
+            <div>
+              <label for="ascent_rate" data-i18n="ascent_rate">Vitesse de remontée (m/min) :</label>
+              <input type="number" id="ascent_rate" value="10" />
             </div>
-            <div class="input-group">
-                <label for="ascent_rate" id="label-ascent_rate"></label>
-                <input type="number" id="ascent_rate" value="10" min="0" max="100" step="1">
-
-                <label for="descent_rate" id="label-descent_rate"></label>
-                <input type="number" id="descent_rate" value="20" min="0" max="100" step="1">
-
-                <label for="surface_pressure" id="label-surface_pressure"></label>
-                <input type="number" id="surface_pressure" value="1.0" min="0" max="2.0" step="0.1">
+            <div>
+              <label for="bottom_time" data-i18n="bottom_time">Durée au fond (avec la descente, minutes) :</label>
+              <input type="number" id="bottom_time" value="20" />
+              <input type="range" id="bottom_time_slider" min="5" max="120" value="20" />
             </div>
-            <div class="input-group">
-                <label for="stop_interval" id="label-stop_interval"></label>
-                <input type="number" id="stop_interval" value="3" min="0" max="10" step="0.5">
 
-                <label for="last_stop_depth" id="label-last_stop_depth"></label>
-                <input type="number" id="last_stop_depth" value="3" min="0" max="10" step="0.5">
-
-                <label for="time_step" id="label-time_step"></label>
-                <input type="number" id="time_step" value="1" min="0.1" max="5" step="0.25">
+            <div>
+              <label for="descent_rate" data-i18n="descent_rate">Vitesse de descente (m/min) :</label>
+              <input type="number" id="descent_rate" value="20" />
             </div>
-        </div>
+            <div>
+              <label for="stop_interval" data-i18n="stop_interval">Intervalle entre paliers (m) :</label>
+              <input type="number" id="stop_interval" value="3" />
+            </div>
+            <div>
+              <label for="last_stop_depth" data-i18n="last_stop_depth">Profondeur dernier palier (m) :</label>
+              <input type="number" id="last_stop_depth" value="3" />
+            </div>
+            <div>
+              <label for="surface_pressure" data-i18n="surface_pressure">Pression de surface (bar) :</label>
+              <input type="number" id="surface_pressure" value="1.0" />
+            </div>
+            <div>
+              <label for="simulation_step" data-i18n="simulation_step">Pas de temps de simulation (min) :</label>
+              <input type="number" id="simulation_step" value="1" />
+            </div>
+            <div>
+              <input type="checkbox" id="add_safety_stop" name="add_safety_stop" />
+              <label for="add_safety_stop" data-i18n="add_safety_stop">Ajouter un palier de sécurité</label>
+            </div>
+            <div></div>
+            <div id="safety_stop_inputs" style="display: none;">
+              <div>
+                <label for="safety_stop_depth" data-i18n="safety_stop_depth">Profondeur du palier de sécurité (m)
+                  :</label>
+                <input type="number" id="safety_stop_depth" value="5" />
+              </div>
+              <div>
+                <label for="safety_stop_duration" data-i18n="safety_stop_duration">Durée du palier de sécurité (min)
+                  :</label>
+                <input type="number" id="safety_stop_duration" value="3" />
+              </div>
+            </div>
+          </div>
+          <div class="range-slider">
+            <label for="gf_low" data-i18n="gf_low">GF Low:</label>
+            <input type="range" id="gf_low" min="10" max="100" value="50" />
+            <span id="gf_low_value">50</span>
+          </div>
+          <div class="range-slider">
+            <label for="gf_high" data-i18n="gf_high">GF High:</label>
+            <input type="range" id="gf_high" min="10" max="100" value="50" />
+            <span id="gf_high_value">50</span>
+          </div>
 
-        <h2 id="canvas-title"></h2>
-        <div class="column_container">
-            <canvas title="deco-canvas" id="decoCanvas" width="600" height="600"></canvas>
-            <div id="plan-as-string"></div>
+          <div id="plan"></div>
+          <button id="show-saturated" data-i18n="show_saturated">
+            Afficher les compartiments saturés
+          </button>
         </div>
+      </div>
     </div>
-
-    <div id="right-container">
-        <h2 id="right-container-h2"></h2>
-        <div id="plotly-plot"></div>
+    <div class="right_container">
+      <h2 id="plan_title"></h2>
+      <p data-i18n="plot_description">
+        Graphique des tensions, M-values et M-values modifiées pour tous les
+        compartiments.
+      </p>
+      <div id="plot"></div>
+      <div id="small_plot"></div>
+      <div id="second_plot"></div>
+      <div id="decoCanvas" width="800" height="400"></div>
     </div>
-
-
+  </div>
+  <script src="dist/main.js"></script>
 </body>
 
 </html>

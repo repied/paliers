@@ -133,6 +133,13 @@ body {
     flex-direction: column;
 }
 
+#safety_stop_inputs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
 p {
     text-align: center;
     margin-bottom: 24px;

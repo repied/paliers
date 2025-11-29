@@ -52,6 +52,9 @@ export const TRANSLATIONS: Translations = {
     "gfCeilingLabel": "GF Ceiling",
     "dtrInfinity": "TTS is too long (calculations stopped)",
     "tankPressureLabel": "Tank Pressure",
+    "label-add_safety_stop": "Add safety stop",
+    "label-safety_stop_depth": "Safety stop depth (m):",
+    "label-safety_stop_duration": "Safety stop duration (min):",
   },
   "fr": {
     "title": "Planification de décompression en plongée",
@@ -104,5 +107,8 @@ export const TRANSLATIONS: Translations = {
     "gfCeilingLabel": "Plafond FG",
     "dtrInfinity": "La DTR est trop longue (calculs arrêtés)",
     "tankPressureLabel": "Pression en bouteille",
+    "label-add_safety_stop": "Ajouter un palier de sécurité",
+    "label-safety_stop_depth": "Profondeur du palier de sécurité (m) :",
+    "label-safety_stop_duration": "Durée du palier de sécurité (min) :",
   }
 }

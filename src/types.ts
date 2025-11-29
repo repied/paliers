@@ -32,6 +32,9 @@ export interface DiveParams {
     stopInterval: Depth;
     lastStopDepth: Depth;
     timeStep: Minutes;
+    addSafetyStop: boolean;
+    safetyStopDepth: Depth;
+    safetyStopDuration: Minutes;
 }
 export interface Plan {
     dtr: Minutes;
