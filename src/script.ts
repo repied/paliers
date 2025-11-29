@@ -1,7 +1,7 @@
-import { GFS_GRID_SIZE, GF_INCREMENT, MAX_STOP_TIME_BEFORE_INFTY, calculatePlan } from "./gf.js";
+import { GFS_GRID_SIZE, GF_INCREMENT, MAX_STOP_TIME_BEFORE_INFTY, calculatePlan, executeProfile } from "./gf.js";
 import { TRANSLATIONS } from "./translations.js";
 import { analysePlan, formatGFstrings } from "./plan_analysis.js";
-import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes } from "./types.js";
+import { Lang, Plan, PlansGrid, Color, DiveParams, SelectedCell, Tooltip, Depth, Minutes, Profile } from "./types.js";
 
 // --- DOM References ---
 export const MOBILE_WIDTH_THRESHOLD = 600;
@@ -597,4 +597,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Apply theme on page load
     setThemePreference();
+
+    // --- Import/Export listeners ---
+    const importProfileBtn = document.getElementById('import-profile-btn') as HTMLButtonElement;
+    const importProfileInput = document.getElementById('import-profile-input') as HTMLInputElement;
+
+    importProfileBtn.addEventListener('click', () => {
+        importProfileInput.click();
+    });
+
+    importProfileInput.addEventListener('change', (event) => {
+        const file = (event.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            try {
+                const profile = parseProfileFromCSV(content);
+                if (isValidProfile(profile)) {
+                    const diveParams: DiveParams = {
+                        bottomTime: 0, // Not used for profile execution
+                        maxDepth: 0,   // Not used for profile execution
+                        gfLow: calculatedPlans[selectedCell.i][selectedCell.j].diveParams!.gfLow,
+                        gfHigh: calculatedPlans[selectedCell.i][selectedCell.j].diveParams!.gfHigh,
+                        ascentRate: parseInt(ascentRateInput.value),
+                        descentRate: parseInt(descentRateInput.value),
+                        surfacePressure: parseFloat(surfacePressureInput.value),
+                        stopInterval: parseInt(stopIntervalInput.value),
+                        lastStopDepth: parseInt(lastStopDepthInput.value),
+                        timeStep: parseFloat(timeStepInput.value),
+                    };
+                    const plan = executeProfile(profile, diveParams);
+                    analysePlan(plan);
+                } else {
+                    alert('Invalid profile data. Please check the CSV file.');
+                }
+            } catch (error) {
+                alert('Error parsing CSV file: ' + (error as Error).message);
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    function parseProfileFromCSV(csv: string): Profile {
+        return csv.trim().split('\n').map(line => {
+            const [time, depth] = line.split(',').map(Number);
+            return { time, depth };
+        });
+    }
+
+    function isValidProfile(profile: Profile): boolean {
+        if (profile.length === 0) return false;
+        if (profile[0].depth !== 0) return false;
+        if (profile[profile.length - 1].depth !== 0) return false;
+        return profile.every(p => p.time >= 0 && p.depth >= 0);
+    }
+
+    const exportPlanBtn = document.getElementById('export-plan-btn') as HTMLButtonElement;
+    exportPlanBtn.addEventListener('click', () => {
+        const plan = calculatedPlans[selectedCell.i][selectedCell.j];
+        if (plan) {
+            const csv = convertPlanToCSV(plan);
+            downloadCSV(csv, 'dive_plan.csv');
+        }
+    });
+
+    function convertPlanToCSV(plan: Plan): string {
+        const header = ['time', 'depth', ...Array.from({ length: 16 }, (_, i) => `C${i}`), 'tankPressure'].join(',');
+        const rows = plan.history.map(h =>
+            [h.time, h.depth, ...h.tensions, h.tankPressure].join(',')
+        );
+        return [header, ...rows].join('\n');
+    }
+
+    function downloadCSV(csv: string, filename: string): void {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
 });

@@ -51,6 +51,7 @@ export const TRANSLATIONS: Translations = {
     "gfCeilingLabel": "GF Ceiling",
     "dtrInfinity": "TTS is too long (calculations stopped)",
     "tankPressureLabel": "Tank Pressure",
+    "mValueBreachLabel": "M-Value Breach",
   },
   "fr": {
     "title": "Planification de décompression en plongée",
@@ -102,5 +103,6 @@ export const TRANSLATIONS: Translations = {
     "gfCeilingLabel": "Plafond FG",
     "dtrInfinity": "La DTR est trop longue (calculs arrêtés)",
     "tankPressureLabel": "Pression en bouteille",
+    "mValueBreachLabel": "Violation M-Value",
   }
 }

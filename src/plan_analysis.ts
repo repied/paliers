@@ -1,6 +1,6 @@
 import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation, Pressure } from "./types.js";
 import { t, MOBILE_WIDTH_THRESHOLD } from "./script.js";
-import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
+import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH, SimulAtDepth } from "./gf.js";
 
 // Maintain trace visibility state across re-plots
 let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);
@@ -278,8 +278,18 @@ function plotPlan(plan: Plan): void {
     // --- Second Subplot: Heatmap (Middle Plot) ss---
     // Prepare zData for heatmap: Calculate saturation relative to ambient PN2: Tension - PN2
     const zData: number[][] = [];
+    const breachData: (number | null)[][] = Array(N_COMPARTMENTS).fill(0).map(() => []);
+
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const row = history.map(h => h.tensions[i] - depthToPN2(h.depth, surfacePressure));
+        const row = history.map(h => {
+            const breach = SimulAtDepth(h.depth, h.tensions, maxDepth, gfLow, gfHigh, surfacePressure);
+            if (!breach.isSafe && breach.satsCompIdx.includes(i)) {
+                breachData[i].push(1); // 1 indicates a breach
+            } else {
+                breachData[i].push(null); // null for no breach, transparent on heatmap
+            }
+            return h.tensions[i] - depthToPN2(h.depth, surfacePressure);
+        });
         zData.push(row);
     }
 
@@ -301,6 +311,20 @@ function plotPlan(plan: Plan): void {
             `${t('relativeTensionLabel')}: %{z:.2f} bar<br>`
     };
     data_ply.push(traceHeatmap);
+
+    const traceBreach: Trace = {
+        x: timePoints,
+        y: Array.from({ length: N_COMPARTMENTS }, (_, i) => `C${i}`),
+        z: breachData,
+        name: t('mValueBreachLabel'),
+        type: 'heatmap',
+        colorscale: [['0', 'rgba(0,0,0,0)'], ['1', 'white']],
+        showscale: false,
+        xaxis: 'x2',
+        yaxis: 'y2',
+        hoverinfo: 'none'
+    };
+    data_ply.push(traceBreach);
 
     // --- Third Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
     const traceMainDiagonalPN2: Trace = {
