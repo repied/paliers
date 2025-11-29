@@ -1,4 +1,4 @@
-import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx, Volume } from "./types.js";
+import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx, Volume, Profile } from "./types.js";
 
 // Values from subsurface codebase are the same as mine
 // static const double buehlmann_N2_a[] = {
@@ -308,4 +308,72 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     }
 
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };
+}
+
+/**
+ * Executes a given dive profile and computes the saturation and tank history.
+ * Does not enforce any decompression model, just simulates the provided profile.
+ */
+export function executeProfile(profile: Profile, diveParams: DiveParams): Plan {
+    const { surfacePressure, timeStep } = diveParams;
+
+    if (profile.length === 0) {
+        return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
+    }
+
+    let tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0, surfacePressure));
+    let history = [];
+    let tankPressure = TANK_START_PRESSURE;
+
+    // Initial state at surface
+    history.push({ time: 0, depth: 0, tensions: [...tensions], tankPressure });
+
+    let t_descent = 0;
+    let maxDepth = 0;
+
+    for (let i = 1; i < profile.length; i++) {
+        const startPos = profile[i - 1];
+        const endPos = profile[i];
+        const segmentDuration = endPos.time - startPos.time;
+
+        if (segmentDuration <= 0) continue;
+
+        const avgDepth = (startPos.depth + endPos.depth) / 2;
+        const avgPN2 = depthToPN2(avgDepth, surfacePressure);
+        const avgPressure = depthToPressure(avgDepth, surfacePressure);
+
+        // Simulate the segment in smaller time steps for accuracy
+        let timeElapsedInSegment = 0;
+        while (timeElapsedInSegment < segmentDuration) {
+            const dt = Math.min(timeStep, segmentDuration - timeElapsedInSegment);
+            const currentTime = startPos.time + timeElapsedInSegment + dt;
+            const currentDepth = startPos.depth + (endPos.depth - startPos.depth) * ((timeElapsedInSegment + dt) / segmentDuration);
+
+            if (currentDepth > maxDepth) {
+                maxDepth = currentDepth;
+                t_descent = currentTime;
+            }
+
+            tankPressure = updateTankPressure(tankPressure, dt, avgPressure);
+            tensions = updateAllTensions(tensions, avgPN2, dt);
+            history.push({ time: currentTime, depth: currentDepth, tensions: [...tensions], tankPressure });
+            timeElapsedInSegment += dt;
+        }
+    }
+
+    const t_dive_total = profile[profile.length - 1].time;
+
+    // 4 . End of dive at surface waiting 20 minutes
+    const lastState = history[history.length -1];
+    let currentTensions = lastState.tensions;
+    let currentTankPressure = lastState.tankPressure;
+
+    for (let t = timeStep; t <= SURFACE_WAIT_MIN; t += timeStep) {
+        currentTankPressure = updateTankPressure(currentTankPressure, timeStep, surfacePressure);
+        currentTensions = updateAllTensions(currentTensions, depthToPN2(0, surfacePressure), timeStep);
+        history.push({ time: t_dive_total + t, depth: 0, tensions: [...currentTensions], tankPressure: currentTankPressure });
+    }
+
+    // For an executed profile, dtr is total time, stops are not calculated.
+    return { dtr: t_dive_total, stops: [], t_descent, t_dive_total, t_stops: 0, history, diveParams };
 }

@@ -17,6 +17,8 @@ export type GFHigh = GF; // high = shallow =surface
 export type CompIdx = number;
 export interface Simulation { isSafe: boolean, satsCompIdx: Array<CompIdx>; }
 export type Tensions = Array<TensionBar>;
+export type Position = { time: Minutes, depth: Depth };
+export type Profile = Array<Position>;
 
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
 export interface State { time: Minutes, depth: Depth, tensions: Tensions, tankPressure: Pressure }
@@ -49,7 +51,7 @@ export type Color = string;
 export interface Trace {
     x: Array<number | string>;
     y: Array<number | string>;
-    z?: Array<Array<number>>;
+    z?: Array<Array<number | null>>;
     type?: 'scatter' | 'heatmap';
     mode?: 'lines' | 'lines+markers' | 'tozero';
     name?: string;
@@ -62,7 +64,7 @@ export interface Trace {
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
     visible?: boolean | 'legendonly';
-    colorscale?: string;
+    colorscale?: string | (string | number)[][];
     reversescale?: boolean;
     zmid?: number;
     colorbar?: { title: string };
