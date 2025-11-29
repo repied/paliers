@@ -242,7 +242,7 @@ function plotPlan(plan: Plan): void {
     };
     data_ply.push(traceCeiling);
 
-    const traceGFCeiling: Trace = {
+    const traceGFCeilingLine: Trace = {
         x: timePoints,
         y: GF_Ceiling_Points,
         mode: 'lines',
@@ -255,7 +255,23 @@ function plotPlan(plan: Plan): void {
             `${t('timeLabel')}: %{x:.2f} min<br>` +
             `${t('gfCeilingLabel')}: %{y:.2f} bar`
     };
-    data_ply.push(traceGFCeiling);
+
+    // To fill the area above the curve on a reversed y-axis, we create a shape
+    // that goes along the curve, then up to the top of the plot (y=0), and back.
+    const traceGFCeilingFill: Trace = {
+        x: [...timePoints, timePoints[timePoints.length - 1], timePoints[0]],
+        y: [...GF_Ceiling_Points, 0, 0],
+        fill: 'toself',
+        fillcolor: 'rgba(255,165,0,0.3)',
+        line: { color: 'transparent' },
+        showlegend: false,
+        hoverinfo: 'none',
+        yaxis: 'y1',
+        xaxis: 'x1',
+        legendgroup: `GFCeiling`,
+    };
+    data_ply.push(traceGFCeilingFill);
+    data_ply.push(traceGFCeilingLine);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const traceComp: Trace = {

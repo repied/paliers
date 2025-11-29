@@ -53,7 +53,7 @@ export interface Trace {
     type?: 'scatter' | 'heatmap';
     mode?: 'lines' | 'lines+markers' | 'tozero';
     name?: string;
-    line?: { color: Color; width: number; dash?: 'dash' | 'dot'; };
+    line?: { color: Color; width?: number; dash?: 'dash' | 'dot'; };
     yaxis: string;
     xaxis: string;
     legendgroup?: string;
@@ -62,6 +62,8 @@ export interface Trace {
     showlegend?: boolean;
     hoverinfo?: 'none' | 'name';
     visible?: boolean | 'legendonly';
+    fill?: 'none' | 'tozeroy' | 'toself';
+    fillcolor?: string;
     colorscale?: string;
     reversescale?: boolean;
     zmid?: number;
