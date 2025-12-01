@@ -9,30 +9,37 @@ export const MOBILE_WIDTH_THRESHOLD = 600;
 // --- DOM References ---
 const canvas = document.getElementById('decoCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-const bottomTimeInput = document.getElementById('bottomTime') as HTMLInputElement;
-const maxDepthInput = document.getElementById('maxDepth') as HTMLInputElement;
+const bottomTimeInput = document.getElementById('bottom_time') as HTMLInputElement;
+const maxDepthInput = document.getElementById('max_depth') as HTMLInputElement;
 const ascentRateInput = document.getElementById('ascent_rate') as HTMLInputElement;
 const descentRateInput = document.getElementById('descent_rate') as HTMLInputElement;
 const surfacePressureInput = document.getElementById('surface_pressure') as HTMLInputElement;
 const stopIntervalInput = document.getElementById('stop_interval') as HTMLInputElement;
 const lastStopDepthInput = document.getElementById('last_stop_depth') as HTMLInputElement;
-const timeStepInput = document.getElementById('time_step') as HTMLInputElement;
+const timeStepInput = document.getElementById('simulation_step') as HTMLInputElement;
+const addSafetyStopCheckbox = document.getElementById('add_safety_stop') as HTMLInputElement;
+const safetyStopInputsContainer = document.getElementById('safety_stop_inputs') as HTMLDivElement;
+const safetyStopDepthInput = document.getElementById('safety_stop_depth') as HTMLInputElement;
+const safetyStopDurationInput = document.getElementById('safety_stop_duration') as HTMLInputElement;
 
-const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
-const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
+const bottomTimeSlider = document.getElementById('bottom_time_slider') as HTMLInputElement;
+const maxDepthSlider = document.getElementById('max_depth_slider') as HTMLInputElement;
 
-const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
-const into = document.getElementById('intro') as HTMLParagraphElement;
-const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
-const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
-const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
-const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabelElement;
-const labelAscentRate = document.getElementById('label-ascent_rate') as HTMLLabelElement;
-const labelDescentRate = document.getElementById('label-descent_rate') as HTMLLabelElement;
-const labelSurfacePressure = document.getElementById('label-surface_pressure') as HTMLLabelElement;
-const labelStopInterval = document.getElementById('label-stop_interval') as HTMLLabelElement;
-const labelLastStopDepth = document.getElementById('label-last_stop_depth') as HTMLLabelElement;
-const labelTimeStep = document.getElementById('label-time_step') as HTMLLabelElement;
+// const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
+// const into = document.getElementById('intro') as HTMLParagraphElement;
+// const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
+// const readmeLink = document.getElementById('readme-link') as HTMLAnchorElement;
+// const labelMaxDepth = document.getElementById('label-maxDepth') as HTMLLabelElement;
+// const labelBottomTime = document.getElementById('label-bottomTime') as HTMLLabelElement;
+// const labelAscentRate = document.getElementById('label-ascent_rate') as HTMLLabelElement;
+// const labelDescentRate = document.getElementById('label-descent_rate') as HTMLLabelElement;
+// const labelSurfacePressure = document.getElementById('label-surface_pressure') as HTMLLabelElement;
+// const labelStopInterval = document.getElementById('label-stop_interval') as HTMLLabelElement;
+// const labelLastStopDepth = document.getElementById('label-last_stop_depth') as HTMLLabelElement;
+// const labelTimeStep = document.getElementById('label-time_step') as HTMLLabelElement;
+// const labelAddSafetyStop = document.getElementById('label-add_safety_stop') as HTMLLabelElement;
+// const labelSafetyStopDepth = document.getElementById('label-safety_stop_depth') as HTMLLabelElement;
+// const labelSafetyStopDuration = document.getElementById('label-safety_stop_duration') as HTMLLabelElement;
 
 
 // --- State variables ---
@@ -65,27 +72,30 @@ document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
 });
 
 export function applyLanguageAndDraw(): void {
-    mainTitle.textContent = t('title');
-    if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) {
-        into.innerHTML = t('into_mobile');
-    } else {
-        into.innerHTML = t('into');
-    }
-    canvastitle.textContent = t('canvastitle');
-    readmeLink.textContent = t('readme');
-    labelMaxDepth.textContent = t('maxDepth');
-    labelBottomTime.textContent = t('bottomTime');
-    labelAscentRate.textContent = t('label-ascent_rate');
-    labelDescentRate.textContent = t('label-descent_rate');
-    labelSurfacePressure.textContent = t('label-surface_pressure');
-    labelStopInterval.textContent = t('label-stop_interval');
-    labelLastStopDepth.textContent = t('label-last_stop_depth');
-    labelTimeStep.textContent = t('label-time_step');
-    // update readme href from data attributes
-    if (readmeLink) {
-        const href = readmeLink.getAttribute(`data-href-${currentLang}`) as string;
-        readmeLink.setAttribute('href', href);
-    }
+    // mainTitle.textContent = t('title');
+    // if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) {
+    //     into.innerHTML = t('into_mobile');
+    // } else {
+    //     into.innerHTML = t('into');
+    // }
+    // canvastitle.textContent = t('canvastitle');
+    // readmeLink.textContent = t('readme');
+    // labelMaxDepth.textContent = t('maxDepth');
+    // labelBottomTime.textContent = t('bottomTime');
+    // labelAscentRate.textContent = t('label-ascent_rate');
+    // labelDescentRate.textContent = t('label-descent_rate');
+    // labelSurfacePressure.textContent = t('label-surface_pressure');
+    // labelStopInterval.textContent = t('label-stop_interval');
+    // labelLastStopDepth.textContent = t('label-last_stop_depth');
+    // labelTimeStep.textContent = t('label-time_step');
+    // labelAddSafetyStop.textContent = t('label-add_safety_stop');
+    // labelSafetyStopDepth.textContent = t('label-safety_stop_depth');
+    // labelSafetyStopDuration.textContent = t('label-safety_stop_duration');
+    // // update readme href from data attributes
+    // if (readmeLink) {
+    //     const href = readmeLink.getAttribute(`data-href-${currentLang}`) as string;
+    //     readmeLink.setAttribute('href', href);
+    // }
     // set selector value and active btn
     const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
     btns.forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
@@ -102,6 +112,9 @@ function calculatePlans(): void {
     const stopInterval = parseInt(stopIntervalInput.value);
     const lastStopDepth = parseInt(lastStopDepthInput.value);
     const timeStep = parseFloat(timeStepInput.value);
+    const addSafetyStop = addSafetyStopCheckbox.checked;
+    const safetyStopDepth = addSafetyStop ? parseInt(safetyStopDepthInput.value) : 0;
+    const safetyStopDuration = addSafetyStop ? parseInt(safetyStopDurationInput.value) : 0;
 
     calculatedPlans = [];
     for (let i = 0; i < cell_number; i++) { // GF Low (0 to 100)
@@ -109,7 +122,7 @@ function calculatePlans(): void {
         let row: Array<Plan> = [];
         for (let j = 0; j < cell_number; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
-            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep };
+            const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep, addSafetyStop, safetyStopDepth, safetyStopDuration };
             const plan = calculatePlan(diveParams);
             plan.diveParams = diveParams;
             row.push(plan);
@@ -439,7 +452,9 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
     surfacePressureInput,
     stopIntervalInput,
     lastStopDepthInput,
-    timeStepInput
+    timeStepInput,
+    safetyStopDepthInput,
+    safetyStopDurationInput
 ].forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -456,6 +471,11 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
         if (input.id === 'bottomTime') { bottomTimeSlider.value = input.value; }
         if (input.id === 'maxDepth') { maxDepthSlider.value = input.value; }
     });
+});
+
+addSafetyStopCheckbox.addEventListener('change', () => {
+    safetyStopInputsContainer.style.display = addSafetyStopCheckbox.checked ? 'flex' : 'none';
+    calculatePlansAndDraw();
 });
 
 // Sliders

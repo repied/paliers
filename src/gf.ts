@@ -163,7 +163,7 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, 
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
 export function calculatePlan(diveParams: DiveParams): Plan {
-    const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep } = diveParams;
+    const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep, addSafetyStop, safetyStopDepth, safetyStopDuration } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
@@ -290,6 +290,42 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         currentDepth = nextDepth;
         history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
     }
+
+    // 3b. Add safety stop if requested
+    if (addSafetyStop && safetyStopDuration > 0) {
+        let actualSafetyStopDepth = safetyStopDepth;
+        // if safety step depth > last stop setting: this is not a good set of params. Set safety stop depth to last stop
+        if (actualSafetyStopDepth > lastStopDepth) {
+            actualSafetyStopDepth = lastStopDepth;
+        }
+
+        if (currentDepth > actualSafetyStopDepth) {
+            // Ascend to safety stop depth
+            const t_ascend_to_safety = (currentDepth - actualSafetyStopDepth) / ascentRate;
+            const depth_ascend_safety = (actualSafetyStopDepth + currentDepth) / 2;
+            const PN2_ascend_safety = depthToPN2(depth_ascend_safety, surfacePressure);
+            const pressure_ascend_safety = depthToPressure(depth_ascend_safety, surfacePressure);
+
+            tankPressure = updateTankPressure(tankPressure, t_ascend_to_safety, pressure_ascend_safety);
+            tensions = updateAllTensions(tensions, PN2_ascend_safety, t_ascend_to_safety);
+            dtr += t_ascend_to_safety;
+            t_dive_total += t_ascend_to_safety;
+            currentDepth = actualSafetyStopDepth;
+            history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
+
+            // Perform safety stop
+            const PN2_stop = depthToPN2(currentDepth, surfacePressure);
+            const pressure_stop = depthToPressure(currentDepth, surfacePressure);
+            tankPressure = updateTankPressure(tankPressure, safetyStopDuration, pressure_stop);
+            tensions = updateAllTensions(tensions, PN2_stop, safetyStopDuration);
+            t_stops += safetyStopDuration;
+            dtr += safetyStopDuration;
+            t_dive_total += safetyStopDuration;
+            history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
+            stops.push({ depth: currentDepth, time: safetyStopDuration, saturatedCompartments: [] });
+        }
+    }
+
     // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
     const t_final_ascent = currentDepth / ascentRate;
     const PN2_final_ascent = depthToPN2((currentDepth + 0) / 2, surfacePressure);

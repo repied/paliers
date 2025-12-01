@@ -221,7 +221,10 @@ describe('calculatePlan', () => {
         surfacePressure: SURFACE_PRESSURE,
         stopInterval: STOP_INTERVAL,
         lastStopDepth: LAST_STOP_DEPTH,
-        timeStep: TIME_STEP
+        timeStep: TIME_STEP,
+        addSafetyStop: false,
+        safetyStopDepth: 0,
+        safetyStopDuration: 0
     };
 
     test('should return Infinity for invalid inputs (zero bottom time)', () => {
