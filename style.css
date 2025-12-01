@@ -133,6 +133,31 @@ body {
     flex-direction: column;
 }
 
+/* Row layout for single-line input groups (e.g. checkbox + label) */
+.input-group-row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+}
+
+.input-group-row label {
+    /* make label inline here so it sits next to input */
+    display: inline-block;
+    margin-bottom: 0;
+    /* don't keep the default block spacing */
+    margin-right: 6px;
+    font-weight: 500;
+}
+
+.input-group-row input[type="checkbox"] {
+    transform: scale(1.15);
+    cursor: pointer;
+    margin-left: 6px;
+}
+
 p {
     text-align: center;
     margin-bottom: 24px;
@@ -382,5 +407,16 @@ body.dark-mode .equation {
 
     .column_container {
         flex-direction: column;
+    }
+
+    /* make single-line rows stack vertically on small screens */
+    .input-group-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .input-group-row label {
+        margin-bottom: 8px;
     }
 }

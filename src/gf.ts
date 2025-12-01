@@ -130,21 +130,24 @@ export function getModifiedMValue(A: CoefA, B: CoefB, pressure: Pressure, GF: GF
  * gfLow = GF at max depth
  * gfHigh = GF at surface
  */
-export function getInterpolatedGF(depth: Depth, maxDepth: Depth, gfLow: GFLow, gfHigh: GFHigh): GF {
-    if (depth >= maxDepth) { return gfLow; }
-    if (depth <= 0) { return gfHigh; }
-    const deepRatio = depth / maxDepth; // from 0 == at surface to 1 == at deepest point
-    const gf: GF = gfLow * deepRatio + gfHigh * (1 - deepRatio);
-    return gf;
-
+export function getInterpolatedGF(depth: Depth, firstStopDepth: Depth | null, gfLow: GFLow, gfHigh: GFHigh): GF {
+    if (firstStopDepth === null) { // until first stop do only use gfLow
+        return gfLow;
+    } else { // regular interpolation between gfLow and gfHigh
+        if (depth >= firstStopDepth) { return gfLow; }
+        if (depth <= 0) { return gfHigh; }
+        const deepRatio = depth / firstStopDepth; // from 0 == at surface to 1 == at deepest point
+        const gf: GF = gfLow * deepRatio + gfHigh * (1 - deepRatio);
+        return gf;
+    }
 }
 
 /**
  * Checks if all compartments are within their modified M-Values at given depth
  * and, if not, returns the list of sursaturated compartments indexes
  */
-export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, GF_low: GFLow, GF_high: GFHigh, surfacePressure: Pressure): Simulation {
-    const gf = getInterpolatedGF(depth, maxDepth, GF_low, GF_high);
+export function SimulAtDepth(depth: Depth, tensions: Tensions, firstStopDepth: Depth | null, GF_low: GFLow, GF_high: GFHigh, surfacePressure: Pressure): Simulation {
+    const gf = getInterpolatedGF(depth, firstStopDepth, GF_low, GF_high);
     const p = depthToPressure(depth, surfacePressure);
     let isSafe = true;
     let satsCompIdx = []; // index of all compartments that are not safe
@@ -162,7 +165,7 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, maxDepth: Depth, 
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
-export function calculatePlan(diveParams: DiveParams): Plan {
+export function calculatePlan(diveParams: DiveParams, isFixedGflow: boolean): Plan {
     const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
@@ -231,6 +234,12 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     currentDepth = maxDepth;
 
     // Ascent loop
+    let firstStopDepth: Depth | null = null;
+    if (isFixedGflow) {
+        firstStopDepth = null; // until first stop do only use gfLow
+    } else {
+        firstStopDepth = maxDepth; // regular interpolation between gfLow and gfHigh
+    }
     while (currentDepth >= lastStopDepth) {
         // Find the next stop depth:
         const remaining_to_laststop = currentDepth - lastStopDepth;
@@ -248,9 +257,12 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         const pressure_ascend = depthToPressure(depth_ascend, surfacePressure);
 
         let tensions_next = updateAllTensions(tensions, PN2_ascend, t_ascend);
-        let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure);
+        let { isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, firstStopDepth, gfLow, gfHigh, surfacePressure);
         if (!isSafe) {
             // Make a stop at currentDepth until it safe to ascend to nextDepth
+            if (firstStopDepth === null) {
+                firstStopDepth = currentDepth;
+            }
             let stopTime = 0;
             let saturatedCompartments: Array<CompIdx> = [...satsCompIdx];
             const PN2_stop = depthToPN2(currentDepth, surfacePressure);
@@ -266,7 +278,7 @@ export function calculatePlan(diveParams: DiveParams): Plan {
                 history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_ascend, t_ascend);
-                ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, maxDepth, gfLow, gfHigh, surfacePressure));
+                ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, firstStopDepth, gfLow, gfHigh, surfacePressure));
                 if (!isSafe) {
                     for (const cidx of satsCompIdx) {
                         if (!saturatedCompartments.includes(cidx)) {

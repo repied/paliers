@@ -24,6 +24,7 @@ export const TRANSLATIONS: Translations = {
     "calculatedTotalDiveTimeLabel": "Total dive time:",
     "requiredStopsLabel": "Stops :",
     "compartmentstopsLabel": "Critical compartments:",
+    "label-fixed_gflow": "GF=GFLow until first stop",
     "GF": "GF",
     "compartmentLabel": "C",
     "timeLabel": "Time",
@@ -55,6 +56,7 @@ export const TRANSLATIONS: Translations = {
   },
   "fr": {
     "title": "Planification de décompression en plongée",
+    "label-fixed_gflow": "GF=GFLow jusqu'au premier palier",
     "canvastitle": "Durée Totale de Remontée (DTR)",
     "into": "Bühlmann ZHL-16C avec facteurs de gradient à l'air. Cliquez ou utilisez les flèches pour changer les FGs. Les compartiments peuvent être masqués en cliquant sur la légende. Icône en haut à droite pour afficher les compartiments saturés.",
     "into_mobile": "Bühlmann ZHL-16C avec facteurs de gradient à l'air. Cliquez ou utilisez les flèches pour changer les FGs. Icône en haut à droite pour afficher les compartiments saturés.",
