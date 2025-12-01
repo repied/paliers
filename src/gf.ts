@@ -1,4 +1,4 @@
-import { Tensions, SpeedMmin, CompartmentCoefs, Depth, TensionBar, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx, Volume } from "./types.js";
+import { Tensions, Speed, CompartmentCoefs, Depth, Tension, Minutes, HalfLife, CoefA, CoefB, Pressure, GF, GFLow, GFHigh, Simulation, Plan, PN2, DiveParams, CompIdx, Volume, State, StateHistory } from "./types.js";
 
 // Values from subsurface codebase are the same as mine
 // static const double buehlmann_N2_a[] = {
@@ -90,7 +90,7 @@ function assert(condition: boolean, message: string): asserts condition {
  * Returns a single tension after time t at partial pressure P, if starting from tension T0
  * Tn2 = P + (T0 - P) * exp(-k * t)
  */
-export function updateTension(t0: TensionBar, pn2: PN2, t: Minutes, compartment_t12: HalfLife): TensionBar {
+export function updateTension(t0: Tension, pn2: PN2, t: Minutes, compartment_t12: HalfLife): Tension {
     const k = Math.log(2) / compartment_t12;
     const T1 = pn2 + (t0 - pn2) * Math.exp(-k * t);
     return T1;
@@ -108,8 +108,8 @@ export function updateAllTensions(tensions: Tensions, PN2: PN2, t: Minutes): Ten
  * M_Value is the maximum tolerated tension in a compartment at given ambient pressure
  * pressure is a real pressure, not a partial pressure for N2
  */
-export function getMValue(A: CoefA, B: CoefB, pressure: Pressure): TensionBar {
-    const M_orig: TensionBar = A + pressure / B;
+export function getMValue(A: CoefA, B: CoefB, pressure: Pressure): Tension {
+    const M_orig: Tension = A + pressure / B;
     assert(M_orig >= pressure, `M Value should be > pressure`);
     return M_orig
 }
@@ -118,7 +118,7 @@ export function getMValue(A: CoefA, B: CoefB, pressure: Pressure): TensionBar {
  * Modified M_value is a lower limit for tension in a compartment
  * pressure is a real pressure, not a partial pressure for N2
 */
-export function getModifiedMValue(A: CoefA, B: CoefB, pressure: Pressure, GF: GF): TensionBar {
+export function getModifiedMValue(A: CoefA, B: CoefB, pressure: Pressure, GF: GF): Tension {
     const M_orig = getMValue(A, B, pressure);
     const M_mod = M_orig * GF + pressure * (1 - GF); // same as pressure + (M_orig - pressure) * GF;
     assert(M_mod <= M_orig, `We should have M_mod <= M_orig`);
@@ -308,4 +308,91 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     }
 
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };
+}
+
+/**
+ * Calculates the ceiling profile from a given Plan.
+ * At each time point, the ceiling is the maximum of all compartment ceilings.
+ * Ceiling for a compartment is defined as the pressure at which the compartment tension 
+ * would be equals the M-Value, ie the maximum tolerated tension in that compartment.
+ * Teleporting above the ceiling would be unsafe.
+ * 
+ * Calculations: M = A + P/B and we set M==T so we have P_ceiling = (T - A) * B
+ */
+export function calculateCeilings(history: StateHistory, surfacePressure: Pressure): Array<Pressure> {
+    function ceiling(tensions: Tensions): Pressure {
+        let maxCeilingPressure = surfacePressure;
+        tensions.forEach((tension, i) => {
+            const A = BUEHLMANN[i].A;
+            const B = BUEHLMANN[i].B;
+            const ceilingPressure = (tension - A) * B;
+            if (ceilingPressure > maxCeilingPressure) {
+                maxCeilingPressure = ceilingPressure;
+            }
+        });
+        return maxCeilingPressure;
+    }
+    return history.map((state: State) => ceiling(state.tensions));
+}
+
+/**
+ * Calculates the GF based ceiling profile from a given Plan.
+ * At each time point, the ceiling is the maximum of all compartment ceilings.
+ * GFCeiling for a compartment is defined as the pressure at which the compartment tension 
+ * would be equals the modified M-Value, ie the maximum tolerated tension in that compartment.
+ * Teleporting above the ceiling would be unsafe.
+ * 
+ */
+export function calculateGFCeilings(history: StateHistory, diveParams: DiveParams): Array<Pressure> {
+    const { maxDepth, gfLow, gfHigh, surfacePressure } = diveParams as DiveParams;
+    return history.map(entry => {
+        let maxCeilingPressure = surfacePressure;
+        entry.tensions.forEach((tension, i) => {
+            const A = BUEHLMANN[i].A;
+            const B = BUEHLMANN[i].B;
+            const K = 1 / B - 1;
+            const h = gfHigh;
+            const md = (gfLow - gfHigh) / maxDepth;
+
+            // Quadratic equation coefficients for Depth D: a*D^2 + b*D + c = 0
+            // Derived from T = M_mod(P, GF(D)) where P = Psurf + D/10 and GF(D) = md*D + h
+            const a = 0.1 * md * K;
+            const b = md * A + 0.1 + K * (surfacePressure * md + 0.1 * h);
+            const c = h * A + surfacePressure * (1 + h * K) - tension;
+
+            let D = 0;
+            if (Math.abs(a) < 1e-9) {
+                // Linear case (GF_low == GF_high)
+                if (Math.abs(b) > 1e-9) {
+                    D = -c / b;
+                } else {
+                    D = 0; // Should not happen for realistic parameters
+                }
+            } else {
+                const delta = b * b - 4 * a * c;
+                if (delta >= 0) {
+                    // We want the root that corresponds to the physical solution.
+                    // For md < 0 (usual case), a < 0. The correct root is (-b + sqrt(delta)) / 2a
+                    D = (-b + Math.sqrt(delta)) / (2 * a);
+                } else {
+                    D = 0; // Should not happen
+                }
+            }
+
+            // If calculated D is deeper than maxDepth, we are in the constant GF_low region
+            if (D > maxDepth) {
+                // Solve linear equation with constant GF = gfLow
+                // T = GF_low * A + P * (1 + GF_low * K)
+                // P = (T - GF_low * A) / (1 + GF_low * K)
+                const P = (tension - gfLow * A) / (1 + gfLow * K);
+                D = (P - surfacePressure) * 10;
+            }
+
+            const ceilingPressure = depthToPressure(D, surfacePressure);
+            if (ceilingPressure > maxCeilingPressure) {
+                maxCeilingPressure = ceilingPressure;
+            }
+        });
+        return maxCeilingPressure;
+    });
 }

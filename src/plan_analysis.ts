@@ -1,6 +1,6 @@
-import { Plan, GFLow, GFHigh, CompIdx, Color, TensionBar, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation, Pressure } from "./types.js";
+import { Plan, GFLow, GFHigh, CompIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation, Pressure } from "./types.js";
 import { t, MOBILE_WIDTH_THRESHOLD } from "./script.js";
-import { depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
+import { calculateGFCeilings, calculateCeilings, depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
 
 // Maintain trace visibility state across re-plots
 let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);
@@ -91,81 +91,16 @@ function plotPlan(plan: Plan): void {
         return;
     }
 
-
     const timePoints = history.map(entry => entry.time);
     const depthPoints = history.map(entry => entry.depth);
     const PN2_Points = depthPoints.map(depth => depthToPN2(depth, surfacePressure));
     const P_Points = depthPoints.map(depth => depthToPressure(depth, surfacePressure));
 
-    // Calculate Ceiling Points (Raw M-Value Ceiling)
-    const Ceiling_Points = history.map(entry => {
-        let maxCeilingPressure = surfacePressure; // Minimum ceiling is surface
-        entry.tensions.forEach((tension, i) => {
-            const A = BUEHLMANN[i].A;
-            const B = BUEHLMANN[i].B;
-            // M-Value: M = A + P/B => P_tol = (T - A) * B
-            const ceilingPressure = (tension - A) * B;
-            if (ceilingPressure > maxCeilingPressure) {
-                maxCeilingPressure = ceilingPressure;
-            }
-        });
-        return maxCeilingPressure;
-    });
-
-    // Calculate GF Ceiling Points (Modified M-Value Ceiling)
-    const GF_Ceiling_Points = history.map(entry => {
-        let maxCeilingPressure = surfacePressure;
-        entry.tensions.forEach((tension, i) => {
-            const A = BUEHLMANN[i].A;
-            const B = BUEHLMANN[i].B;
-            const K = 1 / B - 1;
-            const h = gfHigh;
-            const md = (gfLow - gfHigh) / maxDepth;
-
-            // Quadratic equation coefficients for Depth D: a*D^2 + b*D + c = 0
-            // Derived from T = M_mod(P, GF(D)) where P = Psurf + D/10 and GF(D) = md*D + h
-            const a = 0.1 * md * K;
-            const b = md * A + 0.1 + K * (surfacePressure * md + 0.1 * h);
-            const c = h * A + surfacePressure * (1 + h * K) - tension;
-
-            let D = 0;
-            if (Math.abs(a) < 1e-9) {
-                // Linear case (GF_low == GF_high)
-                if (Math.abs(b) > 1e-9) {
-                    D = -c / b;
-                } else {
-                    D = 0; // Should not happen for realistic parameters
-                }
-            } else {
-                const delta = b * b - 4 * a * c;
-                if (delta >= 0) {
-                    // We want the root that corresponds to the physical solution.
-                    // For md < 0 (usual case), a < 0. The correct root is (-b + sqrt(delta)) / 2a
-                    D = (-b + Math.sqrt(delta)) / (2 * a);
-                } else {
-                    D = 0; // Should not happen
-                }
-            }
-
-            // If calculated D is deeper than maxDepth, we are in the constant GF_low region
-            if (D > maxDepth) {
-                // Solve linear equation with constant GF = gfLow
-                // T = GF_low * A + P * (1 + GF_low * K)
-                // P = (T - GF_low * A) / (1 + GF_low * K)
-                const P = (tension - gfLow * A) / (1 + gfLow * K);
-                D = (P - surfacePressure) * 10;
-            }
-
-            const ceilingPressure = depthToPressure(D, surfacePressure);
-            if (ceilingPressure > maxCeilingPressure) {
-                maxCeilingPressure = ceilingPressure;
-            }
-        });
-        return maxCeilingPressure;
-    });
+    const ceiling = calculateCeilings(history, surfacePressure);
+    const ceilingGF = calculateGFCeilings(history, diveParams as DiveParams);
 
     // transpose to get a time series for each compartment
-    const compsTensions: Array<Array<TensionBar>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
+    const compsTensions: Array<Array<Tension>> = Array(N_COMPARTMENTS).fill(null).map(() => []);
     history.forEach(entry => {
         entry.tensions.forEach((tension, i) => {
             compsTensions[i].push(tension);
@@ -213,7 +148,7 @@ function plotPlan(plan: Plan): void {
 
     const traceCeiling: Trace = {
         x: timePoints,
-        y: Ceiling_Points,
+        y: ceiling,
         mode: 'lines',
         name: t('ceilingLabel'),
         line: { color: 'red', width: 1, dash: 'dot' },
@@ -228,7 +163,7 @@ function plotPlan(plan: Plan): void {
 
     const traceGFCeilingLine: Trace = {
         x: timePoints,
-        y: GF_Ceiling_Points,
+        y: ceilingGF,
         mode: 'lines',
         name: t('gfCeilingLabel'),
         line: { color: 'orange', width: 1 },
@@ -243,7 +178,7 @@ function plotPlan(plan: Plan): void {
 
     const traceGFCeilingFill: Trace = {
         x: [...timePoints, timePoints[timePoints.length - 1], timePoints[0]],
-        y: [...GF_Ceiling_Points, 0, 0],
+        y: [...ceilingGF, 0, 0],
         fill: 'toself',
         fillcolor: 'rgba(255,165,0,0.3)',
         line: { color: 'transparent' },

@@ -4,11 +4,11 @@ export type Volume = number; // in liters
 export type Pressure = number; // in bars
 export type PartPressure = Pressure;
 export type PN2 = PartPressure; // in bars
-export type TensionBar = number; // in bars
+export type Tension = number; // in bars
 export type Minutes = number;
 export type HalfLife = Minutes;
-export type SpeedMmin = number; // in meters per minute
-export type CoefA = TensionBar; // in bars, positive
+export type Speed = number; // in meters per minute
+export type CoefA = Tension; // in bars, positive
 export type CoefB = number; // Pressure/Tension = dimensionless but positive
 export interface CompartmentCoefs { t12: HalfLife; A: CoefA; B: CoefB; };
 export type GF = number;
@@ -16,7 +16,7 @@ export type GFLow = GF; // low = deep = max depth
 export type GFHigh = GF; // high = shallow =surface
 export type CompIdx = number;
 export interface Simulation { isSafe: boolean, satsCompIdx: Array<CompIdx>; }
-export type Tensions = Array<TensionBar>;
+export type Tensions = Array<Tension>;
 
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
 export interface State { time: Minutes, depth: Depth, tensions: Tensions, tankPressure: Pressure }
@@ -26,8 +26,8 @@ export interface DiveParams {
     maxDepth: Depth
     gfLow: GFLow
     gfHigh: GFHigh
-    ascentRate: SpeedMmin
-    descentRate: SpeedMmin;
+    ascentRate: Speed
+    descentRate: Speed;
     surfacePressure: Pressure;
     stopInterval: Depth;
     lastStopDepth: Depth;
