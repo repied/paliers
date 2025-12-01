@@ -24,7 +24,7 @@ function formatCellDataForDetails(plan: Plan): string {
 
     let stopsStr = stops.map(s => `${parseFloat(s.time.toFixed(2))} min @ ${s.depth}m`).join('\n - ');
     let comptStr = stops.map(s => `C${s.saturatedCompartments.join(', C')}`).join('\n - ');
-    if (stops.length === 0) { stopsStr = t('stopsNone'); }
+    if (stops.length === 0) { stopsStr = t('stopsNone'); comptStr = t('stopsNone'); }
 
     let t_at_bottom = bottomTime - t_descent;
     let t_ascent = dtr - t_stops;
@@ -51,12 +51,12 @@ function formatCellDataShort(plan: Plan): string {
 
 
 // export async function analysePlan(plan: Plan): Promise<void> {
-export function analysePlan(plan: Plan): void {
+export function analysePlan(plan: Plan, isFixedGFlow: boolean): void {
     const rightH2 = document.getElementById('right-container-h2') as HTMLHeadingElement;
     const planAsString = document.getElementById('plan-as-string') as HTMLDivElement;
     rightH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planAsString.textContent = formatCellDataForDetails(plan)
-    plotPlan(plan);
+    plotPlan(plan, isFixedGFlow);
 }
 
 function getCompartmentColor(i: CompIdx): Color {
@@ -64,7 +64,7 @@ function getCompartmentColor(i: CompIdx): Color {
     return colorPalette[i % colorPalette.length];
 }
 
-function plotPlan(plan: Plan): void {
+function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
     const { dtr, history, diveParams } = plan as Plan;
     const { bottomTime,
         maxDepth,
@@ -249,7 +249,11 @@ function plotPlan(plan: Plan): void {
         hoverinfo: 'none'
     };
     data_ply.push(traceMainDiagonalP);
-
+    let gfLowDepth = maxDepth; // old behavior
+    let needStop = plan.stops.length > 0;
+    if (isFixedGFlow && needStop) {
+        gfLowDepth = plan.stops[0].depth
+    }
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         // plot the tension
         const traceTensionsVsPN2: Trace = {
@@ -290,19 +294,21 @@ function plotPlan(plan: Plan): void {
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
-        const traceModifiedMValues: Trace = {
-            x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
-            y: [getModifiedMValue(A, B, surfacePressure, gfHigh), getModifiedMValue(A, B, depthToPressure(maxDepth, surfacePressure), gfLow)],
-            name: `${t('modifiedMValueLabel')}`,
-            line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
-            mode: 'lines',
-            yaxis: 'y3',
-            xaxis: 'x3', legendgroup: `compartment${i}`,
-            hoverinfo: 'none'
-        };
-        if (i > 0) { traceModifiedMValues.showlegend = false; }
-        applyTraceVisibility(traceModifiedMValues, i);
-        data_ply.push(traceModifiedMValues);
+        if (!isFixedGFlow || isFixedGFlow && needStop) {
+            const traceModifiedMValues: Trace = {
+                x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(gfLowDepth, surfacePressure)],
+                y: [getModifiedMValue(A, B, surfacePressure, gfHigh), getModifiedMValue(A, B, depthToPressure(gfLowDepth, surfacePressure), gfLow)],
+                name: `${t('modifiedMValueLabel')}`,
+                line: { width: 1, color: getCompartmentColor(i), dash: 'dash' },
+                mode: 'lines',
+                yaxis: 'y3',
+                xaxis: 'x3', legendgroup: `compartment${i}`,
+                hoverinfo: 'none'
+            };
+            if (i > 0) { traceModifiedMValues.showlegend = false; }
+            applyTraceVisibility(traceModifiedMValues, i);
+            data_ply.push(traceModifiedMValues);
+        }
     }
 
     // Find the fastest compartment that is visible to associate the GF candlestick with.
@@ -350,32 +356,35 @@ function plotPlan(plan: Plan): void {
         data_ply.push(traceGFHighRemaining);
 
         // GF Low at max depth
-        const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(maxDepth, surfacePressure), gfLow);
-        const y_M_max = getMValue(Afast, Bfast, depthToPressure(maxDepth, surfacePressure));
-        const traceGFLowMain: Trace = {
-            x: [depthToPressure(maxDepth, surfacePressure) + gf_shift, depthToPressure(maxDepth, surfacePressure) + gf_shift],
-            y: [depthToPressure(maxDepth, surfacePressure), y_modM_max],
-            mode: 'lines',
-            name: `GF Low (${Math.round(gfLow * 100)}%)`,
-            line: { color: 'magenta', width: 5 },
-            yaxis: 'y3',
-            xaxis: 'x3',
-            legendgroup: 'gf',
-            hoverinfo: 'name'
-        };
-        data_ply.push(traceGFLowMain);
-        const traceGFLowRemaining: Trace = {
-            x: [depthToPressure(maxDepth, surfacePressure) + gf_shift, depthToPressure(maxDepth, surfacePressure) + gf_shift],
-            y: [y_modM_max, y_M_max],
-            mode: 'lines',
-            line: { color: 'magenta', width: 1 },
-            yaxis: 'y3',
-            xaxis: 'x3',
-            showlegend: false,
-            legendgroup: 'gf',
-            hoverinfo: 'none'
-        };
-        data_ply.push(traceGFLowRemaining);
+        const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(gfLowDepth, surfacePressure), gfLow);
+        const y_M_max = getMValue(Afast, Bfast, depthToPressure(gfLowDepth, surfacePressure));
+        if (!isFixedGFlow || isFixedGFlow && needStop) {
+            const traceGFLowMain: Trace = {
+                x: [depthToPressure(gfLowDepth, surfacePressure) + gf_shift, depthToPressure(gfLowDepth, surfacePressure) + gf_shift],
+                y: [depthToPressure(gfLowDepth, surfacePressure), y_modM_max],
+                mode: 'lines',
+                name: `GF Low (${Math.round(gfLow * 100)}%)`,
+                line: { color: 'magenta', width: 5 },
+                yaxis: 'y3',
+                xaxis: 'x3',
+                legendgroup: 'gf',
+                hoverinfo: 'name'
+            };
+            data_ply.push(traceGFLowMain);
+
+            const traceGFLowRemaining: Trace = {
+                x: [depthToPressure(gfLowDepth, surfacePressure) + gf_shift, depthToPressure(gfLowDepth, surfacePressure) + gf_shift],
+                y: [y_modM_max, y_M_max],
+                mode: 'lines',
+                line: { color: 'magenta', width: 1 },
+                yaxis: 'y3',
+                xaxis: 'x3',
+                showlegend: false,
+                legendgroup: 'gf',
+                hoverinfo: 'none'
+            };
+            data_ply.push(traceGFLowRemaining);
+        }
         annotations = [
             {
                 text: 'GF High',
@@ -389,21 +398,24 @@ function plotPlan(plan: Plan): void {
                     color: 'cyan',
                     size: 12
                 }
-            },
-            {
-                text: 'GF Low',
-                xref: 'x3',
-                yref: 'y3',
-                x: depthToPressure(maxDepth, surfacePressure) + gf_shift + 0.05,
-                y: (y_modM_max + depthToPressure(maxDepth, surfacePressure)) / 2,
-                showarrow: false,
-                xanchor: 'left',
-                font: {
-                    color: 'magenta',
-                    size: 12
+            }];
+        if (!isFixedGFlow || isFixedGFlow && needStop) {
+            annotations.push(
+                {
+                    text: 'GF Low',
+                    xref: 'x3',
+                    yref: 'y3',
+                    x: depthToPressure(gfLowDepth, surfacePressure) + gf_shift + 0.05,
+                    y: (y_modM_max + depthToPressure(gfLowDepth, surfacePressure)) / 2,
+                    showarrow: false,
+                    xanchor: 'left',
+                    font: {
+                        color: 'magenta',
+                        size: 12
+                    }
                 }
-            }
-        ];
+            );
+        }
     } else {
         annotations = []; // No compartment is visible, so we do not add GF annotations.
     }
@@ -506,7 +518,7 @@ function plotPlan(plan: Plan): void {
             {
                 name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
                     localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
-                    plotPlan(plan);
+                    plotPlan(plan, isFixedGFlow);
                 }
             },
             {
@@ -519,7 +531,7 @@ function plotPlan(plan: Plan): void {
                         traceVisibility = [...traceVisibilityBackup]; // restore visibility
                         localStorage.setItem('showAllSatComps', 'false');
                     }
-                    plotPlan(plan);
+                    plotPlan(plan, isFixedGFlow);
                 }
             }
         ],
@@ -531,7 +543,7 @@ function plotPlan(plan: Plan): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
-        toggleTraceVisibilityOnClick(eventData, plan);
+        toggleTraceVisibilityOnClick(eventData, plan, isFixedGFlow);
 
         const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
         if (legendGroup === 'gf') {
@@ -547,14 +559,14 @@ function plotPlan(plan: Plan): void {
 }
 
 
-function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan): void {
+function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan, isFixedGFlow: boolean): void {
     const trace = eventData.data[eventData.curveNumber];
     if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
         const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
         const currentVisibility = trace.visible === true || trace.visible === undefined;
         traceVisibility[compartmentIndex] = !currentVisibility;
         localStorage.setItem('showAllSatComps', 'false');
-        plotPlan(plan);
+        plotPlan(plan, isFixedGFlow);
     }
 }
 function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx): void {

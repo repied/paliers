@@ -225,20 +225,20 @@ describe('calculatePlan', () => {
     };
 
     test('should return Infinity for invalid inputs (zero bottom time)', () => {
-        const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
         expect(plan.dtr).toBe(Infinity);
         expect(plan.stops).toEqual([]);
     });
 
     test('should return Infinity for invalid inputs (zero max depth)', () => {
-        const plan = calculatePlan({ bottomTime: 20, maxDepth: 0, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 0, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
         expect(plan.dtr).toBe(Infinity);
         expect(plan.stops).toEqual([]);
     });
 
     test('should calculate a plan for a simple no-decompression dive', () => {
         // Short, shallow dive - should not require stops
-        const plan = calculatePlan({ bottomTime: 10, maxDepth: 10, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 10, maxDepth: 10, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -250,7 +250,7 @@ describe('calculatePlan', () => {
 
     test('should calculate a plan requiring decompression stops', () => {
         // Longer, deeper dive - should require stops
-        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         expect(plan.dtr).toBeGreaterThan(0);
         expect(plan.dtr).toBeLessThan(Infinity);
@@ -261,13 +261,13 @@ describe('calculatePlan', () => {
 
     test('should have descent time less than or equal to bottom time', () => {
         const bottomTime = 20;
-        const plan = calculatePlan({ bottomTime, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         expect(plan.t_descent).toBeLessThanOrEqual(bottomTime);
     });
 
     test('should have history entries', () => {
-        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         expect(plan.history.length).toBeGreaterThan(0);
         expect(plan.history[0].depth).toBe(0);
@@ -275,7 +275,7 @@ describe('calculatePlan', () => {
     });
 
     test('should have all stops at valid depths', () => {
-        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 30, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         plan.stops.forEach((stop: Stop) => {
             expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH);
@@ -285,7 +285,7 @@ describe('calculatePlan', () => {
     });
 
     test('should have monotonically increasing time in history', () => {
-        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
+        const plan = calculatePlan({ bottomTime: 20, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams }, false);
 
         for (let i = 1; i < plan.history.length; i++) {
             expect(plan.history[i].time).toBeGreaterThanOrEqual(plan.history[i - 1].time);
