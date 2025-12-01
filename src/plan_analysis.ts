@@ -182,28 +182,12 @@ function plotPlan(plan: Plan): void {
     }
 
     // --- First Subplot: Time vs Depth/Tensions (Top Plot) ---
-    const tracePN2: Trace = {
-        x: timePoints,
-        y: PN2_Points,
-        mode: 'lines',
-        name: t('pn2ambiantLabel'),
-        line: { color: 'black', width: 3 },
-        yaxis: 'y1',
-        xaxis: 'x1',
-        legendgroup: `P_N2_ambiant`,
-        customdata: depthPoints,
-        hovertemplate:
-            `${t('timeLabel')}: %{x:.2f} min<br>` +
-            `${t('depthLabel')}: %{customdata:.0f} m<br>` +
-            `${t('pn2ambiantLabel')}: %{y:.2f} bar`
-    };
-    data_ply.push(tracePN2);
     const tracePressure: Trace = {
         x: timePoints,
         y: P_Points,
         mode: 'lines',
-        name: t('pressureLabel'),
-        line: { color: 'black', width: 1 },
+        name: t('ambiantPressureLabel'),
+        line: { color: 'black', width: 2 },
         yaxis: 'y1',
         xaxis: 'x1',
         legendgroup: `P_ambiant`,
@@ -217,7 +201,7 @@ function plotPlan(plan: Plan): void {
         y: tankPressurePoints,
         mode: 'lines',
         name: t('tankPressureLabel'),
-        line: { color: 'green', width: 2 },
+        line: { color: 'green', width: 1 },
         yaxis: 'y12',
         xaxis: 'x1',
         legendgroup: `TankPressure`,
@@ -232,7 +216,7 @@ function plotPlan(plan: Plan): void {
         y: Ceiling_Points,
         mode: 'lines',
         name: t('ceilingLabel'),
-        line: { color: 'red', width: 2, dash: 'dot' },
+        line: { color: 'red', width: 1, dash: 'dot' },
         yaxis: 'y1',
         xaxis: 'x1',
         legendgroup: `Ceiling`,
@@ -247,7 +231,7 @@ function plotPlan(plan: Plan): void {
         y: GF_Ceiling_Points,
         mode: 'lines',
         name: t('gfCeilingLabel'),
-        line: { color: 'orange', width: 2, dash: 'dash' },
+        line: { color: 'orange', width: 1 },
         yaxis: 'y1',
         xaxis: 'x1',
         legendgroup: `GFCeiling`,
@@ -255,9 +239,8 @@ function plotPlan(plan: Plan): void {
             `${t('timeLabel')}: %{x:.2f} min<br>` +
             `${t('gfCeilingLabel')}: %{y:.2f} bar`
     };
+    data_ply.push(traceGFCeilingLine);
 
-    // To fill the area above the curve on a reversed y-axis, we create a shape
-    // that goes along the curve, then up to the top of the plot (y=0), and back.
     const traceGFCeilingFill: Trace = {
         x: [...timePoints, timePoints[timePoints.length - 1], timePoints[0]],
         y: [...GF_Ceiling_Points, 0, 0],
@@ -271,7 +254,6 @@ function plotPlan(plan: Plan): void {
         legendgroup: `GFCeiling`,
     };
     data_ply.push(traceGFCeilingFill);
-    data_ply.push(traceGFCeilingLine);
 
     for (let i = 0; i < N_COMPARTMENTS; i++) {
         const traceComp: Trace = {
@@ -319,25 +301,12 @@ function plotPlan(plan: Plan): void {
     data_ply.push(traceHeatmap);
 
     // --- Third Subplot: Ambient Pressure vs Tensions (Bottom Plot) ---
-    const traceMainDiagonalPN2: Trace = {
-        x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
-        y: [depthToPN2(SURFACE_DEPTH, surfacePressure), depthToPN2(maxDepth, surfacePressure)],
-        mode: 'lines',
-        name: t('pn2ambiantLabel'),
-        line: { color: 'black', width: 3 },
-        yaxis: 'y3',
-        xaxis: 'x3',
-        legendgroup: `P_N2_ambiant`,
-        showlegend: false,
-        hoverinfo: 'none'
-    };
-    data_ply.push(traceMainDiagonalPN2);
     const traceMainDiagonalP: Trace = {
         x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
         y: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(maxDepth, surfacePressure)],
         mode: 'lines',
-        name: t('pressureLabel'),
-        line: { color: 'black', width: 1 },
+        name: t('ambiantPressureLabel'),
+        line: { color: 'black', width: 2 },
         yaxis: 'y3',
         xaxis: 'x3',
         legendgroup: `P_ambiant`,
