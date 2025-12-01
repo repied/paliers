@@ -1,6 +1,7 @@
 bgcolor
 BUEHLMANN
 Bühlmann
+Coef
 Coefs
 customdata
 displaylogo
