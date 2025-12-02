@@ -342,11 +342,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         }
 
         // Perform the ascent to next depth now that it's safe
+        currentDepth = nextDepth;
         tankPressure = updateTankPressure(tankPressure, t_ascend, pressure_ascend);
         tensions = updateAllTensions(tensions, PN2_ascend, t_ascend);
         dtr += t_ascend;
         t_dive_total += t_ascend;
-        currentDepth = nextDepth;
         mValues = getMValues(pressure_ascend);
         gf = getInterpolatedGF(pressure_ascend, firstStopDepth, gfLow, gfHigh);
         modMValues = getModifiedMValues(pressure_ascend, gf);

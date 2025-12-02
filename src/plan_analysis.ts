@@ -1,6 +1,6 @@
 import { Plan, GFLow, GFHigh, CompIdx, Color, Tension, Trace, Layout, PlotConfig, PlotDivElement, EventData, DiveParams, Annotation, Pressure } from "./types.js";
 import { t, MOBILE_WIDTH_THRESHOLD } from "./script.js";
-import { calculateGFCeilings, calculateCeilings, depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH } from "./gf.js";
+import { calculateGFCeilings, calculateCeilings, depthToPN2, depthToPressure, getMValue, getModifiedMValue, N_COMPARTMENTS, BUEHLMANN, SURFACE_DEPTH, isPlanBreachModifiedMValues } from "./gf.js";
 
 // Maintain trace visibility state across re-plots
 let traceVisibility: boolean[] = Array(N_COMPARTMENTS).fill(false);
@@ -57,6 +57,10 @@ export function analysePlan(plan: Plan): void {
     rightH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planAsString.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
+    if (isPlanBreachModifiedMValues(plan)) {
+        console.log('Breach modified M-values detected in plan:', plan.diveParams);
+    }
+
 }
 
 function getCompartmentColor(i: CompIdx): Color {
