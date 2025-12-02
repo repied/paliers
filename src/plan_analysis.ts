@@ -51,12 +51,12 @@ function formatCellDataShort(plan: Plan): string {
 
 
 // export async function analysePlan(plan: Plan): Promise<void> {
-export function analysePlan(plan: Plan, isFixedGFlow: boolean): void {
+export function analysePlan(plan: Plan): void {
     const rightH2 = document.getElementById('right-container-h2') as HTMLHeadingElement;
     const planAsString = document.getElementById('plan-as-string') as HTMLDivElement;
     rightH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
     planAsString.textContent = formatCellDataForDetails(plan)
-    plotPlan(plan, isFixedGFlow);
+    plotPlan(plan);
 }
 
 function getCompartmentColor(i: CompIdx): Color {
@@ -64,7 +64,7 @@ function getCompartmentColor(i: CompIdx): Color {
     return colorPalette[i % colorPalette.length];
 }
 
-function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
+function plotPlan(plan: Plan): void {
     const { dtr, history, diveParams } = plan as Plan;
     const { bottomTime,
         maxDepth,
@@ -251,7 +251,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
     data_ply.push(traceMainDiagonalP);
     let gfLowDepth = maxDepth; // old behavior
     let needStop = plan.stops.length > 0;
-    if (isFixedGFlow && needStop) {
+    if (needStop) {
         gfLowDepth = plan.stops[0].depth
     }
     for (let i = 0; i < N_COMPARTMENTS; i++) {
@@ -294,7 +294,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
         data_ply.push(traceMValues);
 
         // plot the modified M-Value line for this compartment
-        if (!isFixedGFlow || isFixedGFlow && needStop) {
+        if (needStop) {
             const traceModifiedMValues: Trace = {
                 x: [depthToPressure(SURFACE_DEPTH, surfacePressure), depthToPressure(gfLowDepth, surfacePressure)],
                 y: [getModifiedMValue(A, B, surfacePressure, gfHigh), getModifiedMValue(A, B, depthToPressure(gfLowDepth, surfacePressure), gfLow)],
@@ -358,7 +358,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
         // GF Low at max depth
         const y_modM_max = getModifiedMValue(Afast, Bfast, depthToPressure(gfLowDepth, surfacePressure), gfLow);
         const y_M_max = getMValue(Afast, Bfast, depthToPressure(gfLowDepth, surfacePressure));
-        if (!isFixedGFlow || isFixedGFlow && needStop) {
+        if (needStop) {
             const traceGFLowMain: Trace = {
                 x: [depthToPressure(gfLowDepth, surfacePressure) + gf_shift, depthToPressure(gfLowDepth, surfacePressure) + gf_shift],
                 y: [depthToPressure(gfLowDepth, surfacePressure), y_modM_max],
@@ -399,7 +399,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
                     size: 12
                 }
             }];
-        if (!isFixedGFlow || isFixedGFlow && needStop) {
+        if (needStop) {
             annotations.push(
                 {
                     text: 'GF Low',
@@ -518,7 +518,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
             {
                 name: 'upsideDown', title: 'Turn Time-Tensions (Top) Plot Upside Down', icon: Plotly.Icons['3d_rotate'], click: () => {
                     localStorage.setItem('upsideDown', String(localStorage.getItem('upsideDown') === 'false'));
-                    plotPlan(plan, isFixedGFlow);
+                    plotPlan(plan);
                 }
             },
             {
@@ -531,7 +531,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
                         traceVisibility = [...traceVisibilityBackup]; // restore visibility
                         localStorage.setItem('showAllSatComps', 'false');
                     }
-                    plotPlan(plan, isFixedGFlow);
+                    plotPlan(plan);
                 }
             }
         ],
@@ -543,7 +543,7 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
 
     const plotDiv = document.getElementById('plotly-plot') as PlotDivElement;
     plotDiv.on('plotly_legendclick', function (eventData: EventData) {
-        toggleTraceVisibilityOnClick(eventData, plan, isFixedGFlow);
+        toggleTraceVisibilityOnClick(eventData, plan);
 
         const legendGroup = eventData.data[eventData.curveNumber].legendgroup as string;
         if (legendGroup === 'gf') {
@@ -559,14 +559,14 @@ function plotPlan(plan: Plan, isFixedGFlow: boolean): void {
 }
 
 
-function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan, isFixedGFlow: boolean): void {
+function toggleTraceVisibilityOnClick(eventData: EventData, plan: Plan): void {
     const trace = eventData.data[eventData.curveNumber];
     if (trace.legendgroup && trace.legendgroup.startsWith('compartment')) {
         const compartmentIndex = parseInt(trace.legendgroup.substring('compartment'.length));
         const currentVisibility = trace.visible === true || trace.visible === undefined;
         traceVisibility[compartmentIndex] = !currentVisibility;
         localStorage.setItem('showAllSatComps', 'false');
-        plotPlan(plan, isFixedGFlow);
+        plotPlan(plan);
     }
 }
 function applyTraceVisibility(trace: Trace, compartmentIndex: CompIdx): void {

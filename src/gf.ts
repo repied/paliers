@@ -165,7 +165,7 @@ export function SimulAtDepth(depth: Depth, tensions: Tensions, firstStopDepth: D
  * Calculates the complete decompression profile
  * Returns { dtr (TTS), stops [], t_descent, t_dive_total, history }
  */
-export function calculatePlan(diveParams: DiveParams, isFixedGflow: boolean): Plan {
+export function calculatePlan(diveParams: DiveParams): Plan {
     const { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep } = diveParams;
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
@@ -234,12 +234,7 @@ export function calculatePlan(diveParams: DiveParams, isFixedGflow: boolean): Pl
     currentDepth = maxDepth;
 
     // Ascent loop
-    let firstStopDepth: Depth | null = null;
-    if (isFixedGflow) {
-        firstStopDepth = null; // until first stop do only use gfLow
-    } else {
-        firstStopDepth = maxDepth; // regular interpolation between gfLow and gfHigh
-    }
+    let firstStopDepth: Depth | null = null; // until first stop do only use gfLow
     while (currentDepth >= lastStopDepth) {
         // Find the next stop depth:
         const remaining_to_laststop = currentDepth - lastStopDepth;

@@ -17,7 +17,6 @@ const surfacePressureInput = document.getElementById('surface_pressure') as HTML
 const stopIntervalInput = document.getElementById('stop_interval') as HTMLInputElement;
 const lastStopDepthInput = document.getElementById('last_stop_depth') as HTMLInputElement;
 const timeStepInput = document.getElementById('time_step') as HTMLInputElement;
-const switchFixedGFlow = document.getElementById('fixed_gflow') as HTMLInputElement;
 
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
@@ -34,7 +33,6 @@ const labelSurfacePressure = document.getElementById('label-surface_pressure') a
 const labelStopInterval = document.getElementById('label-stop_interval') as HTMLLabelElement;
 const labelLastStopDepth = document.getElementById('label-last_stop_depth') as HTMLLabelElement;
 const labelTimeStep = document.getElementById('label-time_step') as HTMLLabelElement;
-const labelSwitchFixedGFlow = document.getElementById('label-fixed_gflow') as HTMLLabelElement;
 
 
 // --- State variables ---
@@ -83,7 +81,6 @@ export function applyLanguageAndDraw(): void {
     labelStopInterval.textContent = t('label-stop_interval');
     labelLastStopDepth.textContent = t('label-last_stop_depth');
     labelTimeStep.textContent = t('label-time_step');
-    labelSwitchFixedGFlow.textContent = t('label-fixed_gflow');
 
     // update readme href from data attributes
     if (readmeLink) {
@@ -93,7 +90,7 @@ export function applyLanguageAndDraw(): void {
     // set selector value and active btn
     const btns = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
     btns.forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
-    drawCanvasAndPlan(switchFixedGFlow.checked);
+    drawCanvasAndPlan();
 }
 
 // --- Canvas drawing functions ---
@@ -114,7 +111,7 @@ function calculatePlans(): void {
         for (let j = 0; j < cell_number; j++) { // GF High (0 to 100)
             const gfHigh = (j * GF_INCREMENT) / 100;
             const diveParams: DiveParams = { bottomTime, maxDepth, gfLow, gfHigh, ascentRate, descentRate, surfacePressure, stopInterval, lastStopDepth, timeStep };
-            const plan = calculatePlan(diveParams, switchFixedGFlow.checked);
+            const plan = calculatePlan(diveParams);
             plan.diveParams = diveParams;
             row.push(plan);
         }
@@ -124,13 +121,13 @@ function calculatePlans(): void {
 
 function calculatePlansAndDraw(): void {
     calculatePlans();
-    drawCanvasAndPlan(switchFixedGFlow.checked);
+    drawCanvasAndPlan();
 }
 
-function drawCanvasAndPlan(isFixedGFlow: boolean): void {
+function drawCanvasAndPlan(): void {
     drawCanvas();
     const plan = calculatedPlans[selectedCell.i][selectedCell.j];
-    analysePlan(plan, isFixedGFlow);
+    analysePlan(plan);
 }
 
 
@@ -462,10 +459,6 @@ const debouncedCalculatePlansAndDraw = debounce(calculatePlansAndDraw, 250);
     });
 });
 
-switchFixedGFlow.addEventListener('change', () => {
-    calculatePlansAndDraw();
-});
-
 // Sliders
 [bottomTimeSlider, maxDepthSlider].forEach(slider => {
     slider.addEventListener('input', () => {
@@ -508,7 +501,7 @@ canvas.addEventListener('click', (e) => {
         selectedCell = { i: cellOrNull.i, j: cellOrNull.j };
         drawCanvas();
         const newPlan = calculatedPlans[cellOrNull.i][cellOrNull.j]
-        analysePlan(newPlan, switchFixedGFlow.checked);
+        analysePlan(newPlan);
     } else {
         // clicked outside grid, do nothing
     }
@@ -545,7 +538,7 @@ window.addEventListener('keydown', (e) => {
         tooltip.x = margin + j * cell_width + cell_width / 2;
         tooltip.y = margin + i * cell_width + cell_width / 2;
         drawCanvas();
-        analysePlan(newPlan, switchFixedGFlow.checked);
+        analysePlan(newPlan);
     }
 });
 
@@ -572,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const plan = calculatedPlans[selectedCell.i][selectedCell.j];
-        analysePlan(plan, switchFixedGFlow.checked); // replot plotly to get it to match theme
+        analysePlan(plan); // replot plotly to get it to match theme
 
     }
 
