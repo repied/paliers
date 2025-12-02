@@ -151,7 +151,7 @@ function plotPlan(plan: Plan): void {
         y: ceiling,
         mode: 'lines',
         name: t('ceilingLabel'),
-        line: { color: 'red', width: 1, dash: 'dot' },
+        line: { color: 'brown', width: 1, dash: 'dot' },
         yaxis: 'y1',
         xaxis: 'x1',
         legendgroup: `Ceiling`,
@@ -161,28 +161,13 @@ function plotPlan(plan: Plan): void {
     };
     data_ply.push(traceCeiling);
 
-    const traceGFCeilingLine: Trace = {
-        x: timePoints,
-        y: ceilingGF,
-        mode: 'lines',
-        name: t('gfCeilingLabel'),
-        line: { color: 'orange', width: 1 },
-        yaxis: 'y1',
-        xaxis: 'x1',
-        legendgroup: `GFCeiling`,
-        hovertemplate:
-            `${t('timeLabel')}: %{x:.2f} min<br>` +
-            `${t('gfCeilingLabel')}: %{y:.2f} bar`
-    };
-    data_ply.push(traceGFCeilingLine);
-
     const traceGFCeilingFill: Trace = {
         x: [...timePoints, timePoints[timePoints.length - 1], timePoints[0]],
-        y: [...ceilingGF, 0, 0],
+        y: [...ceilingGF, surfacePressure, surfacePressure],
+        name: t('gfCeilingLabel'),
         fill: 'toself',
         fillcolor: 'rgba(255,165,0,0.3)',
         line: { color: 'transparent' },
-        showlegend: false,
         hoverinfo: 'none',
         yaxis: 'y1',
         xaxis: 'x1',
