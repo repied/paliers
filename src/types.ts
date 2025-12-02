@@ -71,6 +71,7 @@ export interface Trace {
     zsmooth?: 'fast' | 'best' | false;
     connectgaps?: boolean;
     showscale?: boolean;
+    opacity?: number;
 }
 
 export interface Grid { rows: number; columns: number; pattern: 'independent'; roworder: 'top to bottom'; ygap: number; }

@@ -325,7 +325,7 @@ function plotPlan(plan: Plan): void {
         // Add GF Low/High visualization segments for the fastest visible compartment.
         const Afast = BUEHLMANN[fastestVisibleComIdxOr0].A;
         const Bfast = BUEHLMANN[fastestVisibleComIdxOr0].B;
-        const gf_shift = 0.1;
+        const gf_shift = 0.;
 
         // GF High at surface
         const M_surf = getMValue(Afast, Bfast, surfacePressure);
@@ -339,7 +339,8 @@ function plotPlan(plan: Plan): void {
             yaxis: 'y3',
             xaxis: 'x3',
             legendgroup: 'gf',
-            hoverinfo: 'name'
+            hoverinfo: 'name',
+            opacity: 0.5
         };
         data_ply.push(traceGFHighMain);
         const traceGFHighRemaining: Trace = {
@@ -351,7 +352,8 @@ function plotPlan(plan: Plan): void {
             xaxis: 'x3',
             showlegend: false,
             legendgroup: 'gf',
-            hoverinfo: 'none'
+            hoverinfo: 'none',
+            opacity: 0.5
         };
         data_ply.push(traceGFHighRemaining);
 
@@ -368,7 +370,8 @@ function plotPlan(plan: Plan): void {
                 yaxis: 'y3',
                 xaxis: 'x3',
                 legendgroup: 'gf',
-                hoverinfo: 'name'
+                hoverinfo: 'name',
+                opacity: 0.5
             };
             data_ply.push(traceGFLowMain);
 
@@ -381,7 +384,8 @@ function plotPlan(plan: Plan): void {
                 xaxis: 'x3',
                 showlegend: false,
                 legendgroup: 'gf',
-                hoverinfo: 'none'
+                hoverinfo: 'none',
+                opacity: 0.5
             };
             data_ply.push(traceGFLowRemaining);
         }
