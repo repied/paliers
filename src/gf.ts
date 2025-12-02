@@ -282,14 +282,13 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     // 3. Ascent and stops phase
     currentDepth = maxDepth;
     // Ascent loop
-    while (currentDepth >= lastStopDepth) {
+    while (currentDepth >= lastStopDepth) {    
         // Find the next stop depth:
         const remaining_to_laststop = currentDepth - lastStopDepth;
-        const n_full_intervals = Math.floor((remaining_to_laststop + 0.00001) / stopInterval);
+        const n_full_intervals = Math.floor((remaining_to_laststop + 0.00001) / stopInterval
         let nextDepth = lastStopDepth + stopInterval * n_full_intervals;
-        // Ensure nextDepth is less than currentDepth to avoid infinite loop
-        if (nextDepth == currentDepth) {
-            nextDepth = currentDepth - stopInterval;
+        if (currentDepth == lastStopDepth) {
+            nextDepth = SURFACE_DEPTH;
         }
 
         // Simulate ascent to nextDepth at ascentRate
