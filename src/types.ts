@@ -19,7 +19,18 @@ export interface Simulation { isSafe: boolean, satsCompIdx: Array<CompIdx>; }
 export type Tensions = Array<Tension>;
 
 export interface Stop { time: Minutes, depth: Depth, saturatedCompartments: Array<CompIdx>, }
-export interface State { time: Minutes, depth: Depth, tensions: Tensions, tankPressure: Pressure }
+export interface State {
+    time: Minutes,
+    depth: Depth,
+    tensions: Tensions,
+    tankPressure: Pressure,
+    pressure: Pressure,
+    mValues: Tensions,
+    modMValues: Tensions,
+    // ceiling: Depth,
+    // gfCeiling: Depth,
+    // pn2Ambiant: PN2,
+}
 export type StateHistory = Array<State>;
 export interface DiveParams {
     bottomTime: Minutes,

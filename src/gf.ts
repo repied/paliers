@@ -113,6 +113,11 @@ export function getMValue(A: CoefA, B: CoefB, pressure: Pressure): Tension {
     assert(M_orig >= pressure, `M Value should be > pressure`);
     return M_orig
 }
+
+export function getMValues(pressure: Pressure): Tensions {
+    return BUEHLMANN.map(c => getMValue(c.A, c.B, pressure));
+}
+
 /**
  * Modified M-Value using gradient factor at current pressure
  * Modified M_value is a lower limit for tension in a compartment
@@ -125,6 +130,11 @@ export function getModifiedMValue(A: CoefA, B: CoefB, pressure: Pressure, GF: GF
     assert(M_mod >= pressure, `we should have M_mod >= pressure`);
     return M_mod;
 }
+
+export function getModifiedMValues(pressure: Pressure, GF: GF): Tensions {
+    return BUEHLMANN.map(c => getModifiedMValue(c.A, c.B, pressure, GF));
+}
+
 /**
  * Get the interpolated gradient factor (GF) for a given depth
  * gfLow = GF at max depth
@@ -142,12 +152,31 @@ export function getInterpolatedGF(depth: Depth, firstStopDepth: Depth | null, gf
     }
 }
 
+export function isPlanBreachMValues(plan: Plan): boolean {
+    const tensions = plan.history.map(state => state.tensions);
+    const mValues = plan.history.map(state => state.mValues);
+    const isValid = tensions.every((tensionsAtTime, idx) => {
+        return tensionsAtTime.every((tension, compIdx) => tension <= mValues[idx][compIdx]);
+    });
+    return !isValid;
+}
+
+export function isPlanBreachModifiedMValues(plan: Plan): boolean {
+    const tensions = plan.history.map(state => state.tensions);
+    const modMValues = plan.history.map(state => state.modMValues);
+    const isValid = tensions.every((tensionsAtTime, idx) => {
+        return tensionsAtTime.every((tension, compIdx) => tension <= modMValues[idx][compIdx]);
+    });
+    return !isValid;
+}
+
+
 /**
  * Checks if all compartments are within their modified M-Values at given depth
  * and, if not, returns the list of sursaturated compartments indexes
  */
-export function SimulAtDepth(depth: Depth, tensions: Tensions, firstStopDepth: Depth | null, GF_low: GFLow, GF_high: GFHigh, surfacePressure: Pressure): Simulation {
-    const gf = getInterpolatedGF(depth, firstStopDepth, GF_low, GF_high);
+export function SimulAtDepth(depth: Depth, tensions: Tensions, firstStopDepth: Depth | null, gfLow: GFLow, gfHigh: GFHigh, surfacePressure: Pressure): Simulation {
+    const gf = getInterpolatedGF(depth, firstStopDepth, gfLow, gfHigh);
     const p = depthToPressure(depth, surfacePressure);
     let isSafe = true;
     let satsCompIdx = []; // index of all compartments that are not safe
@@ -170,8 +199,12 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     if (bottomTime <= 0 || maxDepth <= 0) {
         return { dtr: Infinity, stops: [], t_descent: 0, t_dive_total: 0, t_stops: 0, history: [] };
     }
+    let firstStopDepth: Depth | null = null; // until first stop do only use gfLow
 
     let tensions = Array(N_COMPARTMENTS).fill(depthToPN2(0, surfacePressure)); // surface tensions
+    let mValues = getMValues(surfacePressure);
+    let gf = getInterpolatedGF(SURFACE_DEPTH, firstStopDepth, gfLow, gfHigh);
+    let modMValues = getModifiedMValues(surfacePressure, gf);
     let stops = [];
     let t_stops = 0; // only stops time
     let dtr = 0; // ascent + stops time
@@ -180,7 +213,8 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     let tankPressure = TANK_START_PRESSURE;
 
     // Initial state at surface
-    history.push({ time: 0, depth: 0, tensions: [...tensions], tankPressure });
+    let state = { time: 0, depth: 0, tensions: [...tensions], tankPressure, pressure: surfacePressure, mValues: [...mValues], modMValues: [...modMValues] };
+    history.push(state);
 
     // 1. Descent phase
     let t_descent = 0;
@@ -194,7 +228,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         const pressureStep = depthToPressure(depthStep, surfacePressure);
         tankPressure = updateTankPressure(tankPressure, timeStep, pressureStep);
         tensions = updateAllTensions(tensions, PN2Step, timeStep);
-        history.push({ time: t_dive_total, depth: nextDepth, tensions: [...tensions], tankPressure });
+        mValues = getMValues(pressureStep);
+        let gf = getInterpolatedGF(pressureStep, firstStopDepth, gfLow, gfHigh);
+        let modMValues = getModifiedMValues(pressureStep, gf);
+        state = { time: t_dive_total, depth: nextDepth, tensions: [...tensions], tankPressure, pressure: pressureStep, mValues: [...mValues], modMValues: [...modMValues] };
+        history.push(state);
         currentDepth = nextDepth;
         nextDepth = currentDepth + descentRate * timeStep;
     }
@@ -207,8 +245,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     const pressure_last_bit = depthToPressure(depth_last_bit, surfacePressure);
     tankPressure = updateTankPressure(tankPressure, t_last_bit, pressure_last_bit);
     tensions = updateAllTensions(tensions, PN2_last_bit, t_last_bit);
-    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
-
+    mValues = getMValues(pressure_last_bit);
+    gf = getInterpolatedGF(pressure_last_bit, firstStopDepth, gfLow, gfHigh);
+    modMValues = getModifiedMValues(pressure_last_bit, gf);
+    state = { time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure, pressure: pressure_last_bit, mValues: [...mValues], modMValues: [...modMValues] };
+    history.push(state);
 
     // 2. Bottom phase (Bottom Time)
     // bottomTime is interpreted as the total time spent at maxDepth, including descent.
@@ -220,7 +261,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         t_dive_total += timeStep;
         tankPressure = updateTankPressure(tankPressure, timeStep, maxPressure);
         tensions = updateAllTensions(tensions, maxPN2, timeStep);
-        history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
+        mValues = getMValues(maxPressure);
+        gf = getInterpolatedGF(maxPressure, firstStopDepth, gfLow, gfHigh);
+        modMValues = getModifiedMValues(maxPressure, gf);
+        state = { time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure, pressure: maxPressure, mValues: [...mValues], modMValues: [...modMValues] };
+        history.push(state);
         t_bottom_curr += timeStep;
     } //t_bottom >= t_at_bottom
     t_bottom_curr -= timeStep; // we overstepped the last bit
@@ -228,13 +273,15 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     t_dive_total += t_last_bit;
     tankPressure = updateTankPressure(tankPressure, t_last_bit, maxPressure);
     tensions = updateAllTensions(tensions, maxPN2, t_last_bit);
-    history.push({ time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure });
+    mValues = getMValues(maxPressure);
+    gf = getInterpolatedGF(maxPressure, firstStopDepth, gfLow, gfHigh);
+    modMValues = getModifiedMValues(maxPressure, gf);
+    state = { time: t_dive_total, depth: maxDepth, tensions: [...tensions], tankPressure, pressure: maxPressure, mValues: [...mValues], modMValues: [...modMValues] };
+    history.push(state);
 
     // 3. Ascent and stops phase
     currentDepth = maxDepth;
-
     // Ascent loop
-    let firstStopDepth: Depth | null = null; // until first stop do only use gfLow
     while (currentDepth >= lastStopDepth) {
         // Find the next stop depth:
         const remaining_to_laststop = currentDepth - lastStopDepth;
@@ -270,7 +317,12 @@ export function calculatePlan(diveParams: DiveParams): Plan {
                 t_dive_total += timeStep;
                 tankPressure = updateTankPressure(tankPressure, timeStep, pressure_stop);
                 tensions = updateAllTensions(tensions, PN2_stop, timeStep);
-                history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
+                mValues = getMValues(pressure_stop);
+                gf = getInterpolatedGF(pressure_stop, firstStopDepth, gfLow, gfHigh);
+                modMValues = getModifiedMValues(pressure_stop, gf);
+                state = { time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure, pressure: pressure_stop, mValues: [...mValues], modMValues: [...modMValues] };
+                history.push(state);
+
                 // Check if we can now ascend to nextDepth
                 tensions_next = updateAllTensions(tensions, PN2_ascend, t_ascend);
                 ({ isSafe, satsCompIdx } = SimulAtDepth(nextDepth, tensions_next, firstStopDepth, gfLow, gfHigh, surfacePressure));
@@ -295,7 +347,11 @@ export function calculatePlan(diveParams: DiveParams): Plan {
         dtr += t_ascend;
         t_dive_total += t_ascend;
         currentDepth = nextDepth;
-        history.push({ time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure });
+        mValues = getMValues(pressure_ascend);
+        gf = getInterpolatedGF(pressure_ascend, firstStopDepth, gfLow, gfHigh);
+        modMValues = getModifiedMValues(pressure_ascend, gf);
+        state = { time: t_dive_total, depth: currentDepth, tensions: [...tensions], tankPressure, pressure: pressure_ascend, mValues: [...mValues], modMValues: [...modMValues] };
+        history.push(state);
     }
     // Finish ascent to surface as we have now currentDepth < LAST_STOP_DEPTH
     const t_final_ascent = currentDepth / ascentRate;
@@ -305,13 +361,21 @@ export function calculatePlan(diveParams: DiveParams): Plan {
     tensions = updateAllTensions(tensions, PN2_final_ascent, t_final_ascent);
     dtr += t_final_ascent;
     t_dive_total += t_final_ascent;
-    history.push({ time: t_dive_total, depth: 0, tensions: [...tensions], tankPressure });
+    mValues = getMValues(pressure__final_ascend);
+    gf = getInterpolatedGF(pressure__final_ascend, firstStopDepth, gfLow, gfHigh);
+    modMValues = getModifiedMValues(pressure__final_ascend, gf);
+    state = { time: t_dive_total, depth: SURFACE_DEPTH, tensions: [...tensions], tankPressure, pressure: pressure__final_ascend, mValues: [...mValues], modMValues: [...modMValues] };
+    history.push(state);
 
     // 4 . End of dive at surface waiting 20 minutes
     for (let t = timeStep; t <= SURFACE_WAIT_MIN; t += timeStep) {
         tankPressure = updateTankPressure(tankPressure, timeStep, surfacePressure);
-        tensions = updateAllTensions(tensions, depthToPN2(0, surfacePressure), timeStep);
-        history.push({ time: t_dive_total + t, depth: 0, tensions: [...tensions], tankPressure });
+        tensions = updateAllTensions(tensions, depthToPN2(SURFACE_DEPTH, surfacePressure), timeStep);
+        mValues = getMValues(surfacePressure);
+        gf = getInterpolatedGF(surfacePressure, firstStopDepth, gfLow, gfHigh);
+        modMValues = getModifiedMValues(surfacePressure, gf);
+        state = { time: t_dive_total, depth: SURFACE_DEPTH, tensions: [...tensions], tankPressure, pressure: surfacePressure, mValues: [...mValues], modMValues: [...modMValues] };
+        history.push(state);
     }
 
     return { dtr, stops, t_descent, t_dive_total, t_stops, history };

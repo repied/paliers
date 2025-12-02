@@ -1,5 +1,6 @@
 // Unit tests for dive plan calculation functions in gf.ts
 import {
+    isPlanBreachModifiedMValues,
     depthToPressure,
     depthToPN2,
     updateTension,
@@ -228,6 +229,7 @@ describe('calculatePlan', () => {
         const plan = calculatePlan({ bottomTime: 0, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
         expect(plan.dtr).toBe(Infinity);
         expect(plan.stops).toEqual([]);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
     test('should return Infinity for invalid inputs (zero max depth)', () => {
@@ -246,6 +248,7 @@ describe('calculatePlan', () => {
         expect(plan.t_descent).toBeGreaterThan(0);
         expect(plan.t_dive_total).toBeGreaterThan(0);
         expect(plan.history.length).toBeGreaterThan(0);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
     test('should calculate a plan requiring decompression stops', () => {
@@ -257,6 +260,7 @@ describe('calculatePlan', () => {
         expect(plan.stops.length).toBeGreaterThan(0);
         expect(plan.t_stops).toBeGreaterThan(0);
         expect(plan.t_dive_total).toBeGreaterThan(plan.dtr);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
     test('should have descent time less than or equal to bottom time', () => {
@@ -264,6 +268,7 @@ describe('calculatePlan', () => {
         const plan = calculatePlan({ bottomTime, maxDepth: 30, gfLow: 0.3, gfHigh: 0.85, ...defaultParams });
 
         expect(plan.t_descent).toBeLessThanOrEqual(bottomTime);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
     test('should have history entries', () => {
@@ -272,6 +277,7 @@ describe('calculatePlan', () => {
         expect(plan.history.length).toBeGreaterThan(0);
         expect(plan.history[0].depth).toBe(0);
         expect(plan.history[0].time).toBe(0);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
     test('should have all stops at valid depths', () => {
@@ -281,6 +287,7 @@ describe('calculatePlan', () => {
             expect(stop.depth).toBeGreaterThanOrEqual(LAST_STOP_DEPTH);
             expect(stop.depth % STOP_INTERVAL).toBe(0);
             expect(stop.time).toBeGreaterThan(0);
+            expect(isPlanBreachModifiedMValues(plan)).toBe(false);
         });
     });
 
@@ -290,5 +297,25 @@ describe('calculatePlan', () => {
         for (let i = 1; i < plan.history.length; i++) {
             expect(plan.history[i].time).toBeGreaterThanOrEqual(plan.history[i - 1].time);
         }
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
+    });
+
+
+});
+
+describe('plan detection for different last stop depths', () => {
+    const defaultParams = {
+        ascentRate: ASCENT_RATE,
+        descentRate: DESCENT_RATE,
+        surfacePressure: SURFACE_PRESSURE,
+        stopInterval: STOP_INTERVAL,
+        lastStopDepth: 6,
+        timeStep: TIME_STEP
+    };
+
+    test('20min at 40m with last stop 6m should produce an invalid plan', () => {
+        const params = { bottomTime: 20, maxDepth: 40, gfLow: 0.3, gfHigh: 0.85, ...defaultParams };
+        const plan = calculatePlan(params);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 });
