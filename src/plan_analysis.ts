@@ -194,10 +194,24 @@ function plotPlan(plan: Plan): void {
     }
 
     // --- Second Subplot: Heatmap (Middle Plot) ss---
-    // Prepare zData for heatmap: Calculate saturation relative to ambient PN2: Tension - PN2
+    // Prepare zData for heatmap: Calculate relative saturation 
+    // 0 = at ambient pressure
+    // 100 = at maximum pressure M value
+    // -100 for a zero tension
+    // more than 100 = overpressure DANGER
+    // negative = on gasizing
+    // positive = off gazing
     const zData: number[][] = [];
     for (let i = 0; i < N_COMPARTMENTS; i++) {
-        const row = history.map(h => h.tensions[i] - depthToPN2(h.depth, surfacePressure));
+        const row = history.map(h => {
+            const P = depthToPressure(h.depth, surfacePressure);
+            const Mvalue = getMValue(BUEHLMANN[i].A, BUEHLMANN[i].B, P);
+            if (h.tensions[i] >= P) {
+                return 100 * ((h.tensions[i] - P) / (Mvalue - P)); // this is called GF99
+            } else {
+                return -100 * ((P - h.tensions[i]) / P);
+            }
+        });
         zData.push(row);
     }
 
@@ -207,7 +221,8 @@ function plotPlan(plan: Plan): void {
         z: zData,
         name: "",
         type: 'heatmap',
-        colorscale: 'Jet',
+        colorscale: 'Picnic', // diverging
+        // colorscale: 'Jet',
         zmid: 0,
         xaxis: 'x2',
         yaxis: 'y2',
@@ -216,7 +231,7 @@ function plotPlan(plan: Plan): void {
         hovertemplate:
             `%{y}<br>` +
             `${t('timeLabel')}: %{x:.2f} min<br>` +
-            `${t('relativeTensionLabel')}: %{z:.2f} bar<br>`
+            `${t('relativeTensionLabel')}: %{z:.0f}%<br>`
     };
     data_ply.push(traceHeatmap);
 
