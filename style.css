@@ -66,16 +66,6 @@ body {
     cursor: crosshair;
 }
 
-#plan-as-string {
-    padding: 12px;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    color: #333;
-    /* keep text formatting */
-    white-space: pre-wrap;
-}
-
 #lang-theme-selector-container {
     /* above all the text*/
     position: static;
@@ -371,14 +361,6 @@ body.dark-mode input[type="range"]::-moz-range-thumb {
     background: #64b5f6;
     /* Lighter blue thumb */
     border-color: #3a3a3a;
-}
-
-
-
-body.dark-mode #plan-as-string {
-    background: #4a4a4a;
-    border-color: #5a5a5a;
-    color: #e0e0e0;
 }
 
 body.dark-mode code {

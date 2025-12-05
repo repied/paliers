@@ -254,6 +254,28 @@ function drawCanvas(): void {
     }
 }
 
+function formatCellDataForDetails(plan: Plan): string {
+    // to be written and wrapped in canvas tooltip
+    const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
+    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
+
+    if (dtr === Infinity) {
+        return t('dtrInfinity');
+    }
+
+    let t_at_bottom = bottomTime - t_descent;
+    let t_ascent = dtr - t_stops;
+
+    const s_dive_total = parseFloat(t_dive_total.toFixed(2));
+    const s_descent = parseFloat(t_descent.toFixed(2));
+    const s_at_bottom = parseFloat(t_at_bottom.toFixed(2));
+    const s_stops = parseFloat(t_stops.toFixed(2));
+    const s_ascent = parseFloat(t_ascent.toFixed(2));
+
+    return t('calculatedTotalDiveTimeLabel') + ` ${s_dive_total} min =${s_descent}+${s_at_bottom}+${s_stops}+${s_ascent}`
+}
+
+
 function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     const { dtr, stops, t_descent, t_dive_total, diveParams } = plan;
     const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
@@ -363,13 +385,11 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
     ctx.fillStyle = '#343a40';
     ctx.font = '11px Inter';
 
-    let stopsStr = stops.map(s => `${s.time} min @ ${s.depth}m`).join(', ');
-    if (stops.length === 0) {
-        stopsStr = t('stopsNone');
-    }
+    let stopsStr = stops.map(s => `${parseFloat(s.time.toFixed(2))}min@ ${s.depth}m`).join('\n ');
+    if (stops.length === 0) { stopsStr = t('stopsNone'); }
 
     // Function to wrap text
-    function wrapText(text: string, x: number, y: number, maxWidth: number, lineHeight: number): void {
+    function wrapText(text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
         let words = text.split(' ');
         let line = '';
         for (let n = 0; n < words.length; n++) {
@@ -385,9 +405,11 @@ function drawTooltip(mouseX: number, mouseY: number, plan: Plan): void {
             }
         }
         ctx.fillText(line, x, y);
+        return y + lineHeight;
     }
 
-    wrapText(`${t('stopsLabel')} ${stopsStr}`, legendX, legendY, graphW, 14);
+    let new_y = wrapText(`${formatCellDataForDetails(plan)}`, legendX, legendY, graphW, 14);
+    wrapText(`${t('requiredStopsLabel')} ` + stopsStr, legendX, new_y + 14, graphW, 14);
 }
 
 

@@ -14,34 +14,6 @@ export function formatGFstrings(gfLow: GFLow, gfHigh: GFHigh): string {
     return `${t('GF')} ${Math.round(100 * gfLow)} / ${Math.round(100 * gfHigh)}`;
 }
 
-function formatCellDataForDetails(plan: Plan): string {
-    const { dtr, stops, t_descent, t_dive_total, t_stops, history, diveParams } = plan;
-    const { bottomTime, maxDepth, gfLow, gfHigh } = diveParams as DiveParams;
-
-    if (dtr === Infinity) {
-        return t('diveProfileTitle') + ` ${formatGFstrings(gfLow, gfHigh)}\n\n` + t('dtrInfinity');
-    }
-
-    let stopsStr = stops.map(s => `${parseFloat(s.time.toFixed(2))} min @ ${s.depth}m`).join('\n - ');
-    let comptStr = stops.map(s => `C${s.saturatedCompartments.join(', C')}`).join('\n - ');
-    if (stops.length === 0) { stopsStr = t('stopsNone'); comptStr = t('stopsNone'); }
-
-    let t_at_bottom = bottomTime - t_descent;
-    let t_ascent = dtr - t_stops;
-
-    return `${t('diveProfileTitle')} ${formatGFstrings(gfLow, gfHigh)}\n\n` +
-        // `- ${t('maxDepthLabel')} ${maxDepth} meters\n` +
-        // `- ${t('bottomTimeLabel')} ${bottomTime} min\n` +
-        // `- ${t('gradientFactorsLabel')} ${formatGFstrings(gfLow, gfHigh)}\n` +
-        `${t('calculatedDTRLabel')} ${Math.ceil(dtr).toString()} min\n\n` +
-        `${t('calculatedTotalDiveTimeLabel')} ${parseFloat(t_dive_total.toFixed(2))} min\n` +
-        ` - ${t('calculatedt_descentLabel')} ${parseFloat(t_descent.toFixed(2))} min\n` +
-        ` - ${t('calculatedTotalBottomTimeLabel')} ${parseFloat(t_at_bottom.toFixed(2))} min\n` +
-        ` - ${t('calculatedTotalStopTimeLabel')} ${parseFloat(t_stops.toFixed(2))} min\n` +
-        ` - ${t('calculatedAscentTimeLabel')} ${parseFloat(t_ascent.toFixed(2))} min\n` +
-        `${t('requiredStopsLabel')}\n - ${stopsStr}\n` +
-        `${t('compartmentstopsLabel')}\n - ${comptStr}\n`;
-}
 
 function formatCellDataShort(plan: Plan): string {
     const { diveParams } = plan;
@@ -53,9 +25,7 @@ function formatCellDataShort(plan: Plan): string {
 // export async function analysePlan(plan: Plan): Promise<void> {
 export function analysePlan(plan: Plan): void {
     const rightH2 = document.getElementById('right-container-h2') as HTMLHeadingElement;
-    const planAsString = document.getElementById('plan-as-string') as HTMLDivElement;
     rightH2.textContent = `${t('profileLabelPrefix')} ${formatCellDataShort(plan)}`;
-    planAsString.textContent = formatCellDataForDetails(plan)
     plotPlan(plan);
     if (isPlanBreachModifiedMValues(plan)) {
         console.log('Breach modified M-values detected in plan:', plan.diveParams);
