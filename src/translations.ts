@@ -2,6 +2,7 @@ import { Translations } from "./types.js";
 
 export const TRANSLATIONS: Translations = {
   "en": {
+    "warning-banner": "WARNING: calculations are not 100% correct, do not rely on them for planning real dives. For educational and illustrative purposes only.",
     "title": "Diving decompression planning",
     "canvastitle": "Time To Surface (TTS)",
     "into": "Bühlmann ZHL-16C with gradient factors on air. Click or arrow keys to change GFs. Compartments can be hidden by clicking on legend. Topright icon to show saturated compartments.",
@@ -55,6 +56,7 @@ export const TRANSLATIONS: Translations = {
     "tankPressureLabel": "Tank Pressure",
   },
   "fr": {
+    "warning-banner": "ATTENTION : les calculs ne sont pas 100% corrects, ne vous y fiez pas pour planifier des plongées réelles. À but éducatif et illustratif uniquement.",
     "title": "Planification de décompression en plongée",
     "label-fixed_gflow": "GF=GFLow jusqu'au premier palier",
     "canvastitle": "Durée Totale de Remontée (DTR)",

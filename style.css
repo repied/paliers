@@ -374,6 +374,26 @@ body.dark-mode .equation {
     color: #e0e0e0;
 }
 
+#warning-banner {
+    background-color: rgb(243, 243, 94);
+    color: black;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#close-banner-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
 @media (max-width: 1200px) {
     body {
         flex-direction: column;

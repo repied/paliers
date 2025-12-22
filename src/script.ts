@@ -21,6 +21,7 @@ const timeStepInput = document.getElementById('time_step') as HTMLInputElement;
 const bottomTimeSlider = document.getElementById('bottomTimeSlider') as HTMLInputElement;
 const maxDepthSlider = document.getElementById('maxDepthSlider') as HTMLInputElement;
 
+const warning_banner_text = document.getElementById('warning-banner-text') as HTMLDivElement;
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const into = document.getElementById('intro') as HTMLParagraphElement;
 const canvastitle = document.getElementById('canvas-title') as HTMLHeadingElement;
@@ -65,6 +66,7 @@ document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(b => {
 });
 
 export function applyLanguageAndDraw(): void {
+    warning_banner_text.textContent = t('warning-banner');
     mainTitle.textContent = t('title');
     if (window.innerWidth < MOBILE_WIDTH_THRESHOLD) {
         into.innerHTML = t('into_mobile');
@@ -621,3 +623,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply theme on page load
     setThemePreference();
 });
+
+const closeBannerBtn = document.getElementById('close-banner-btn');
+const warningBanner = document.getElementById('warning-banner');
+
+if (closeBannerBtn && warningBanner) {
+    closeBannerBtn.addEventListener('click', () => {
+        warningBanner.style.display = 'none';
+    });
+}
