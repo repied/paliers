@@ -300,7 +300,25 @@ describe('calculatePlan', () => {
         expect(isPlanBreachModifiedMValues(plan)).toBe(false);
     });
 
+    test('Regression: complex dive should not breach modified M-values at any point', () => {
+        const plan = calculatePlan({
+            bottomTime: 40,
+            maxDepth: 45,
+            gfLow: 0.2,
+            gfHigh: 0.8,
+            ...defaultParams
+        });
 
+        expect(plan.stops.length).toBeGreaterThan(0);
+        expect(isPlanBreachModifiedMValues(plan)).toBe(false);
+
+        // Explicitly check every history entry
+        plan.history.forEach((state, i) => {
+            state.tensions.forEach((tension, compIdx) => {
+                expect(tension).toBeLessThanOrEqual(state.modMValues[compIdx] + 1e-7);
+            });
+        });
+    });
 });
 
 describe('plan detection for different last stop depths', () => {
