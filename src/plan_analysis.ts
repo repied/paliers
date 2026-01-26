@@ -71,7 +71,8 @@ function plotPlan(plan: Plan): void {
     const P_Points = depthPoints.map(depth => depthToPressure(depth, surfacePressure));
 
     const ceiling = calculateCeilings(history, surfacePressure);
-    const ceilingGF = calculateGFCeilings(history, diveParams as DiveParams);
+    const firstStopDepth = plan.stops.length > 0 ? plan.stops[0].depth : null;
+    const ceilingGF = calculateGFCeilings(history, diveParams as DiveParams, firstStopDepth);
 
     // transpose to get a time series for each compartment
     const compsTensions: Array<Array<Tension>> = Array(N_COMPARTMENTS).fill(null).map(() => []);

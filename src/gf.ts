@@ -415,8 +415,10 @@ export function calculateCeilings(history: StateHistory, surfacePressure: Pressu
  * Teleporting above the ceiling would be unsafe.
  * 
  */
-export function calculateGFCeilings(history: StateHistory, diveParams: DiveParams): Array<Pressure> {
+export function calculateGFCeilings(history: StateHistory, diveParams: DiveParams, firstStopDepth?: Depth | null): Array<Pressure> {
     const { maxDepth, gfLow, gfHigh, surfacePressure } = diveParams as DiveParams;
+    const kneeDepth = (firstStopDepth && firstStopDepth > 0) ? firstStopDepth : maxDepth;
+
     return history.map(entry => {
         let maxCeilingPressure = surfacePressure;
         entry.tensions.forEach((tension, i) => {
@@ -424,7 +426,7 @@ export function calculateGFCeilings(history: StateHistory, diveParams: DiveParam
             const B = BUEHLMANN[i].B;
             const K = 1 / B - 1;
             const h = gfHigh;
-            const md = (gfLow - gfHigh) / maxDepth;
+            const md = (gfLow - gfHigh) / kneeDepth;
 
             // Quadratic equation coefficients for Depth D: a*D^2 + b*D + c = 0
             // Derived from T = M_mod(P, GF(D)) where P = Psurf + D/10 and GF(D) = md*D + h
@@ -451,8 +453,8 @@ export function calculateGFCeilings(history: StateHistory, diveParams: DiveParam
                 }
             }
 
-            // If calculated D is deeper than maxDepth, we are in the constant GF_low region
-            if (D > maxDepth) {
+            // If calculated D is deeper than kneeDepth, we are in the constant GF_low region
+            if (D > kneeDepth) {
                 // Solve linear equation with constant GF = gfLow
                 // T = GF_low * A + P * (1 + GF_low * K)
                 // P = (T - GF_low * A) / (1 + GF_low * K)
