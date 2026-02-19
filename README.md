@@ -1,5 +1,10 @@
 # Paliers
 
+## Better app available ; "Tables"
+[Tables](https://github.com/repied/tables) is an easy to use and mobile friendly app implementing the same algo. It's more recent, more accurate and more tested. 
+
+## Paliers
+
 `paliers` is a client-side tool to compute and display scuba diving desaturation plans. It's built with HTML, CSS, and TypeScript, and requires no server-side components.
 
 <div style="text-align: center;">
